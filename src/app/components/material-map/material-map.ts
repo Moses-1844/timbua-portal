@@ -444,4 +444,8 @@ export class MaterialMap implements OnInit, AfterViewInit {
   retryLoadMaterials(): void {
     this.loadMaterials();
   }
+  // Add this method to the component class
+closeMaterialDetails(): void {
+  this.selectedMaterial.set(null);
+}
 }

@@ -140,73 +140,83 @@
   }
 
   <!-- Material Details Panel -->
-  @if (selectedMaterial(); as material) {
-    <div class="material-details">
-      <div class="material-header">
+<!-- Material Details Panel -->
+@if (selectedMaterial(); as material) {
+  <div class="material-details">
+    <!-- Add close button in header -->
+    <div class="material-header">
+      <div class="header-content">
         <span class="material-icon-large">{{ material.icon || '📦' }}</span>
         <h3>{{ material.name }}</h3>
       </div>
-      
-      <div class="detail-section">
-        <h4>Location Information</h4>
-        <p><strong>Location:</strong> {{ material.location.name }}</p>
-        <p><strong>County:</strong> {{ material.location.county }}</p>
-        <p><strong>Sub-County:</strong> {{ material.location.subCounty }}</p>
-        <p><strong>Ward:</strong> {{ material.location.ward }}</p>
-        <p><strong>Coordinates:</strong> {{ material.location.latitude | number:'1.4-4' }}, {{ material.location.longitude | number:'1.4-4' }}</p>
-      </div>
+      <button class="close-btn" (click)="closeMaterialDetails()" aria-label="Close details">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M18 6L6 18M6 6l12 12"></path>
+        </svg>
+      </button>
+    </div>
+    
+    <div class="detail-section">
+      <h4>Location Information</h4>
+      <p><strong>Location:</strong> {{ material.location.name }}</p>
+      <p><strong>County:</strong> {{ material.location.county }}</p>
+      <p><strong>Sub-County:</strong> {{ material.location.subCounty }}</p>
+      <p><strong>Ward:</strong> {{ material.location.ward }}</p>
+      <p><strong>Coordinates:</strong> {{ material.location.latitude | number:'1.4-4' }}, {{ material.location.longitude | number:'1.4-4' }}</p>
+    </div>
 
-      <div class="detail-section">
-        <h4>Material Types</h4>
-        <div class="material-types">
-          @for (type of material.type; track type) {
-            <span class="material-type-badge">
-              {{ getTypeIcon(type) }} {{ type }}
-            </span>
-          }
-        </div>
-      </div>
-
-      <div class="detail-section">
-        <h4>Research Details</h4>
-        <p><strong>Questionnaire No:</strong> {{ material.questionnaireNo }}</p>
-        <p><strong>Research Assistant:</strong> {{ material.researchAssistantNo }}</p>
-        @if (material.timestamp) {
-          <p><strong>Recorded:</strong> {{ material.timestamp | date:'medium' }}</p>
+    <!-- Rest of the material details content remains the same -->
+    <div class="detail-section">
+      <h4>Material Types</h4>
+      <div class="material-types">
+        @for (type of material.type; track type) {
+          <span class="material-type-badge">
+            {{ getTypeIcon(type) }} {{ type }}
+          </span>
         }
       </div>
+    </div>
 
-      <div class="detail-section">
-        <h4>Production Details</h4>
-        <p><strong>Industry Size:</strong> {{ material.sizeOfManufacturingIndustry }}</p>
-        <p><strong>Period of Manufacture:</strong> {{ material.periodOfManufacture }}</p>
-        <p><strong>Owner:</strong> {{ material.ownerOfMaterial }}</p>
-        <p><strong>Usage:</strong> {{ material.materialUsage }}</p>
-        <p><strong>Employees:</strong> {{ material.numberOfPeopleEmployed }}</p>
-        <p><strong>Daily Production:</strong> {{ material.volumeProducedPerDay }}</p>
-        <p><strong>Used In:</strong> {{ material.materialUsedIn }}</p>
-        @if (material.similarLocations) {
-          <p><strong>Similar Locations:</strong> {{ material.similarLocations }}</p>
-        }
-      </div>
-
-      @if (material.challenges && material.challenges.length > 0) {
-        <div class="detail-section">
-          <h4>Challenges</h4>
-          <ul>
-            @for (challenge of material.challenges; track challenge) {
-              <li>{{ challenge }}</li>
-            }
-          </ul>
-        </div>
-      }
-
-      @if (material.comments) {
-        <div class="detail-section">
-          <h4>Comments</h4>
-          <p>{{ material.comments }}</p>
-        </div>
+    <div class="detail-section">
+      <h4>Research Details</h4>
+      <p><strong>Questionnaire No:</strong> {{ material.questionnaireNo }}</p>
+      <p><strong>Research Assistant:</strong> {{ material.researchAssistantNo }}</p>
+      @if (material.timestamp) {
+        <p><strong>Recorded:</strong> {{ material.timestamp | date:'medium' }}</p>
       }
     </div>
-  }
+
+    <div class="detail-section">
+      <h4>Production Details</h4>
+      <p><strong>Industry Size:</strong> {{ material.sizeOfManufacturingIndustry }}</p>
+      <p><strong>Period of Manufacture:</strong> {{ material.periodOfManufacture }}</p>
+      <p><strong>Owner:</strong> {{ material.ownerOfMaterial }}</p>
+      <p><strong>Usage:</strong> {{ material.materialUsage }}</p>
+      <p><strong>Employees:</strong> {{ material.numberOfPeopleEmployed }}</p>
+      <p><strong>Daily Production:</strong> {{ material.volumeProducedPerDay }}</p>
+      <p><strong>Used In:</strong> {{ material.materialUsedIn }}</p>
+      @if (material.similarLocations) {
+        <p><strong>Similar Locations:</strong> {{ material.similarLocations }}</p>
+      }
+    </div>
+
+    @if (material.challenges && material.challenges.length > 0) {
+      <div class="detail-section">
+        <h4>Challenges</h4>
+        <ul>
+          @for (challenge of material.challenges; track challenge) {
+            <li>{{ challenge }}</li>
+          }
+        </ul>
+      </div>
+    }
+
+    @if (material.comments) {
+      <div class="detail-section">
+        <h4>Comments</h4>
+        <p>{{ material.comments }}</p>
+      </div>
+    }
+  </div>
+}
 </div>
