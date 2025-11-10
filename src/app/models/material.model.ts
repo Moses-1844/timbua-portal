@@ -15,47 +15,36 @@ export interface Material {
   challenges: string[];
   recommendations: string[];
   timestamp: string;
-  icon?: string; // Add icon property
+  icon: string;
+  
+  // Additional fields from API
+  materialUsedIn?: string;
+  sizeOfManufacturingIndustry?: string;
+  periodOfManufacture?: string;
+  ownerOfMaterial?: string;
+  materialUsage?: string;
+  numberOfPeopleEmployed?: string;
+  similarLocations?: string;
+  volumeProducedPerDay?: string;
+  comments?: string;
 }
-/*export interface Material {
-  id: string;
-  name: string;
-  type: string;
-  description: string;
-  location: {
-    latitude: number;
-    longitude: number;
-    address: string;
-    region: string;
-    county: string;
-  };
-  supplier: {
-    name: string;
-    contact: string;
-    email: string;
-    license: string;
-  };
-  specifications: {
-    quality: 'High' | 'Medium' | 'Low';
-    certification: string[];
-    durability: string;
-    environmentalImpact: string;
-  };
-  pricing: {
-    unit: string;
-    price: number;
-    currency: string;
-    discount: number;
-  };
-  availability: {
-    quantity: number;
-    status: 'Available' | 'Limited' | 'Out of Stock';
-    deliveryTime: string;
-  };
-  sustainability: {
-    ecoFriendly: boolean;
-    recyclable: boolean;
-    carbonFootprint: string;
-  };
-  timestamp: string;
-}*/
+
+// API response interface
+export interface ApiMaterialSite {
+  id: number;
+  questionnaireNo: number;
+  researchAssistantNo: string;
+  material: string;
+  materialLocation: string;
+  latitude: number;
+  longitude: number;
+  materialUsedIn: string;
+  sizeOfManufacturingIndustry: string;
+  periodOfManufacture: string;
+  ownerOfMaterial: string;
+  materialUsage: string;
+  numberOfPeopleEmployed: string;
+  similarLocations: string | null;
+  volumeProducedPerDay: string;
+  comments: string | null;
+}

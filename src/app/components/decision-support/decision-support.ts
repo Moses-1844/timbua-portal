@@ -1,18 +1,19 @@
 import { Component, OnInit, AfterViewInit, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { HttpClient } from '@angular/common/http';
 import * as L from 'leaflet';
 import * as turf from '@turf/turf';
 import { MaterialService } from '../../services/material.service';
 import { Material } from '../../models/material.model';
 import { GovernmentColors } from '../../config/colors.config';
 
-// Define simple interfaces for our restricted zones
 interface RestrictedZone {
   id: string;
   name: string;
   type: string;
-  coordinates: number[][][]; // [[[lng, lat], [lng, lat], ...]]
-  bufferDistance: number; // in meters
+  coordinates: number[][][];
+  bufferDistance: number;
+  source: 'geojson' | 'manual';
 }
 
 interface AnalysisResult {
@@ -20,10 +21,27 @@ interface AnalysisResult {
   restrictions: string[];
   nearestMaterials: {
     material: Material;
-    distance: number; // in meters
-    travelTime: number; // in minutes
+    distance: number;
+    travelTime: number;
   }[];
   recommendations: string[];
+}
+
+interface GeoJSONFeature {
+  type: string;
+  properties: {
+    name: string;
+    [key: string]: any;
+  };
+  geometry: {
+    type: string;
+    coordinates: any;
+  };
+}
+
+interface GeoJSONData {
+  type: string;
+  features: GeoJSONFeature[];
 }
 
 @Component({
@@ -35,65 +53,27 @@ interface AnalysisResult {
 })
 export class DecisionSupport implements OnInit, AfterViewInit {
   private materialService = inject(MaterialService);
+  private http = inject(HttpClient);
   
   private map: L.Map | undefined;
   private markers: L.Marker[] = [];
   private siteMarker: L.Marker | null = null;
-  private restrictedZones: L.LayerGroup | null = null;
+  private restrictedZonesLayer: L.LayerGroup | undefined;
+  private bufferZonesLayer: L.LayerGroup | undefined;
+  private materialMarkersLayer: L.LayerGroup | undefined;
   
   materials = signal<Material[]>([]);
   selectedSite = signal<{ lat: number; lng: number } | null>(null);
   analysisResult = signal<AnalysisResult | null>(null);
   isLoading = signal(false);
   isAnalyzing = signal(false);
+  isLoadingRestrictions = signal(false);
   
-  // Make Math available in template
   Math = Math;
-
-  // Mock restricted zones with simple coordinates
-  private restrictedZonesData: RestrictedZone[] = [
-    {
-      id: '1',
-      name: 'Tsavo East National Park',
-      type: 'Protected Area',
-      coordinates: [[
-        [38.5, -3.0],
-        [39.5, -3.0],
-        [39.5, -2.5],
-        [38.5, -2.5],
-        [38.5, -3.0]
-      ]],
-      bufferDistance: 5000 // 5km buffer
-    },
-    {
-      id: '2',
-      name: 'Mombasa Airport',
-      type: 'Airport',
-      coordinates: [[
-        [39.60, -4.03],
-        [39.65, -4.03],
-        [39.65, -4.00],
-        [39.60, -4.00],
-        [39.60, -4.03]
-      ]],
-      bufferDistance: 3000 // 3km buffer
-    },
-    {
-      id: '3',
-      name: 'Mida Creek Conservation Area',
-      type: 'Marine Protected Area',
-      coordinates: [[
-        [39.90, -3.35],
-        [40.00, -3.35],
-        [40.00, -3.25],
-        [39.90, -3.25],
-        [39.90, -3.35]
-      ]],
-      bufferDistance: 2000 // 2km buffer
-    }
-  ];
+  restrictedZonesData: RestrictedZone[] = [];
 
   ngOnInit() {
+    this.loadRestrictedZones();
     this.loadMaterials();
   }
 
@@ -101,10 +81,206 @@ export class DecisionSupport implements OnInit, AfterViewInit {
     this.initMap();
   }
 
+  public async loadRestrictedZones(): Promise<void> {
+    this.isLoadingRestrictions.set(true);
+    
+    try {
+      await this.loadGeoJSONData();
+      console.log('Loaded restricted zones from GeoJSON:', this.restrictedZonesData.length);
+    } catch (error) {
+      console.error('Error loading restricted zones from GeoJSON:', error);
+      this.loadManualRestrictedZones();
+    } finally {
+      this.isLoadingRestrictions.set(false);
+    }
+  }
+
+private async loadGeoJSONData(): Promise<void> {
+  try {
+    console.log('Attempting to load GeoJSON data...');
+    
+    // Try multiple possible paths
+    const possiblePaths = [
+      '/geojson.geojson',
+      '/geojson.geojson',
+      './geojson.geojson',
+      '/geojson.geojson'
+    ];
+
+    let geojsonData: GeoJSONData | undefined;
+    let loadedPath = '';
+
+    for (const path of possiblePaths) {
+      try {
+        console.log(`Trying to load from: ${path}`);
+        geojsonData = await this.http.get<GeoJSONData>(path).toPromise();
+        loadedPath = path;
+        console.log(`✅ Successfully loaded GeoJSON from: ${path}`);
+        break;
+      } catch (error) {
+        console.warn(`❌ Failed to load from ${path}:`, error);
+        continue;
+      }
+    }
+
+    if (!geojsonData) {
+      console.warn('⚠️ Could not load GeoJSON from any path, using manual data');
+      throw new Error('GeoJSON not found');
+    }
+
+    if (geojsonData?.features) {
+      console.log(`📊 Processing ${geojsonData.features.length} features from GeoJSON`);
+      this.processGeoJSONFeatures(geojsonData.features);
+    } else {
+      throw new Error('Invalid GeoJSON data structure - no features found');
+    }
+  } catch (error) {
+    console.error('🚨 Failed to load GeoJSON file:', error);
+    throw error;
+  }
+}
+  private processGeoJSONFeatures(features: GeoJSONFeature[]): void {
+    features.forEach((feature, index) => {
+      if (!feature.properties?.name) return;
+
+      const zoneType = this.determineZoneType(feature);
+      const bufferDistance = this.getBufferDistance(zoneType);
+      
+      let coordinates: number[][][] = [];
+
+      try {
+        if (feature.geometry.type === 'Polygon') {
+          coordinates = feature.geometry.coordinates;
+        } else if (feature.geometry.type === 'MultiPolygon') {
+          // Use the first polygon for simplicity, or you can handle all polygons
+          coordinates = feature.geometry.coordinates[0];
+        } else if (feature.geometry.type === 'Point') {
+          const point = feature.geometry.coordinates;
+          const circle = turf.circle(point, 0.5, { units: 'kilometers' });
+          coordinates = [(circle.geometry as any).coordinates];
+        } else {
+          console.warn(`Unsupported geometry type: ${feature.geometry.type}`);
+          return;
+        }
+
+        if (coordinates.length > 0) {
+          this.restrictedZonesData.push({
+            id: `geojson-${feature.properties.name}-${index}`,
+            name: feature.properties.name,
+            type: zoneType,
+            coordinates: coordinates,
+            bufferDistance: bufferDistance,
+            source: 'geojson'
+          });
+        }
+      } catch (error) {
+        console.warn('Error processing GeoJSON feature:', feature.properties.name, error);
+      }
+    });
+  }
+
+private determineZoneType(feature: GeoJSONFeature): string {
+  const name = feature.properties.name?.toLowerCase() || '';
+  const otherProps = JSON.stringify(feature.properties).toLowerCase();
+
+  // Check for airport-related terms
+  if (name.includes('airport') || name.includes('aerodrome') || otherProps.includes('aeroway')) {
+    return 'Airport';
+  }
+  
+  // Check for protected area terms
+  if (name.includes('national park') || name.includes('reserve') || name.includes('protected') || 
+      name.includes('conservancy') || name.includes('wildlife')) {
+    return 'Protected Area';
+  }
+  
+  // Check for water body terms
+  if (name.includes('lake') || name.includes('river') || name.includes('water') || 
+      name.includes('reservoir') || otherProps.includes('natural=water')) {
+    return 'Water Body';
+  }
+
+  // Default based on properties - FIXED: Use bracket notation for index signature properties
+  if (feature.properties['boundary'] === 'national_park' || feature.properties['boundary'] === 'protected_area') {
+    return 'Protected Area';
+  }
+  
+  if (feature.properties['aeroway']) {
+    return 'Airport';
+  }
+  
+  if (feature.properties['natural'] === 'water') {
+    return 'Water Body';
+  }
+
+  return 'Restricted Area';
+}
+
+  private getBufferDistance(zoneType: string): number {
+    switch (zoneType) {
+      case 'Protected Area':
+        return 2000; // 2km buffer
+      case 'Airport':
+        return 3000; // 3km buffer
+      case 'Water Body':
+        return 500;  // 500m buffer
+      default:
+        return 1000; // 1km buffer for other restricted areas
+    }
+  }
+
+  private loadManualRestrictedZones(): void {
+    // Fallback data in case GeoJSON fails to load
+    this.restrictedZonesData = [
+      {
+        id: 'manual-1',
+        name: 'Nairobi National Park',
+        type: 'Protected Area',
+        coordinates: [[
+          [36.75, -1.40],
+          [36.95, -1.40],
+          [36.95, -1.20],
+          [36.75, -1.20],
+          [36.75, -1.40]
+        ]],
+        bufferDistance: 2000,
+        source: 'manual'
+      },
+      {
+        id: 'manual-2',
+        name: 'Jomo Kenyatta International Airport',
+        type: 'Airport',
+        coordinates: [[
+          [36.92, -1.33],
+          [36.98, -1.33],
+          [36.98, -1.30],
+          [36.92, -1.30],
+          [36.92, -1.33]
+        ]],
+        bufferDistance: 3000,
+        source: 'manual'
+      },
+      {
+        id: 'manual-3',
+        name: 'Lake Naivasha',
+        type: 'Water Body',
+        coordinates: [[
+          [36.35, -0.70],
+          [36.45, -0.70],
+          [36.45, -0.75],
+          [36.35, -0.75],
+          [36.35, -0.70]
+        ]],
+        bufferDistance: 500,
+        source: 'manual'
+      }
+    ];
+  }
+
   private initMap(): void {
     this.map = L.map('decision-map', {
-      center: [-4.0000, 39.3000],
-      zoom: 10,
+      center: [-1.2921, 36.8219],
+      zoom: 7,
       zoomControl: false
     });
 
@@ -112,177 +288,234 @@ export class DecisionSupport implements OnInit, AfterViewInit {
       position: 'topright'
     }).addTo(this.map);
 
-    // Add tile layer
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
       attribution: '© OpenStreetMap contributors',
       maxZoom: 18
     }).addTo(this.map);
 
-    // Add restricted zones layer
-    this.addRestrictedZones();
+    // Initialize layer groups
+    this.restrictedZonesLayer = L.layerGroup();
+    this.bufferZonesLayer = L.layerGroup();
+    this.materialMarkersLayer = L.layerGroup();
 
-    // Add click event for site selection
+    // Add overlay control
+    const overlayMaps: { [key: string]: L.LayerGroup } = {
+      "Restricted Zones": this.restrictedZonesLayer,
+      "Buffer Zones": this.bufferZonesLayer,
+      "Material Sites": this.materialMarkersLayer
+    };
+
+    L.control.layers({}, overlayMaps, {
+      position: 'topright',
+      collapsed: false
+    }).addTo(this.map);
+
+    // Add layers to map by default
+    this.restrictedZonesLayer.addTo(this.map);
+    this.bufferZonesLayer.addTo(this.map);
+    this.materialMarkersLayer.addTo(this.map);
+
+    setTimeout(() => {
+      this.addRestrictedZones();
+    }, 1000);
+
     this.map.on('click', (e: L.LeafletMouseEvent) => {
       this.onMapClick(e.latlng);
     });
   }
 
   private addRestrictedZones(): void {
-    this.restrictedZones = L.layerGroup().addTo(this.map!);
+    if (!this.map || this.restrictedZonesData.length === 0 || !this.restrictedZonesLayer || !this.bufferZonesLayer) return;
+
+    // Clear existing layers
+    this.restrictedZonesLayer.clearLayers();
+    this.bufferZonesLayer.clearLayers();
 
     this.restrictedZonesData.forEach(zone => {
-      // Convert coordinates to Leaflet format [lat, lng]
-      const leafletCoords = zone.coordinates[0].map(coord => [coord[1], coord[0]] as [number, number]);
-      
-      const polygon = L.polygon(leafletCoords, {
-        color: GovernmentColors.kenyaRed,
-        fillColor: GovernmentColors.kenyaRed,
-        fillOpacity: 0.2,
-        weight: 2
-      }).addTo(this.restrictedZones!);
-
-      // Create buffer zone using Turf.js
       try {
+        // Convert coordinates from [lng, lat] to [lat, lng] for Leaflet
+        const leafletCoords = zone.coordinates[0].map(coord => {
+          // Handle both [lng, lat] and [lat, lng] formats
+          if (coord.length === 2) {
+            // Assume GeoJSON format: [lng, lat]
+            return [coord[1], coord[0]] as [number, number];
+          }
+          return coord as [number, number];
+        });
+        
+        // Add main restricted zone polygon
+        const polygon = L.polygon(leafletCoords, {
+          color: this.getZoneColor(zone.type),
+          fillColor: this.getZoneColor(zone.type),
+          fillOpacity: 0.3,
+          weight: 2
+        }).addTo(this.restrictedZonesLayer!);
+
+        // Add buffer zone
         const zonePolygon = turf.polygon(zone.coordinates);
         const buffer = turf.buffer(zonePolygon, zone.bufferDistance / 1000, { units: 'kilometers' });
         
         if (buffer && buffer.geometry) {
-          const bufferCoords = (buffer.geometry as any).coordinates[0].map((coord: number[]) => [coord[1], coord[0]] as [number, number]);
+          const bufferCoords = (buffer.geometry as any).coordinates[0].map((coord: number[]) => {
+            // Convert from [lng, lat] to [lat, lng]
+            return [coord[1], coord[0]] as [number, number];
+          });
           
           L.polygon(bufferCoords, {
-            color: GovernmentColors.kenyaRed,
-            fillColor: GovernmentColors.kenyaRed,
+            color: this.getZoneColor(zone.type),
+            fillColor: this.getZoneColor(zone.type),
             fillOpacity: 0.1,
             weight: 1,
             dashArray: '5,5'
-          }).addTo(this.restrictedZones!);
+          }).addTo(this.bufferZonesLayer!);
         }
-      } catch (error) {
-        console.warn('Could not create buffer for zone:', zone.name, error);
-      }
 
-      // Add popup with zone info
-      polygon.bindPopup(`
-        <div>
-          <h3>${zone.name}</h3>
-          <p><strong>Type:</strong> ${zone.type}</p>
-          <p><strong>Buffer:</strong> ${zone.bufferDistance}m</p>
-          <p><em>Construction restricted in this area</em></p>
-        </div>
-      `);
+        polygon.bindPopup(`
+          <div>
+            <h3>${zone.name}</h3>
+            <p><strong>Type:</strong> ${zone.type}</p>
+            <p><strong>Buffer:</strong> ${zone.bufferDistance}m</p>
+            <p><strong>Source:</strong> Local GeoJSON Data</p>
+            <p><em>Construction restricted in this area</em></p>
+          </div>
+        `);
+
+      } catch (error) {
+        console.warn('Error adding zone to map:', zone.name, error);
+      }
     });
+  }
+
+  private getZoneColor(zoneType: string): string {
+    switch (zoneType) {
+      case 'Protected Area':
+        return GovernmentColors.kenyaGreen;
+      case 'Airport':
+        return GovernmentColors.kenyaRed;
+      case 'Water Body':
+        return GovernmentColors.kbrcBlue;
+      default:
+        return GovernmentColors.kbrcGray;
+    }
   }
 
   private loadMaterials(): void {
     this.isLoading.set(true);
     
-    this.materialService.getMaterials().subscribe({
-      next: (materials) => {
+    // Direct API call for faster loading
+    this.http.get<any[]>('https://timbuabackend.onrender.com/api/material-sites').subscribe({
+      next: (response) => {
+        const materials = this.transformApiResponse(response);
         this.materials.set(materials);
         this.addMaterialMarkers();
         this.isLoading.set(false);
+        console.log('Loaded materials from API:', materials.length);
       },
       error: (error) => {
-        console.error('Error loading materials:', error);
-        // Use mock data as fallback
-        const mockData = this.getMockMaterials();
-        this.materials.set(mockData);
-        this.addMaterialMarkers();
-        this.isLoading.set(false);
+        console.error('Error loading materials from API:', error);
+        // Fallback to service if direct API fails
+        this.materialService.getMaterials().subscribe({
+          next: (materials) => {
+            this.materials.set(materials);
+            this.addMaterialMarkers();
+            this.isLoading.set(false);
+          },
+          error: (serviceError) => {
+            console.error('Error loading materials from service:', serviceError);
+            this.materials.set([]);
+            this.isLoading.set(false);
+          }
+        });
       }
     });
   }
 
-  private getMockMaterials(): Material[] {
-    // Return simplified mock materials for testing
-    return [
-      {
-        id: '1',
-        questionnaireNo: '1',
-        researchAssistantNo: '002/B1',
-        name: 'Local blocks, Kokoto',
-        type: ['Blocks', 'Kokoto'],
-        location: {
-          name: 'Mwachanda',
-          latitude: -4.170327,
-          longitude: 39.246377,
-          county: 'Kilifi',
-          subCounty: 'Kaloleni',
-          ward: 'Mwanamwinga'
-        },
-        challenges: [],
-        recommendations: [],
-        timestamp: new Date().toISOString(),
-        icon: '🧱'
-      },
-      {
-        id: '13',
-        questionnaireNo: '13',
-        researchAssistantNo: '002/B1',
-        name: 'River Sand',
-        type: ['Sand'],
-        location: {
-          name: 'Mwache bridge',
-          latitude: -3.94485,
-          longitude: 39.510227,
-          county: 'Mombasa',
-          subCounty: 'Kisauni',
-          ward: 'Mtopanga'
-        },
-        challenges: [],
-        recommendations: [],
-        timestamp: new Date().toISOString(),
-        icon: '🏖️'
-      },
-      {
-        id: '14',
-        questionnaireNo: '14',
-        researchAssistantNo: '002/B1',
-        name: 'Ballast, Washed sand',
-        type: ['Ballast', 'Sand'],
-        location: {
-          name: 'Bonje, Mwache',
-          latitude: -4.002532,
-          longitude: 39.536543,
-          county: 'Mombasa',
-          subCounty: 'Kisauni',
-          ward: 'Mtopanga'
-        },
-        challenges: [],
-        recommendations: [],
-        timestamp: new Date().toISOString(),
-        icon: '⛰️'
-      },
-      {
-        id: '22',
-        questionnaireNo: '22',
-        researchAssistantNo: '002/B1',
-        name: 'Ballast',
-        type: ['Ballast'],
-        location: {
-          name: 'Mbandi',
-          latitude: -4.128325,
-          longitude: 39.3289,
-          county: 'Kilifi',
-          subCounty: 'Kaloleni',
-          ward: 'Mazeras'
-        },
-        challenges: [],
-        recommendations: [],
-        timestamp: new Date().toISOString(),
-        icon: '⛰️'
+private transformApiResponse(apiData: any[]): Material[] {
+  return apiData.map(item => {
+    // Extract material types from the response
+    let materialTypes: string[] = [];
+    if (item.material) {
+      // Handle different material formats
+      if (Array.isArray(item.material)) {
+        materialTypes = item.material;
+      } else if (typeof item.material === 'string') {
+        // Split comma-separated materials
+        materialTypes = item.material.split(',').map((m: string) => m.trim());
+      } else {
+        materialTypes = [String(item.material)];
       }
-    ];
+    } else {
+      materialTypes = ['Unknown'];
+    }
+
+    // Extract location name
+    const locationName = item.materialLocation || item.location?.name || 'Unknown Location';
+    
+    // Ensure coordinates are numbers
+    const latitude = Number(item.latitude) || -1.2921;
+    const longitude = Number(item.longitude) || 36.8219;
+
+    return {
+      id: item._id || item.id || `material-${item.questionnaireNo || 'unknown'}`,
+      questionnaireNo: item.questionnaireNo?.toString() || 'N/A',
+      researchAssistantNo: item.researchAssistantNo || 'N/A',
+      name: item.material || 'Unnamed Material',
+      type: materialTypes,
+      location: {
+        name: locationName,
+        latitude: latitude,
+        longitude: longitude,
+        county: item.location?.county || 'Unknown',
+        subCounty: item.location?.subCounty || 'Unknown',
+        ward: item.location?.ward || 'Unknown'
+      },
+      challenges: Array.isArray(item.challenges) ? item.challenges : [],
+      recommendations: Array.isArray(item.recommendations) ? item.recommendations : [],
+      timestamp: item.timestamp || item.createdAt || new Date().toISOString(),
+      icon: this.getMaterialIcon(materialTypes),
+      // Additional properties from the API
+      additionalInfo: {
+        materialUsage: item.materialUsage,
+        materialUsedIn: item.materialUsedIn,
+        numberOfPeopleEmployed: item.numberOfPeopleEmployed,
+        ownerOfMaterial: item.ownerOfMaterial,
+        periodOfManufacture: item.periodOfManufacture,
+        similarLocations: item.similarLocations,
+        sizeOfManufacturingIndustry: item.sizeOfManufacturingIndustry,
+        volumeProducedPerDay: item.volumeProducedPerDay
+      }
+    };
+  });
+}
+
+  private getMaterialIcon(materialTypes: string[]): string {
+    const types = materialTypes.map(t => t.toLowerCase());
+    
+    if (types.some(t => t.includes('sand'))) return '🏖️';
+    if (types.some(t => t.includes('ballast'))) return '⛰️';
+    if (types.some(t => t.includes('block'))) return '🧱';
+    if (types.some(t => t.includes('rock'))) return '🪨';
+    if (types.some(t => t.includes('cement'))) return '🏭';
+    if (types.some(t => t.includes('clay'))) return '🟫';
+    if (types.some(t => t.includes('stone'))) return '🔶';
+    
+    return '📦';
   }
 
   private addMaterialMarkers(): void {
-    if (!this.map) return;
+    if (!this.map || !this.materialMarkersLayer) return;
 
-    // Clear existing material markers
-    this.markers.forEach(marker => this.map!.removeLayer(marker));
+    // Clear existing markers
+    this.materialMarkersLayer.clearLayers();
     this.markers = [];
 
     this.materials().forEach(material => {
+      // Check if material and material.type exist
+      if (!material || !material.type) {
+        console.warn('Invalid material data:', material);
+        return;
+      }
+
       const markerColor = this.getMarkerColor(material);
       
       const marker = L.marker([material.location.latitude, material.location.longitude], {
@@ -295,18 +528,16 @@ export class DecisionSupport implements OnInit, AfterViewInit {
       });
 
       marker.bindPopup(this.createMaterialPopup(material));
-      marker.addTo(this.map!);
+      marker.addTo(this.materialMarkersLayer!);
       this.markers.push(marker);
     });
   }
 
   private onMapClick(latlng: L.LatLng): void {
-    // Clear previous site marker
     if (this.siteMarker) {
       this.map!.removeLayer(this.siteMarker);
     }
 
-    // Add new site marker
     this.siteMarker = L.marker(latlng, {
       icon: L.divIcon({
         className: 'site-marker',
@@ -317,8 +548,6 @@ export class DecisionSupport implements OnInit, AfterViewInit {
     }).addTo(this.map!);
 
     this.selectedSite.set({ lat: latlng.lat, lng: latlng.lng });
-    
-    // Analyze the site
     this.analyzeSite(latlng);
   }
 
@@ -329,7 +558,6 @@ export class DecisionSupport implements OnInit, AfterViewInit {
       const sitePoint = turf.point([latlng.lng, latlng.lat]);
       const restrictions: string[] = [];
       
-      // Check if site is in restricted zones
       this.restrictedZonesData.forEach(zone => {
         try {
           const zonePolygon = turf.polygon(zone.coordinates);
@@ -338,7 +566,6 @@ export class DecisionSupport implements OnInit, AfterViewInit {
           if (isInZone) {
             restrictions.push(`🚫 Site is inside ${zone.name} (${zone.type})`);
           } else {
-            // Check buffer zone
             const buffer = turf.buffer(zonePolygon, zone.bufferDistance / 1000, { units: 'kilometers' });
             if (buffer) {
               const isInBuffer = turf.booleanPointInPolygon(sitePoint, buffer);
@@ -352,10 +579,7 @@ export class DecisionSupport implements OnInit, AfterViewInit {
         }
       });
 
-      // Find nearest materials
       const nearestMaterials = this.findNearestMaterials(latlng);
-      
-      // Generate recommendations
       const recommendations = this.generateRecommendations(restrictions, nearestMaterials);
       
       this.analysisResult.set({
@@ -376,35 +600,42 @@ export class DecisionSupport implements OnInit, AfterViewInit {
       .map(material => {
         const materialPoint = turf.point([material.location.longitude, material.location.latitude]);
         const distance = turf.distance(sitePoint, materialPoint, { units: 'kilometers' }) * 1000; // Convert to meters
-        
-        // Estimate travel time (assuming 40km/h average speed)
-        const travelTime = (distance / 1000) / 40 * 60; // in minutes
+        const travelTime = (distance / 1000) / 40 * 60; // Assuming 40 km/h average speed
         
         return {
           material,
-          distance,
+          distance: Math.round(distance),
           travelTime: Math.round(travelTime)
         };
       })
       .sort((a, b) => a.distance - b.distance)
-      .slice(0, 5); // Top 5 nearest
+      .slice(0, 5);
   }
 
   private generateRecommendations(restrictions: string[], nearestMaterials: AnalysisResult['nearestMaterials']): string[] {
     const recommendations: string[] = [];
 
     if (restrictions.length > 0) {
-      recommendations.push('❌ Consider selecting a different site location');
-      recommendations.push('📋 Check with local authorities for construction permits');
+      recommendations.push('❌ Site has regulatory restrictions - consider alternative location');
+      recommendations.push('📋 Required: Environmental impact assessment and permits');
     } else {
-      recommendations.push('✅ Site appears suitable for construction');
+      recommendations.push('✅ Site appears regulatory compliant');
+      recommendations.push('📝 Proceed with standard construction approval process');
     }
 
     if (nearestMaterials.length > 0) {
       const closest = nearestMaterials[0];
-      recommendations.push(`📦 Nearest material source: ${closest.material.name} (${Math.round(closest.distance)}m away)`);
       
-      // Material-specific recommendations
+      if (closest.distance < 2000) {
+        recommendations.push('🚚 Excellent material accessibility (< 2km)');
+      } else if (closest.distance < 5000) {
+        recommendations.push('🚛 Good material availability (2-5km)');
+      } else {
+        recommendations.push('💰 Consider transportation costs for distant materials');
+      }
+
+      recommendations.push(`📦 Nearest source: ${closest.material.name} (${closest.distance}m)`);
+
       const materialTypes = new Set(nearestMaterials.flatMap(item => item.material.type));
       
       if (materialTypes.has('Sand')) {
@@ -416,24 +647,38 @@ export class DecisionSupport implements OnInit, AfterViewInit {
       if (materialTypes.has('Ballast')) {
         recommendations.push('🛣️ Ballast ideal for road construction and foundations');
       }
+    } else {
+      recommendations.push('❌ No material sources found nearby');
+      recommendations.push('🔍 Expand search radius or consider alternative materials');
     }
 
-    // Cost-saving recommendations
-    if (nearestMaterials.length >= 3) {
-      const avgDistance = nearestMaterials.reduce((sum, item) => sum + item.distance, 0) / nearestMaterials.length;
-      if (avgDistance < 5000) { // 5km
-        recommendations.push('💰 Good material availability - potential for bulk purchase discounts');
-      }
+    if (restrictions.some(r => r.includes('Water Body'))) {
+      recommendations.push('💧 Water body nearby - consider flood risk and water table');
+    }
+
+    if (restrictions.some(r => r.includes('Protected Area'))) {
+      recommendations.push('🌿 Near protected area - enhanced environmental compliance required');
+    }
+
+    if (restrictions.some(r => r.includes('Airport'))) {
+      recommendations.push('✈️ Near airport - height restrictions and noise considerations apply');
     }
 
     return recommendations;
   }
 
   private getMarkerColor(material: Material): string {
-    if (material.type.includes('Sand')) return GovernmentColors.kbrcBlue;
-    if (material.type.includes('Blocks')) return GovernmentColors.kenyaGreen;
-    if (material.type.includes('Ballast')) return GovernmentColors.kenyaRed;
-    if (material.type.includes('Rocks')) return GovernmentColors.kbrcDarkBlue;
+    // Added null checks for material.type
+    if (!material || !material.type) {
+      return GovernmentColors.kbrcGray;
+    }
+
+    const types = material.type.map(t => t.toLowerCase());
+    
+    if (types.some(t => t.includes('sand'))) return GovernmentColors.kbrcBlue;
+    if (types.some(t => t.includes('block'))) return GovernmentColors.kenyaGreen;
+    if (types.some(t => t.includes('ballast'))) return GovernmentColors.kenyaRed;
+    if (types.some(t => t.includes('rock'))) return GovernmentColors.kbrcDarkBlue;
     return GovernmentColors.kbrcGray;
   }
 
@@ -482,6 +727,8 @@ export class DecisionSupport implements OnInit, AfterViewInit {
         <p><strong>Location:</strong> ${material.location.name}</p>
         <p><strong>Types:</strong> ${material.type.join(', ')}</p>
         <p><strong>County:</strong> ${material.location.county}</p>
+        <p><strong>Sub-County:</strong> ${material.location.subCounty}</p>
+        <p><strong>Ward:</strong> ${material.location.ward}</p>
       </div>
     `;
   }
@@ -495,13 +742,25 @@ export class DecisionSupport implements OnInit, AfterViewInit {
     this.analysisResult.set(null);
   }
 
-  toggleRestrictedZones(show: boolean): void {
-    if (this.restrictedZones) {
-      if (show) {
-        this.map!.addLayer(this.restrictedZones);
-      } else {
-        this.map!.removeLayer(this.restrictedZones);
-      }
+  toggleLayer(layer: 'restricted' | 'buffer' | 'materials', show: boolean): void {
+    if (!this.map) return;
+
+    switch (layer) {
+      case 'restricted':
+        if (this.restrictedZonesLayer) {
+          show ? this.map.addLayer(this.restrictedZonesLayer) : this.map.removeLayer(this.restrictedZonesLayer);
+        }
+        break;
+      case 'buffer':
+        if (this.bufferZonesLayer) {
+          show ? this.map.addLayer(this.bufferZonesLayer) : this.map.removeLayer(this.bufferZonesLayer);
+        }
+        break;
+      case 'materials':
+        if (this.materialMarkersLayer) {
+          show ? this.map.addLayer(this.materialMarkersLayer) : this.map.removeLayer(this.materialMarkersLayer);
+        }
+        break;
     }
   }
 }

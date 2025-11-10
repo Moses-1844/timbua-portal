@@ -1,18 +1,11 @@
 <div class="map-container">
   <div id="map"></div>
 
-  <!-- Data Source Indicator -->
-  @if (usingMockData() && !isLoading()) {
-    <div class="data-source-indicator">
-      <span class="mock-data-badge">📊 Using Sample Data</span>
-    </div>
-  }
-
   <!-- Loading Overlay -->
   @if (isLoading()) {
     <div class="loading-overlay">
       <div class="loading-spinner"></div>
-      <p>Checking for latest data...</p>
+      <p>Loading materials data...</p>
     </div>
   }
 
@@ -27,12 +20,12 @@
   }
 
   <!-- API Error Notice -->
-  @if (hasError() && usingMockData() && !isLoading()) {
+  @if (hasError() && !isLoading()) {
     <div class="api-error-notice">
       <div class="error-icon">⚠️</div>
       <div class="error-content">
         <h4>Connection Issue</h4>
-        <p>Using sample data. Real-time data unavailable.</p>
+        <p>Unable to load materials data. Please check your connection.</p>
         <button class="retry-btn-small" (click)="retryLoadMaterials()">Retry Connection</button>
       </div>
     </div>
@@ -42,12 +35,6 @@
   @if (materials().length > 0 && mapInitialized()) {
     <div class="controls-panel">
       <h3>Filter Materials</h3>
-      
-      @if (usingMockData()) {
-        <div class="mock-data-warning">
-          <small>Sample data - {{ materials().length }} locations</small>
-        </div>
-      }
       
       <div class="filter-group">
         <label for="materialFilter">Material Name</label>
@@ -67,25 +54,26 @@
           (change)="onFilterChange('type', $any($event.target).value)">
           <option value="">All Types</option>
           <option value="Blocks">🧱 Blocks</option>
-          <option value="Rocks">🪨 Rocks</option>
+          <option value="Bricks">🧱 Bricks</option>
           <option value="Sand">🏖️ Sand</option>
-          <option value="Ballast">⛰️ Ballast</option>
-          <option value="Slabs">🔲 Slabs</option>
-          <option value="Tiles">🧩 Tiles</option>
-          <option value="Kokoto">🌴 Kokoto</option>
-          <option value="Galana">🪵 Galana</option>
-          <option value="Maram">🎋 Maram</option>
+          <option value="Stones">🪨 Stones</option>
+          <option value="Limestone">🪨 Limestone</option>
+          <option value="Wood">🪵 Wood/Timber</option>
+          <option value="Cement">🏗️ Cement</option>
+          <option value="Concrete">🏗️ Concrete</option>
+          <option value="Metal">⚙️ Metal</option>
+          <option value="Glass">🔲 Glass</option>
+          <option value="Makuti">🌴 Makuti</option>
         </select>
       </div>
 
       <div class="filter-group">
-        <label for="regionFilter">County</label>
+        <label for="regionFilter">Region</label>
         <select 
           id="regionFilter" 
           [value]="filters().region"
           (change)="onFilterChange('region', $any($event.target).value)">
-          <option value="">All Counties</option>
-          <option value="Kilifi">Kilifi</option>
+          <option value="">All Regions</option>
           <option value="Mombasa">Mombasa</option>
         </select>
       </div>
@@ -98,9 +86,6 @@
       <!-- Materials Count -->
       <div class="materials-count">
         Showing {{ filteredMaterials().length }} of {{ materials().length }} materials
-        @if (usingMockData()) {
-          <br><small>(Sample Data)</small>
-        }
       </div>
 
       <!-- Legend -->
@@ -108,21 +93,34 @@
         <h4>Material Icons</h4>
         <div class="legend-item">
           <span class="legend-icon">🧱</span>
-          <span>Blocks</span>
+          <span>Blocks/Bricks</span>
         </div>
         <div class="legend-item">
           <span class="legend-icon">🏖️</span>
           <span>Sand</span>
         </div>
         <div class="legend-item">
-          <span class="legend-icon">⛰️</span>
-          <span>Ballast</span>
+          <span class="legend-icon">🪨</span>
+          <span>Stones</span>
         </div>
         <div class="legend-item">
-          <span class="legend-icon">🔲</span>
-          <span>Slabs/Tiles</span>
+          <span class="legend-icon">🏗️</span>
+          <span>Cement/Concrete</span>
+        </div>
+        <div class="legend-item">
+          <span class="legend-icon">🪵</span>
+          <span>Wood/Timber</span>
         </div>
       </div>
+    </div>
+  }
+
+  <!-- No Data Message -->
+  @if (!isLoading() && !hasError() && materials().length === 0 && mapInitialized()) {
+    <div class="no-data-message">
+      <div class="no-data-icon">📊</div>
+      <h3>No Materials Data</h3>
+      <p>No materials data available to display.</p>
     </div>
   }
 
@@ -140,7 +138,7 @@
         <p><strong>County:</strong> {{ material.location.county }}</p>
         <p><strong>Sub-County:</strong> {{ material.location.subCounty }}</p>
         <p><strong>Ward:</strong> {{ material.location.ward }}</p>
-        <p><strong>Coordinates:</strong> {{ material.location.latitude }}, {{ material.location.longitude }}</p>
+        <p><strong>Coordinates:</strong> {{ material.location.latitude | number:'1.4-4' }}, {{ material.location.longitude | number:'1.4-4' }}</p>
       </div>
 
       <div class="detail-section">
@@ -158,6 +156,23 @@
         <h4>Research Details</h4>
         <p><strong>Questionnaire No:</strong> {{ material.questionnaireNo }}</p>
         <p><strong>Research Assistant:</strong> {{ material.researchAssistantNo }}</p>
+        @if (material.timestamp) {
+          <p><strong>Recorded:</strong> {{ material.timestamp | date:'medium' }}</p>
+        }
+      </div>
+
+      <div class="detail-section">
+        <h4>Production Details</h4>
+        <p><strong>Industry Size:</strong> {{ material.sizeOfManufacturingIndustry }}</p>
+        <p><strong>Period of Manufacture:</strong> {{ material.periodOfManufacture }}</p>
+        <p><strong>Owner:</strong> {{ material.ownerOfMaterial }}</p>
+        <p><strong>Usage:</strong> {{ material.materialUsage }}</p>
+        <p><strong>Employees:</strong> {{ material.numberOfPeopleEmployed }}</p>
+        <p><strong>Daily Production:</strong> {{ material.volumeProducedPerDay }}</p>
+        <p><strong>Used In:</strong> {{ material.materialUsedIn }}</p>
+        @if (material.similarLocations) {
+          <p><strong>Similar Locations:</strong> {{ material.similarLocations }}</p>
+        }
       </div>
 
       @if (material.challenges && material.challenges.length > 0) {
@@ -171,20 +186,10 @@
         </div>
       }
 
-      @if (material.recommendations && material.recommendations.length > 0) {
+      @if (material.comments) {
         <div class="detail-section">
-          <h4>Recommendations</h4>
-          <ul>
-            @for (recommendation of material.recommendations; track recommendation) {
-              <li>{{ recommendation }}</li>
-            }
-          </ul>
-        </div>
-      }
-
-      @if (usingMockData()) {
-        <div class="mock-data-notice">
-          <small>📊 Sample data for demonstration</small>
+          <h4>Comments</h4>
+          <p>{{ material.comments }}</p>
         </div>
       }
     </div>

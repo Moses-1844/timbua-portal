@@ -17,58 +17,103 @@
     </div>
   </header>
 
-  <!-- Main Content - Directly include MaterialMap component -->
-  <main class="main-content">
-    <section class="hero-section" [style.background]="colors.background">
-      <div class="hero-content">
-        <h2>Building Materials Mapping & Decision Support</h2>
-        <p>Access comprehensive information about construction materials across Kenya. Make informed decisions with our mapping and advisory tools.</p>
-        <div class="hero-features">
-          <div class="feature" [style.border-left-color]="colors.kenyaGreen">
-            <h3>Material Mapping</h3>
-            <p>Locate building material suppliers nationwide</p>
-          </div>
-          <div class="feature" [style.border-left-color]="colors.kbrcBlue">
-            <h3>Quality Assessment</h3>
-            <p>Verified quality ratings and certifications</p>
-          </div>
-          <div class="feature" [style.border-left-color]="colors.kenyaRed">
-            <h3>Decision Support</h3>
-            <p>Get advice on material selection and usage</p>
-          </div>
-        </div>
-      </div>
-    </section>
+  <!-- Dashboard Navigation -->
+  <nav class="dashboard-nav" [style.background]="colors.kenyaWhite">
+    <div class="nav-content">
+      <button 
+        class="nav-button" 
+        [class.active]="activeSection === 'materials'"
+        (click)="activeSection = 'materials'"
+        [style.background]="activeSection === 'materials' ? colors.kbrcBlue : 'transparent'"
+        [style.color]="activeSection === 'materials' ? colors.kenyaWhite : colors.textPrimary">
+        📍 Materials Map
+      </button>
+      <button 
+        class="nav-button" 
+        [class.active]="activeSection === 'support'"
+        (click)="activeSection = 'support'"
+        [style.background]="activeSection === 'support' ? colors.kbrcBlue : 'transparent'"
+        [style.color]="activeSection === 'support' ? colors.kenyaWhite : colors.textPrimary">
+        💡 Decision Support
+      </button>
+    </div>
+  </nav>
 
-    <!-- Map Section -->
-    <section class="map-section">
-      <app-material-map></app-material-map>
-    </section>
-<section class="decision-support-section">
-  <app-decision-support></app-decision-support>
-</section>
-    <!-- Info Section -->
-    <section class="info-section" [style.background]="colors.kenyaWhite">
-      <div class="info-content">
-        <h2>About This Portal</h2>
-        <p>This public portal provides citizens, contractors, and government agencies with access to verified building material information across Kenya. No login required.</p>
+  <!-- Main Content - Dashboard -->
+  <main class="dashboard-main">
+    <!-- Materials Dashboard Section -->
+    @if (activeSection === 'materials') {
+      <section class="dashboard-section active">
         
-        <div class="info-cards">
-          <div class="info-card" [style.border-top-color]="colors.kenyaGreen">
-            <h3>Transparent Pricing</h3>
-            <p>Compare prices from different suppliers</p>
+        <div class="section-header">
+          <h2>Building Materials Mapping</h2>
+          <p>Explore and locate building material suppliers across Kenya with our interactive map</p>
+        </div>
+
+        <div class="dashboard-content">
+          <!-- Quick Stats -->
+          <div class="stats-grid">
+            <div class="stat-card" [style.border-top-color]="colors.kenyaGreen">
+              <div class="stat-value">250+</div>
+              <div class="stat-label">Verified Suppliers</div>
+            </div>
+            <div class="stat-card" [style.border-top-color]="colors.kbrcBlue">
+              <div class="stat-value">15</div>
+              <div class="stat-label">Material Types</div>
+            </div>
+            <div class="stat-card" [style.border-top-color]="colors.kenyaRed">
+              <div class="stat-value">47</div>
+              <div class="stat-label">Counties Covered</div>
+            </div>
           </div>
-          <div class="info-card" [style.border-top-color]="colors.kbrcBlue">
-            <h3>Quality Assurance</h3>
-            <p>KBRC certified materials and suppliers</p>
+
+          <!-- Map Container -->
+          <div class="map-container">
+            <app-material-map></app-material-map>
           </div>
-          <div class="info-card" [style.border-top-color]="colors.kenyaRed">
-            <h3>Sustainability</h3>
-            <p>Eco-friendly and sustainable options</p>
+
+          <!-- Quick Actions -->
+          
+        </div>
+      </section>
+    }
+
+    <!-- Decision Support Dashboard Section -->
+    @if (activeSection === 'support') {
+      <section class="dashboard-section active">
+        
+        <div class="section-header">
+          <h2>Decision Support System</h2>
+          <p>Get expert advice and recommendations for your construction projects</p>
+        </div>
+
+        <div class="dashboard-content">
+          <!-- Support Tools -->
+          <div class="tools-grid">
+            <div class="tool-card" [style.border-left-color]="colors.kenyaGreen">
+              <div class="tool-icon">🏗️</div>
+              <h3>Material Selector</h3>
+              <p>Choose the best materials for your specific project needs</p>
+            </div>
+            <div class="tool-card" [style.border-left-color]="colors.kbrcBlue">
+              <div class="tool-icon">💸</div>
+              <h3>Cost Calculator</h3>
+              <p>Estimate project costs and budget requirements</p>
+            </div>
+            <div class="tool-card" [style.border-left-color]="colors.kenyaRed">
+              <div class="tool-icon">🌱</div>
+              <h3>Sustainability Advisor</h3>
+              <p>Get eco-friendly material recommendations</p>
+            </div>
+          </div>
+
+          <!-- Decision Support Component -->
+          <div class="support-container">
+            <app-decision-support></app-decision-support>
           </div>
         </div>
-      </div>
-    </section>
+      </section>
+    }
   </main>
 
   <!-- Footer -->
@@ -76,7 +121,7 @@
     <div class="footer-content">
       <div class="footer-section">
         <h4>Timbua</h4>
-        <p> Timbua Building Materials Initiative</p>
+        <p>Timbua Building Materials Initiative</p>
       </div>
       <div class="footer-section">
         <h4>Contact</h4>

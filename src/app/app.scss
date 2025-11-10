@@ -85,122 +85,180 @@ body {
   }
 }
 
-// Main Content
-.main-content {
-  flex: 1;
-}
+// Dashboard Navigation
+.dashboard-nav {
+  background: colors.$kenyaWhite;
+  border-bottom: 1px solid #e0e0e0;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
 
-// Hero Section
-.hero-section {
-  background: colors.$background;
-  padding: 3rem 0;
-
-  .hero-content {
+  .nav-content {
     max-width: 1200px;
     margin: 0 auto;
+    padding: 0 20px;
+    display: flex;
+    gap: 1px;
+    background: #e0e0e0;
+  }
+
+  .nav-button {
+    flex: 1;
+    padding: 1rem 1.5rem;
+    border: none;
+    background: transparent;
+    font-size: 1em;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+
+    &:hover {
+      background: rgba(0, 86, 179, 0.1) !important;
+    }
+
+    &.active {
+      color: colors.$kenyaWhite !important;
+    }
+  }
+}
+
+// Dashboard Main Content
+.dashboard-main {
+  flex: 1;
+  background: colors.$background;
+}
+
+// Dashboard Sections
+.dashboard-section {
+  display: none;
+  padding: 2rem 0;
+
+  &.active {
+    display: block;
+  }
+
+  .section-header {
+    max-width: 1200px;
+    margin: 0 auto 2rem;
     padding: 0 20px;
     text-align: center;
 
     h2 {
       color: colors.$kbrcDarkBlue;
-      font-size: 2.5em;
-      margin-bottom: 1rem;
-      font-weight: 700;
+      font-size: 2em;
+      margin-bottom: 0.5rem;
     }
 
     p {
       color: colors.$textSecondary;
-      font-size: 1.2em;
-      margin-bottom: 2rem;
-      max-width: 800px;
-      margin-left: auto;
-      margin-right: auto;
-    }
-  }
-
-  .hero-features {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-    gap: 2rem;
-    margin-top: 3rem;
-
-    .feature {
-      background: colors.$kenyaWhite;
-      padding: 2rem;
-      border-radius: 8px;
-      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-      border-left: 4px solid colors.$kenyaGreen;
-
-      h3 {
-        color: colors.$kbrcDarkBlue;
-        margin-bottom: 1rem;
-        font-size: 1.3em;
-      }
-
-      p {
-        color: colors.$textSecondary;
-        margin: 0;
-      }
-    }
-  }
-}
-
-// Map Section
-.map-section {
-  padding: 3rem 0;
-  background: colors.$kenyaWhite;
-}
-
-// Info Section
-.info-section {
-  background: colors.$kenyaWhite;
-  padding: 3rem 0;
-
-  .info-content {
-    max-width: 1200px;
-    margin: 0 auto;
-    padding: 0 20px;
-
-    h2 {
-      color: colors.$kbrcDarkBlue;
-      text-align: center;
-      margin-bottom: 2rem;
-      font-size: 2em;
-    }
-
-    > p {
-      text-align: center;
-      color: colors.$textSecondary;
       font-size: 1.1em;
-      max-width: 800px;
-      margin: 0 auto 3rem;
     }
   }
+}
 
-  .info-cards {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-    gap: 2rem;
+// Dashboard Content
+.dashboard-content {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 20px;
+}
 
-    .info-card {
-      background: colors.$background;
-      padding: 2rem;
-      border-radius: 8px;
-      text-align: center;
-      border-top: 4px solid colors.$kenyaGreen;
+// Stats Grid
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 1.5rem;
+  margin-bottom: 2rem;
 
-      h3 {
-        color: colors.$kbrcDarkBlue;
-        margin-bottom: 1rem;
-        font-size: 1.2em;
-      }
+  .stat-card {
+    background: colors.$kenyaWhite;
+    padding: 1.5rem;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    border-top: 4px solid;
+    text-align: center;
 
-      p {
-        color: colors.$textSecondary;
-        margin: 0;
-      }
+    .stat-value {
+      font-size: 2em;
+      font-weight: 700;
+      color: colors.$kbrcDarkBlue;
+      margin-bottom: 0.5rem;
+    }
+
+    .stat-label {
+      color: colors.$textSecondary;
+      font-weight: 600;
     }
   }
+}
+
+// Map Container
+.map-container {
+  background: colors.$kenyaWhite;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  margin-bottom: 2rem;
+  overflow: hidden;
+}
+
+// Actions Grid
+.actions-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 1rem;
+
+  .action-btn {
+    padding: 1rem 1.5rem;
+    border: none;
+    border-radius: 8px;
+    color: colors.$kenyaWhite;
+    font-weight: 600;
+    cursor: pointer;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+
+    &:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+    }
+  }
+}
+
+// Tools Grid
+.tools-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 1.5rem;
+  margin-bottom: 2rem;
+
+  .tool-card {
+    background: colors.$kenyaWhite;
+    padding: 2rem;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    border-left: 4px solid;
+    text-align: center;
+
+    .tool-icon {
+      font-size: 2.5em;
+      margin-bottom: 1rem;
+    }
+
+    h3 {
+      color: colors.$kbrcDarkBlue;
+      margin-bottom: 1rem;
+      font-size: 1.2em;
+    }
+
+    p {
+      color: colors.$textSecondary;
+    }
+  }
+}
+
+// Support Container
+.support-container {
+  background: colors.$kenyaWhite;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  overflow: hidden;
 }
 
 // Footer
@@ -243,7 +301,7 @@ body {
   }
 }
 
-// Responsive Design
+// Mobile Responsive Design
 @media (max-width: 768px) {
   .government-header .header-content {
     flex-direction: column;
@@ -251,12 +309,51 @@ body {
     text-align: center;
   }
 
-  .hero-section .hero-content h2 {
-    font-size: 2em;
+  .dashboard-nav .nav-content {
+    flex-direction: column;
+    gap: 1px;
   }
 
-  .hero-features,
-  .info-cards {
+  .stats-grid {
     grid-template-columns: 1fr;
+  }
+
+  .actions-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .tools-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .section-header h2 {
+    font-size: 1.5em;
+  }
+
+  .dashboard-section {
+    padding: 1rem 0;
+  }
+
+  .dashboard-content {
+    padding: 0 15px;
+  }
+}
+
+@media (max-width: 480px) {
+  .government-header .logo-section {
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .government-header .logo-section h1 {
+    font-size: 1.2em;
+  }
+
+  .stat-card {
+    padding: 1rem;
+  }
+
+  .tool-card {
+    padding: 1.5rem;
   }
 }
