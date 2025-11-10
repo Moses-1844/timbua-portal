@@ -14,7 +14,7 @@ interface RestrictedZone {
   coordinates: number[][][];
   bufferDistance: number;
   source: 'geojson' | 'manual';
-  bounds?: [number, number, number, number]; // Use tuple type instead of turf.BBox
+  bounds?: [number, number, number, number];
 }
 
 interface AnalysisResult {
@@ -77,7 +77,7 @@ export class DecisionSupport implements OnInit, AfterViewInit {
   private analysisCache = new Map<string, AnalysisResult>();
   private materialCache = new Map<string, Material>();
   private lastAnalysisTime = 0;
-  private readonly ANALYSIS_DEBOUNCE = 500; // ms
+  private readonly ANALYSIS_DEBOUNCE = 500;
 
   ngOnInit() {
     this.loadRestrictedZones();
@@ -106,7 +106,6 @@ export class DecisionSupport implements OnInit, AfterViewInit {
     try {
       console.log('Attempting to load GeoJSON data...');
       
-      // Use fetch API for better performance with large files
       const response = await fetch('/geojson.geojson');
       if (!response.ok) throw new Error(`HTTP ${response.status}`);
       
@@ -124,9 +123,8 @@ export class DecisionSupport implements OnInit, AfterViewInit {
     }
   }
 
-  // Optimized GeoJSON processing with batching and simplification
   private async processGeoJSONFeaturesOptimized(features: GeoJSONFeature[]): Promise<void> {
-    const batchSize = 50; // Process in smaller batches
+    const batchSize = 50;
     const totalBatches = Math.ceil(features.length / batchSize);
     
     console.log(`🔄 Processing ${features.length} features in ${totalBatches} batches...`);
@@ -136,11 +134,9 @@ export class DecisionSupport implements OnInit, AfterViewInit {
       const endIndex = Math.min(startIndex + batchSize, features.length);
       const batch = features.slice(startIndex, endIndex);
 
-      // Process batch
       const batchResults = this.processFeatureBatch(batch, startIndex);
       this.restrictedZonesData.push(...batchResults);
 
-      // Yield to UI every batch
       if (batchIndex < totalBatches - 1) {
         await new Promise(resolve => setTimeout(resolve, 0));
       }
@@ -165,15 +161,16 @@ export class DecisionSupport implements OnInit, AfterViewInit {
         if (feature.geometry.type === 'Polygon') {
           coordinates = this.simplifyPolygon(feature.geometry.coordinates);
         } else if (feature.geometry.type === 'MultiPolygon') {
-          // Use only the first polygon for performance
           coordinates = this.simplifyPolygon(feature.geometry.coordinates[0]);
+        } else if (feature.geometry.type === 'LineString') {
+          // Handle roads and rivers as LineStrings
+          coordinates = this.lineStringToPolygon(feature.geometry.coordinates, bufferDistance / 1000);
         } else if (feature.geometry.type === 'Point') {
           const point = feature.geometry.coordinates;
-          // Use smaller circle for points to improve performance
           const circle = turf.circle(point, 0.2, { units: 'kilometers', steps: 8 });
           coordinates = [(circle.geometry as any).coordinates];
         } else {
-          continue; // Skip unsupported types
+          continue;
         }
 
         if (coordinates.length > 0 && coordinates[0].length > 0) {
@@ -186,7 +183,6 @@ export class DecisionSupport implements OnInit, AfterViewInit {
             source: 'geojson'
           };
           
-          // Pre-calculate bounds for spatial filtering
           zone.bounds = this.calculateBounds(coordinates[0]);
           results.push(zone);
         }
@@ -198,12 +194,56 @@ export class DecisionSupport implements OnInit, AfterViewInit {
     return results;
   }
 
-  // Simplify polygons to reduce complexity
+  // Convert LineString to Polygon for roads and rivers - FIXED: Handle undefined buffer
+  private lineStringToPolygon(coordinates: number[][], bufferDistance: number): number[][][] {
+    try {
+      const line = turf.lineString(coordinates);
+      const buffered = turf.buffer(line, bufferDistance, { units: 'kilometers' });
+      
+      // FIX: Check if buffered is defined and has geometry
+      if (buffered && buffered.geometry) {
+        return (buffered.geometry as any).coordinates;
+      } else {
+        throw new Error('Buffer operation failed');
+      }
+    } catch (error) {
+      console.warn('Error converting LineString to Polygon:', error);
+      // Fallback: create a simple buffer around the line
+      return this.createSimpleLineBuffer(coordinates, bufferDistance);
+    }
+  }
+
+  // Fallback method for LineString buffering
+  private createSimpleLineBuffer(coordinates: number[][], bufferDistance: number): number[][][] {
+    if (coordinates.length < 2) return [coordinates];
+    
+    const bufferCoords: number[][] = [];
+    const earthRadius = 6371; // km
+    
+    // Add buffer to both sides of the line
+    coordinates.forEach((coord, index) => {
+      if (index === 0 || index === coordinates.length - 1) {
+        // For endpoints, create a circular buffer
+        const lat = coord[1];
+        const lng = coord[0];
+        const latOffset = (bufferDistance / earthRadius) * (180 / Math.PI);
+        const lngOffset = (bufferDistance / earthRadius) * (180 / Math.PI) / Math.cos(lat * Math.PI / 180);
+        
+        bufferCoords.push([lng - lngOffset, lat - latOffset]);
+        bufferCoords.push([lng + lngOffset, lat - latOffset]);
+        bufferCoords.push([lng + lngOffset, lat + latOffset]);
+        bufferCoords.push([lng - lngOffset, lat + latOffset]);
+        bufferCoords.push([lng - lngOffset, lat - latOffset]);
+      }
+    });
+    
+    return [bufferCoords];
+  }
+
   private simplifyPolygon(coordinates: number[][][]): number[][][] {
     if (!coordinates || coordinates.length === 0) return coordinates;
     
     const simplified = coordinates.map(polygon => {
-      // Reduce points for performance - keep every 3rd point for large polygons
       if (polygon.length > 50) {
         return polygon.filter((_, index) => index % 3 === 0);
       }
@@ -213,7 +253,6 @@ export class DecisionSupport implements OnInit, AfterViewInit {
     return simplified;
   }
 
-  // Calculate bounding box for spatial filtering - FIXED: Use tuple type
   private calculateBounds(coordinates: number[][]): [number, number, number, number] {
     const lngs = coordinates.map(coord => coord[0]);
     const lats = coordinates.map(coord => coord[1]);
@@ -230,20 +269,35 @@ export class DecisionSupport implements OnInit, AfterViewInit {
     const name = feature.properties.name?.toLowerCase() || '';
     const otherProps = JSON.stringify(feature.properties).toLowerCase();
 
+    // Check for airport-related terms
     if (name.includes('airport') || name.includes('aerodrome') || otherProps.includes('aeroway')) {
       return 'Airport';
     }
     
+    // Check for protected area terms
     if (name.includes('national park') || name.includes('reserve') || name.includes('protected') || 
-        name.includes('conservancy') || name.includes('wildlife')) {
+        name.includes('conservancy') || name.includes('wildlife') || name.includes('forest')) {
       return 'Protected Area';
     }
     
+    // Check for water body terms - EXPANDED
     if (name.includes('lake') || name.includes('river') || name.includes('water') || 
-        name.includes('reservoir') || otherProps.includes('natural=water')) {
+        name.includes('reservoir') || name.includes('wetland') || name.includes('swamp') ||
+        name.includes('dam') || name.includes('stream') || name.includes('creek') ||
+        name.includes('pond') || name.includes('lagoon') || otherProps.includes('natural=water')) {
       return 'Water Body';
     }
 
+    // Check for road and transportation terms - NEW
+    if (name.includes('highway') || name.includes('road') || name.includes('street') ||
+        name.includes('avenue') || name.includes('railway') || name.includes('railroad') ||
+        name.includes('rail track') || name.includes('highway') || name.includes('motorway') ||
+        name.includes('expressway') || name.includes('freeway') || otherProps.includes('highway') ||
+        otherProps.includes('railway')) {
+      return 'Transportation Corridor';
+    }
+
+    // Default based on properties
     if (feature.properties['boundary'] === 'national_park' || feature.properties['boundary'] === 'protected_area') {
       return 'Protected Area';
     }
@@ -256,23 +310,30 @@ export class DecisionSupport implements OnInit, AfterViewInit {
       return 'Water Body';
     }
 
+    if (feature.properties['highway'] || feature.properties['railway']) {
+      return 'Transportation Corridor';
+    }
+
     return 'Restricted Area';
   }
 
   private getBufferDistance(zoneType: string): number {
     switch (zoneType) {
       case 'Protected Area':
-        return 2000;
+        return 2000; // 2km buffer
       case 'Airport':
-        return 3000;
+        return 3000; // 3km buffer
       case 'Water Body':
-        return 500;
+        return 500;  // 500m buffer
+      case 'Transportation Corridor':
+        return 200;  // 200m buffer for roads and railways
       default:
-        return 1000;
+        return 1000; // 1km buffer for other restricted areas
     }
   }
 
   private loadManualRestrictedZones(): void {
+    // Enhanced fallback data with water bodies and roads
     this.restrictedZonesData = [
       {
         id: 'manual-1',
@@ -300,6 +361,60 @@ export class DecisionSupport implements OnInit, AfterViewInit {
           [36.92, -1.33]
         ]],
         bufferDistance: 3000,
+        source: 'manual'
+      },
+      {
+        id: 'manual-3',
+        name: 'Lake Naivasha',
+        type: 'Water Body',
+        coordinates: [[
+          [36.35, -0.70],
+          [36.45, -0.70],
+          [36.45, -0.75],
+          [36.35, -0.75],
+          [36.35, -0.70]
+        ]],
+        bufferDistance: 500,
+        source: 'manual'
+      },
+      {
+        id: 'manual-4',
+        name: 'Nairobi-Mombasa Highway',
+        type: 'Transportation Corridor',
+        coordinates: [[
+          [36.82, -1.30],
+          [37.00, -1.35],
+          [37.20, -1.40],
+          [37.40, -1.45]
+        ]],
+        bufferDistance: 200,
+        source: 'manual'
+      },
+      {
+        id: 'manual-5',
+        name: 'Athi River',
+        type: 'Water Body',
+        coordinates: [[
+          [36.98, -1.45],
+          [37.05, -1.48],
+          [37.12, -1.50],
+          [37.20, -1.52]
+        ]],
+        bufferDistance: 500,
+        source: 'manual'
+      },
+      {
+        id: 'manual-6',
+        name: 'Mombasa-Nairobi Railway',
+        type: 'Transportation Corridor',
+        coordinates: [[
+          [39.65, -4.05],
+          [39.10, -3.80],
+          [38.50, -3.20],
+          [37.80, -2.50],
+          [37.20, -1.80]
+        ]],
+        bufferDistance: 200,
         source: 'manual'
       }
     ];
@@ -337,7 +452,6 @@ export class DecisionSupport implements OnInit, AfterViewInit {
       collapsed: false
     }).addTo(this.map);
 
-    // Add layers to map by default
     this.restrictedZonesLayer.addTo(this.map);
     this.bufferZonesLayer.addTo(this.map);
     this.materialMarkersLayer.addTo(this.map);
@@ -357,7 +471,6 @@ export class DecisionSupport implements OnInit, AfterViewInit {
     this.restrictedZonesLayer.clearLayers();
     this.bufferZonesLayer.clearLayers();
 
-    // Only render visible areas initially
     const bounds = this.map.getBounds();
     const visibleZones = this.restrictedZonesData.filter(zone => 
       this.isZoneVisible(zone, bounds)
@@ -374,8 +487,8 @@ export class DecisionSupport implements OnInit, AfterViewInit {
     if (!zone.bounds) return true;
     
     const zoneBounds = L.latLngBounds(
-      [zone.bounds[1], zone.bounds[0]], // [south, west]
-      [zone.bounds[3], zone.bounds[2]]  // [north, east]
+      [zone.bounds[1], zone.bounds[0]],
+      [zone.bounds[3], zone.bounds[2]]
     );
     
     return mapBounds.intersects(zoneBounds);
@@ -385,34 +498,32 @@ export class DecisionSupport implements OnInit, AfterViewInit {
     try {
       const leafletCoords = zone.coordinates[0].map(coord => [coord[1], coord[0]] as [number, number]);
       
-      // Add main restricted zone polygon with simplified rendering
       const polygon = L.polygon(leafletCoords, {
         color: this.getZoneColor(zone.type),
         fillColor: this.getZoneColor(zone.type),
         fillOpacity: 0.3,
         weight: 2,
-        smoothFactor: 1 // Reduce smoothing for performance
+        smoothFactor: 1
       }).addTo(this.restrictedZonesLayer!);
 
-      // Only add buffer zones for important zones to improve performance
-      if (zone.type === 'Protected Area' || zone.type === 'Airport') {
-        const zonePolygon = turf.polygon(zone.coordinates);
-        const buffer = turf.buffer(zonePolygon, zone.bufferDistance / 1000, { units: 'kilometers' });
+      // Add buffer zones for all zone types
+      const zonePolygon = turf.polygon(zone.coordinates);
+      const buffer = turf.buffer(zonePolygon, zone.bufferDistance / 1000, { units: 'kilometers' });
+      
+      // FIX: Check if buffer is defined and has geometry
+      if (buffer && buffer.geometry) {
+        const bufferCoords = (buffer.geometry as any).coordinates[0].map((coord: number[]) => 
+          [coord[1], coord[0]] as [number, number]
+        );
         
-        if (buffer && buffer.geometry) {
-          const bufferCoords = (buffer.geometry as any).coordinates[0].map((coord: number[]) => 
-            [coord[1], coord[0]] as [number, number]
-          );
-          
-          L.polygon(bufferCoords, {
-            color: this.getZoneColor(zone.type),
-            fillColor: this.getZoneColor(zone.type),
-            fillOpacity: 0.1,
-            weight: 1,
-            dashArray: '5,5',
-            smoothFactor: 1
-          }).addTo(this.bufferZonesLayer!);
-        }
+        L.polygon(bufferCoords, {
+          color: this.getZoneColor(zone.type),
+          fillColor: this.getZoneColor(zone.type),
+          fillOpacity: 0.1,
+          weight: 1,
+          dashArray: '5,5',
+          smoothFactor: 1
+        }).addTo(this.bufferZonesLayer!);
       }
 
       polygon.bindPopup(`
@@ -420,7 +531,7 @@ export class DecisionSupport implements OnInit, AfterViewInit {
           <h3>${zone.name}</h3>
           <p><strong>Type:</strong> ${zone.type}</p>
           <p><strong>Buffer:</strong> ${zone.bufferDistance}m</p>
-          <p><strong>Source:</strong> Local GeoJSON Data</p>
+          <p><strong>Source:</strong> ${zone.source === 'geojson' ? 'Local GeoJSON Data' : 'Manual Data'}</p>
           <p><em>Construction restricted in this area</em></p>
         </div>
       `);
@@ -438,6 +549,8 @@ export class DecisionSupport implements OnInit, AfterViewInit {
         return GovernmentColors.kenyaRed;
       case 'Water Body':
         return GovernmentColors.kbrcBlue;
+      case 'Transportation Corridor':
+        return GovernmentColors.kbrcDarkBlue;
       default:
         return GovernmentColors.kbrcGray;
     }
@@ -594,7 +707,6 @@ export class DecisionSupport implements OnInit, AfterViewInit {
     
     // Use setTimeout to yield to UI
     setTimeout(() => {
-      // Create point using turf.point instead of turf.Point type
       const sitePoint = turf.point([latlng.lng, latlng.lat]);
       
       // Check cache first
@@ -623,7 +735,7 @@ export class DecisionSupport implements OnInit, AfterViewInit {
     }, 0);
   }
 
-  // Optimized restriction checking with spatial filtering - FIXED: Remove turf.Point type
+  // Optimized restriction checking with spatial filtering
   private checkRestrictionsOptimized(sitePoint: any): string[] {
     const restrictions: string[] = [];
     const siteLng = sitePoint.geometry.coordinates[0];
@@ -634,7 +746,7 @@ export class DecisionSupport implements OnInit, AfterViewInit {
       if (zone.bounds) {
         const [minLng, minLat, maxLng, maxLat] = zone.bounds;
         if (siteLng < minLng || siteLng > maxLng || siteLat < minLat || siteLat > maxLat) {
-          continue; // Skip if point is outside bounds
+          continue;
         }
       }
 
@@ -645,14 +757,12 @@ export class DecisionSupport implements OnInit, AfterViewInit {
         if (isInZone) {
           restrictions.push(`🚫 Site is inside ${zone.name} (${zone.type})`);
         } else {
-          // Only check buffer for important zones
-          if (zone.type === 'Protected Area' || zone.type === 'Airport') {
-            const buffer = turf.buffer(zonePolygon, zone.bufferDistance / 1000, { units: 'kilometers' });
-            if (buffer) {
-              const isInBuffer = turf.booleanPointInPolygon(sitePoint, buffer);
-              if (isInBuffer) {
-                restrictions.push(`⚠️ Site is within ${zone.bufferDistance}m buffer of ${zone.name}`);
-              }
+          const buffer = turf.buffer(zonePolygon, zone.bufferDistance / 1000, { units: 'kilometers' });
+          // FIX: Check if buffer is defined and has geometry
+          if (buffer && buffer.geometry) {
+            const isInBuffer = turf.booleanPointInPolygon(sitePoint, buffer);
+            if (isInBuffer) {
+              restrictions.push(`⚠️ Site is within ${zone.bufferDistance}m buffer of ${zone.name}`);
             }
           }
         }
@@ -680,7 +790,7 @@ export class DecisionSupport implements OnInit, AfterViewInit {
           travelTime: Math.round((distance / 1000) / 40 * 60) // 40 km/h average
         };
       })
-      .filter(item => item.distance <= maxDistance) // Filter distant materials
+      .filter(item => item.distance <= maxDistance)
       .sort((a, b) => a.distance - b.distance)
       .slice(0, 5);
   }
@@ -725,16 +835,25 @@ export class DecisionSupport implements OnInit, AfterViewInit {
       recommendations.push('🔍 Expand search radius or consider alternative materials');
     }
 
+    // Enhanced restriction-specific recommendations
     if (restrictions.some(r => r.includes('Water Body'))) {
       recommendations.push('💧 Water body nearby - consider flood risk and water table');
+      recommendations.push('🌊 Required: Water resource management plan and flood assessment');
     }
 
     if (restrictions.some(r => r.includes('Protected Area'))) {
       recommendations.push('🌿 Near protected area - enhanced environmental compliance required');
+      recommendations.push('🦁 Required: Wildlife impact assessment and conservation plan');
     }
 
     if (restrictions.some(r => r.includes('Airport'))) {
       recommendations.push('✈️ Near airport - height restrictions and noise considerations apply');
+      recommendations.push('📡 Required: Aviation safety assessment and height clearance');
+    }
+
+    if (restrictions.some(r => r.includes('Transportation Corridor'))) {
+      recommendations.push('🛣️ Near transportation corridor - access and safety considerations');
+      recommendations.push('🚧 Required: Traffic management plan and access permits');
     }
 
     return recommendations;

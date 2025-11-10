@@ -68,13 +68,28 @@
       </div>
 
       <div class="filter-group">
-        <label for="regionFilter">Region</label>
+        <label for="countyFilter">County</label>
         <select 
-          id="regionFilter" 
-          [value]="filters().region"
-          (change)="onFilterChange('region', $any($event.target).value)">
-          <option value="">All Regions</option>
+          id="countyFilter" 
+          [value]="filters().county"
+          (change)="onFilterChange('county', $any($event.target).value)">
+          <option value="">All Counties</option>
           <option value="Mombasa">Mombasa</option>
+        </select>
+      </div>
+
+      <div class="filter-group">
+        <label for="subCountyFilter">Sub-County</label>
+        <select 
+          id="subCountyFilter" 
+          [value]="filters().subCounty"
+          (change)="onFilterChange('subCounty', $any($event.target).value)">
+          <option value="">All Sub-Counties</option>
+          <option value="Bamburi">Bamburi</option>
+          <option value="Shanzu">Shanzu</option>
+          <option value="Mtopanga">Mtopanga</option>
+          <option value="Mwakurunge">Mwakurunge</option>
+          <option value="Junda">Junda</option>
         </select>
       </div>
 

@@ -27,7 +27,8 @@ export class MaterialMap implements OnInit, AfterViewInit {
   
   filters = signal({
     type: '',
-    region: '',
+    county: '',
+    subCounty: '',
     material: ''
   });
 
@@ -403,6 +404,7 @@ export class MaterialMap implements OnInit, AfterViewInit {
           <h3 style="margin: 0; color: ${GovernmentColors.kbrcDarkBlue};">${material.name}</h3>
         </div>
         <p><strong>Location:</strong> ${material.location.name}</p>
+        <p><strong>Sub-County:</strong> ${material.location.subCounty}</p>
         <p><strong>Types:</strong> ${material.type.join(', ')}</p>
         <p><strong>Industry:</strong> ${material.sizeOfManufacturingIndustry}</p>
       </div>
@@ -415,10 +417,11 @@ export class MaterialMap implements OnInit, AfterViewInit {
 
     const filtered = allMaterials.filter(material => {
       const typeMatch = !currentFilters.type || material.type.includes(currentFilters.type);
-      const regionMatch = !currentFilters.region || material.location.county === currentFilters.region;
+      const countyMatch = !currentFilters.county || material.location.county === currentFilters.county;
+      const subCountyMatch = !currentFilters.subCounty || material.location.subCounty === currentFilters.subCounty;
       const materialMatch = !currentFilters.material || material.name.toLowerCase().includes(currentFilters.material.toLowerCase());
       
-      return typeMatch && regionMatch && materialMatch;
+      return typeMatch && countyMatch && subCountyMatch && materialMatch;
     });
 
     this.filteredMaterials.set(filtered);
@@ -426,12 +429,12 @@ export class MaterialMap implements OnInit, AfterViewInit {
   }
 
   clearFilters(): void {
-    this.filters.set({ type: '', region: '', material: '' });
+    this.filters.set({ type: '', county: '', subCounty: '', material: '' });
     this.filteredMaterials.set(this.materials());
     this.addMarkersToMap();
   }
 
-  onFilterChange(filterType: 'type' | 'region' | 'material', value: string): void {
+  onFilterChange(filterType: 'type' | 'county' | 'subCounty' | 'material', value: string): void {
     this.filters.update(filters => ({
       ...filters,
       [filterType]: value
