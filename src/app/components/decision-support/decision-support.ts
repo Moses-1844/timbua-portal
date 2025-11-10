@@ -14,6 +14,7 @@ interface RestrictedZone {
   coordinates: number[][][];
   bufferDistance: number;
   source: 'geojson' | 'manual';
+  bounds?: [number, number, number, number]; // Use tuple type instead of turf.BBox
 }
 
 interface AnalysisResult {
@@ -72,6 +73,12 @@ export class DecisionSupport implements OnInit, AfterViewInit {
   Math = Math;
   restrictedZonesData: RestrictedZone[] = [];
 
+  // Performance optimization
+  private analysisCache = new Map<string, AnalysisResult>();
+  private materialCache = new Map<string, Material>();
+  private lastAnalysisTime = 0;
+  private readonly ANALYSIS_DEBOUNCE = 500; // ms
+
   ngOnInit() {
     this.loadRestrictedZones();
     this.loadMaterials();
@@ -95,142 +102,177 @@ export class DecisionSupport implements OnInit, AfterViewInit {
     }
   }
 
-private async loadGeoJSONData(): Promise<void> {
-  try {
-    console.log('Attempting to load GeoJSON data...');
+  private async loadGeoJSONData(): Promise<void> {
+    try {
+      console.log('Attempting to load GeoJSON data...');
+      
+      // Use fetch API for better performance with large files
+      const response = await fetch('/geojson.geojson');
+      if (!response.ok) throw new Error(`HTTP ${response.status}`);
+      
+      const geojsonData: GeoJSONData = await response.json();
+      
+      if (geojsonData?.features) {
+        console.log(`📊 Processing ${geojsonData.features.length} features from GeoJSON`);
+        await this.processGeoJSONFeaturesOptimized(geojsonData.features);
+      } else {
+        throw new Error('Invalid GeoJSON data structure - no features found');
+      }
+    } catch (error) {
+      console.error('🚨 Failed to load GeoJSON file:', error);
+      throw error;
+    }
+  }
+
+  // Optimized GeoJSON processing with batching and simplification
+  private async processGeoJSONFeaturesOptimized(features: GeoJSONFeature[]): Promise<void> {
+    const batchSize = 50; // Process in smaller batches
+    const totalBatches = Math.ceil(features.length / batchSize);
     
-    // Try multiple possible paths
-    const possiblePaths = [
-      '/geojson.geojson',
-      '/geojson.geojson',
-      './geojson.geojson',
-      '/geojson.geojson'
-    ];
+    console.log(`🔄 Processing ${features.length} features in ${totalBatches} batches...`);
 
-    let geojsonData: GeoJSONData | undefined;
-    let loadedPath = '';
+    for (let batchIndex = 0; batchIndex < totalBatches; batchIndex++) {
+      const startIndex = batchIndex * batchSize;
+      const endIndex = Math.min(startIndex + batchSize, features.length);
+      const batch = features.slice(startIndex, endIndex);
 
-    for (const path of possiblePaths) {
-      try {
-        console.log(`Trying to load from: ${path}`);
-        geojsonData = await this.http.get<GeoJSONData>(path).toPromise();
-        loadedPath = path;
-        console.log(`✅ Successfully loaded GeoJSON from: ${path}`);
-        break;
-      } catch (error) {
-        console.warn(`❌ Failed to load from ${path}:`, error);
-        continue;
+      // Process batch
+      const batchResults = this.processFeatureBatch(batch, startIndex);
+      this.restrictedZonesData.push(...batchResults);
+
+      // Yield to UI every batch
+      if (batchIndex < totalBatches - 1) {
+        await new Promise(resolve => setTimeout(resolve, 0));
       }
     }
 
-    if (!geojsonData) {
-      console.warn('⚠️ Could not load GeoJSON from any path, using manual data');
-      throw new Error('GeoJSON not found');
-    }
-
-    if (geojsonData?.features) {
-      console.log(`📊 Processing ${geojsonData.features.length} features from GeoJSON`);
-      this.processGeoJSONFeatures(geojsonData.features);
-    } else {
-      throw new Error('Invalid GeoJSON data structure - no features found');
-    }
-  } catch (error) {
-    console.error('🚨 Failed to load GeoJSON file:', error);
-    throw error;
+    console.log(`✅ Finished processing ${this.restrictedZonesData.length} restricted zones`);
   }
-}
-  private processGeoJSONFeatures(features: GeoJSONFeature[]): void {
-    features.forEach((feature, index) => {
-      if (!feature.properties?.name) return;
 
-      const zoneType = this.determineZoneType(feature);
-      const bufferDistance = this.getBufferDistance(zoneType);
-      
-      let coordinates: number[][][] = [];
+  private processFeatureBatch(features: GeoJSONFeature[], startIndex: number): RestrictedZone[] {
+    const results: RestrictedZone[] = [];
+
+    for (let i = 0; i < features.length; i++) {
+      const feature = features[i];
+      if (!feature.properties?.name) continue;
 
       try {
+        const zoneType = this.determineZoneType(feature);
+        const bufferDistance = this.getBufferDistance(zoneType);
+        
+        let coordinates: number[][][] = [];
+
         if (feature.geometry.type === 'Polygon') {
-          coordinates = feature.geometry.coordinates;
+          coordinates = this.simplifyPolygon(feature.geometry.coordinates);
         } else if (feature.geometry.type === 'MultiPolygon') {
-          // Use the first polygon for simplicity, or you can handle all polygons
-          coordinates = feature.geometry.coordinates[0];
+          // Use only the first polygon for performance
+          coordinates = this.simplifyPolygon(feature.geometry.coordinates[0]);
         } else if (feature.geometry.type === 'Point') {
           const point = feature.geometry.coordinates;
-          const circle = turf.circle(point, 0.5, { units: 'kilometers' });
+          // Use smaller circle for points to improve performance
+          const circle = turf.circle(point, 0.2, { units: 'kilometers', steps: 8 });
           coordinates = [(circle.geometry as any).coordinates];
         } else {
-          console.warn(`Unsupported geometry type: ${feature.geometry.type}`);
-          return;
+          continue; // Skip unsupported types
         }
 
-        if (coordinates.length > 0) {
-          this.restrictedZonesData.push({
-            id: `geojson-${feature.properties.name}-${index}`,
+        if (coordinates.length > 0 && coordinates[0].length > 0) {
+          const zone: RestrictedZone = {
+            id: `geojson-${feature.properties.name}-${startIndex + i}`,
             name: feature.properties.name,
             type: zoneType,
             coordinates: coordinates,
             bufferDistance: bufferDistance,
             source: 'geojson'
-          });
+          };
+          
+          // Pre-calculate bounds for spatial filtering
+          zone.bounds = this.calculateBounds(coordinates[0]);
+          results.push(zone);
         }
       } catch (error) {
         console.warn('Error processing GeoJSON feature:', feature.properties.name, error);
       }
+    }
+
+    return results;
+  }
+
+  // Simplify polygons to reduce complexity
+  private simplifyPolygon(coordinates: number[][][]): number[][][] {
+    if (!coordinates || coordinates.length === 0) return coordinates;
+    
+    const simplified = coordinates.map(polygon => {
+      // Reduce points for performance - keep every 3rd point for large polygons
+      if (polygon.length > 50) {
+        return polygon.filter((_, index) => index % 3 === 0);
+      }
+      return polygon;
     });
+    
+    return simplified;
   }
 
-private determineZoneType(feature: GeoJSONFeature): string {
-  const name = feature.properties.name?.toLowerCase() || '';
-  const otherProps = JSON.stringify(feature.properties).toLowerCase();
-
-  // Check for airport-related terms
-  if (name.includes('airport') || name.includes('aerodrome') || otherProps.includes('aeroway')) {
-    return 'Airport';
-  }
-  
-  // Check for protected area terms
-  if (name.includes('national park') || name.includes('reserve') || name.includes('protected') || 
-      name.includes('conservancy') || name.includes('wildlife')) {
-    return 'Protected Area';
-  }
-  
-  // Check for water body terms
-  if (name.includes('lake') || name.includes('river') || name.includes('water') || 
-      name.includes('reservoir') || otherProps.includes('natural=water')) {
-    return 'Water Body';
+  // Calculate bounding box for spatial filtering - FIXED: Use tuple type
+  private calculateBounds(coordinates: number[][]): [number, number, number, number] {
+    const lngs = coordinates.map(coord => coord[0]);
+    const lats = coordinates.map(coord => coord[1]);
+    
+    return [
+      Math.min(...lngs),
+      Math.min(...lats),
+      Math.max(...lngs),
+      Math.max(...lats)
+    ];
   }
 
-  // Default based on properties - FIXED: Use bracket notation for index signature properties
-  if (feature.properties['boundary'] === 'national_park' || feature.properties['boundary'] === 'protected_area') {
-    return 'Protected Area';
-  }
-  
-  if (feature.properties['aeroway']) {
-    return 'Airport';
-  }
-  
-  if (feature.properties['natural'] === 'water') {
-    return 'Water Body';
-  }
+  private determineZoneType(feature: GeoJSONFeature): string {
+    const name = feature.properties.name?.toLowerCase() || '';
+    const otherProps = JSON.stringify(feature.properties).toLowerCase();
 
-  return 'Restricted Area';
-}
+    if (name.includes('airport') || name.includes('aerodrome') || otherProps.includes('aeroway')) {
+      return 'Airport';
+    }
+    
+    if (name.includes('national park') || name.includes('reserve') || name.includes('protected') || 
+        name.includes('conservancy') || name.includes('wildlife')) {
+      return 'Protected Area';
+    }
+    
+    if (name.includes('lake') || name.includes('river') || name.includes('water') || 
+        name.includes('reservoir') || otherProps.includes('natural=water')) {
+      return 'Water Body';
+    }
+
+    if (feature.properties['boundary'] === 'national_park' || feature.properties['boundary'] === 'protected_area') {
+      return 'Protected Area';
+    }
+    
+    if (feature.properties['aeroway']) {
+      return 'Airport';
+    }
+    
+    if (feature.properties['natural'] === 'water') {
+      return 'Water Body';
+    }
+
+    return 'Restricted Area';
+  }
 
   private getBufferDistance(zoneType: string): number {
     switch (zoneType) {
       case 'Protected Area':
-        return 2000; // 2km buffer
+        return 2000;
       case 'Airport':
-        return 3000; // 3km buffer
+        return 3000;
       case 'Water Body':
-        return 500;  // 500m buffer
+        return 500;
       default:
-        return 1000; // 1km buffer for other restricted areas
+        return 1000;
     }
   }
 
   private loadManualRestrictedZones(): void {
-    // Fallback data in case GeoJSON fails to load
     this.restrictedZonesData = [
       {
         id: 'manual-1',
@@ -259,20 +301,6 @@ private determineZoneType(feature: GeoJSONFeature): string {
         ]],
         bufferDistance: 3000,
         source: 'manual'
-      },
-      {
-        id: 'manual-3',
-        name: 'Lake Naivasha',
-        type: 'Water Body',
-        coordinates: [[
-          [36.35, -0.70],
-          [36.45, -0.70],
-          [36.45, -0.75],
-          [36.35, -0.75],
-          [36.35, -0.70]
-        ]],
-        bufferDistance: 500,
-        source: 'manual'
       }
     ];
   }
@@ -298,7 +326,6 @@ private determineZoneType(feature: GeoJSONFeature): string {
     this.bufferZonesLayer = L.layerGroup();
     this.materialMarkersLayer = L.layerGroup();
 
-    // Add overlay control
     const overlayMaps: { [key: string]: L.LayerGroup } = {
       "Restricted Zones": this.restrictedZonesLayer,
       "Buffer Zones": this.bufferZonesLayer,
@@ -327,63 +354,80 @@ private determineZoneType(feature: GeoJSONFeature): string {
   private addRestrictedZones(): void {
     if (!this.map || this.restrictedZonesData.length === 0 || !this.restrictedZonesLayer || !this.bufferZonesLayer) return;
 
-    // Clear existing layers
     this.restrictedZonesLayer.clearLayers();
     this.bufferZonesLayer.clearLayers();
 
-    this.restrictedZonesData.forEach(zone => {
-      try {
-        // Convert coordinates from [lng, lat] to [lat, lng] for Leaflet
-        const leafletCoords = zone.coordinates[0].map(coord => {
-          // Handle both [lng, lat] and [lat, lng] formats
-          if (coord.length === 2) {
-            // Assume GeoJSON format: [lng, lat]
-            return [coord[1], coord[0]] as [number, number];
-          }
-          return coord as [number, number];
-        });
-        
-        // Add main restricted zone polygon
-        const polygon = L.polygon(leafletCoords, {
-          color: this.getZoneColor(zone.type),
-          fillColor: this.getZoneColor(zone.type),
-          fillOpacity: 0.3,
-          weight: 2
-        }).addTo(this.restrictedZonesLayer!);
+    // Only render visible areas initially
+    const bounds = this.map.getBounds();
+    const visibleZones = this.restrictedZonesData.filter(zone => 
+      this.isZoneVisible(zone, bounds)
+    );
 
-        // Add buffer zone
+    console.log(`🗺️ Rendering ${visibleZones.length} of ${this.restrictedZonesData.length} zones`);
+
+    visibleZones.forEach(zone => {
+      this.addZoneToMap(zone);
+    });
+  }
+
+  private isZoneVisible(zone: RestrictedZone, mapBounds: L.LatLngBounds): boolean {
+    if (!zone.bounds) return true;
+    
+    const zoneBounds = L.latLngBounds(
+      [zone.bounds[1], zone.bounds[0]], // [south, west]
+      [zone.bounds[3], zone.bounds[2]]  // [north, east]
+    );
+    
+    return mapBounds.intersects(zoneBounds);
+  }
+
+  private addZoneToMap(zone: RestrictedZone): void {
+    try {
+      const leafletCoords = zone.coordinates[0].map(coord => [coord[1], coord[0]] as [number, number]);
+      
+      // Add main restricted zone polygon with simplified rendering
+      const polygon = L.polygon(leafletCoords, {
+        color: this.getZoneColor(zone.type),
+        fillColor: this.getZoneColor(zone.type),
+        fillOpacity: 0.3,
+        weight: 2,
+        smoothFactor: 1 // Reduce smoothing for performance
+      }).addTo(this.restrictedZonesLayer!);
+
+      // Only add buffer zones for important zones to improve performance
+      if (zone.type === 'Protected Area' || zone.type === 'Airport') {
         const zonePolygon = turf.polygon(zone.coordinates);
         const buffer = turf.buffer(zonePolygon, zone.bufferDistance / 1000, { units: 'kilometers' });
         
         if (buffer && buffer.geometry) {
-          const bufferCoords = (buffer.geometry as any).coordinates[0].map((coord: number[]) => {
-            // Convert from [lng, lat] to [lat, lng]
-            return [coord[1], coord[0]] as [number, number];
-          });
+          const bufferCoords = (buffer.geometry as any).coordinates[0].map((coord: number[]) => 
+            [coord[1], coord[0]] as [number, number]
+          );
           
           L.polygon(bufferCoords, {
             color: this.getZoneColor(zone.type),
             fillColor: this.getZoneColor(zone.type),
             fillOpacity: 0.1,
             weight: 1,
-            dashArray: '5,5'
+            dashArray: '5,5',
+            smoothFactor: 1
           }).addTo(this.bufferZonesLayer!);
         }
-
-        polygon.bindPopup(`
-          <div>
-            <h3>${zone.name}</h3>
-            <p><strong>Type:</strong> ${zone.type}</p>
-            <p><strong>Buffer:</strong> ${zone.bufferDistance}m</p>
-            <p><strong>Source:</strong> Local GeoJSON Data</p>
-            <p><em>Construction restricted in this area</em></p>
-          </div>
-        `);
-
-      } catch (error) {
-        console.warn('Error adding zone to map:', zone.name, error);
       }
-    });
+
+      polygon.bindPopup(`
+        <div>
+          <h3>${zone.name}</h3>
+          <p><strong>Type:</strong> ${zone.type}</p>
+          <p><strong>Buffer:</strong> ${zone.bufferDistance}m</p>
+          <p><strong>Source:</strong> Local GeoJSON Data</p>
+          <p><em>Construction restricted in this area</em></p>
+        </div>
+      `);
+
+    } catch (error) {
+      console.warn('Error adding zone to map:', zone.name, error);
+    }
   }
 
   private getZoneColor(zoneType: string): string {
@@ -402,7 +446,6 @@ private determineZoneType(feature: GeoJSONFeature): string {
   private loadMaterials(): void {
     this.isLoading.set(true);
     
-    // Direct API call for faster loading
     this.http.get<any[]>('https://timbuabackend.onrender.com/api/material-sites').subscribe({
       next: (response) => {
         const materials = this.transformApiResponse(response);
@@ -413,7 +456,6 @@ private determineZoneType(feature: GeoJSONFeature): string {
       },
       error: (error) => {
         console.error('Error loading materials from API:', error);
-        // Fallback to service if direct API fails
         this.materialService.getMaterials().subscribe({
           next: (materials) => {
             this.materials.set(materials);
@@ -430,63 +472,56 @@ private determineZoneType(feature: GeoJSONFeature): string {
     });
   }
 
-private transformApiResponse(apiData: any[]): Material[] {
-  return apiData.map(item => {
-    // Extract material types from the response
-    let materialTypes: string[] = [];
-    if (item.material) {
-      // Handle different material formats
-      if (Array.isArray(item.material)) {
-        materialTypes = item.material;
-      } else if (typeof item.material === 'string') {
-        // Split comma-separated materials
-        materialTypes = item.material.split(',').map((m: string) => m.trim());
+  private transformApiResponse(apiData: any[]): Material[] {
+    return apiData.map(item => {
+      let materialTypes: string[] = [];
+      if (item.material) {
+        if (Array.isArray(item.material)) {
+          materialTypes = item.material;
+        } else if (typeof item.material === 'string') {
+          materialTypes = item.material.split(',').map((m: string) => m.trim());
+        } else {
+          materialTypes = [String(item.material)];
+        }
       } else {
-        materialTypes = [String(item.material)];
+        materialTypes = ['Unknown'];
       }
-    } else {
-      materialTypes = ['Unknown'];
-    }
 
-    // Extract location name
-    const locationName = item.materialLocation || item.location?.name || 'Unknown Location';
-    
-    // Ensure coordinates are numbers
-    const latitude = Number(item.latitude) || -1.2921;
-    const longitude = Number(item.longitude) || 36.8219;
+      const locationName = item.materialLocation || item.location?.name || 'Unknown Location';
+      const latitude = Number(item.latitude) || -1.2921;
+      const longitude = Number(item.longitude) || 36.8219;
 
-    return {
-      id: item._id || item.id || `material-${item.questionnaireNo || 'unknown'}`,
-      questionnaireNo: item.questionnaireNo?.toString() || 'N/A',
-      researchAssistantNo: item.researchAssistantNo || 'N/A',
-      name: item.material || 'Unnamed Material',
-      type: materialTypes,
-      location: {
-        name: locationName,
-        latitude: latitude,
-        longitude: longitude,
-        county: item.location?.county || 'Unknown',
-        subCounty: item.location?.subCounty || 'Unknown',
-        ward: item.location?.ward || 'Unknown'
-      },
-      challenges: Array.isArray(item.challenges) ? item.challenges : [],
-      recommendations: Array.isArray(item.recommendations) ? item.recommendations : [],
-      timestamp: item.timestamp || item.createdAt || new Date().toISOString(),
-      icon: this.getMaterialIcon(materialTypes),
-      // Additional properties from the API
-      additionalInfo: {
-        materialUsage: item.materialUsage,
-        materialUsedIn: item.materialUsedIn,
-        numberOfPeopleEmployed: item.numberOfPeopleEmployed,
-        ownerOfMaterial: item.ownerOfMaterial,
-        periodOfManufacture: item.periodOfManufacture,
-        similarLocations: item.similarLocations,
-        sizeOfManufacturingIndustry: item.sizeOfManufacturingIndustry,
-        volumeProducedPerDay: item.volumeProducedPerDay
-      }
-    };
-  });
-}
+      return {
+        id: item._id || item.id || `material-${item.questionnaireNo || 'unknown'}`,
+        questionnaireNo: item.questionnaireNo?.toString() || 'N/A',
+        researchAssistantNo: item.researchAssistantNo || 'N/A',
+        name: item.material || 'Unnamed Material',
+        type: materialTypes,
+        location: {
+          name: locationName,
+          latitude: latitude,
+          longitude: longitude,
+          county: item.location?.county || 'Unknown',
+          subCounty: item.location?.subCounty || 'Unknown',
+          ward: item.location?.ward || 'Unknown'
+        },
+        challenges: Array.isArray(item.challenges) ? item.challenges : [],
+        recommendations: Array.isArray(item.recommendations) ? item.recommendations : [],
+        timestamp: item.timestamp || item.createdAt || new Date().toISOString(),
+        icon: this.getMaterialIcon(materialTypes),
+        additionalInfo: {
+          materialUsage: item.materialUsage,
+          materialUsedIn: item.materialUsedIn,
+          numberOfPeopleEmployed: item.numberOfPeopleEmployed,
+          ownerOfMaterial: item.ownerOfMaterial,
+          periodOfManufacture: item.periodOfManufacture,
+          similarLocations: item.similarLocations,
+          sizeOfManufacturingIndustry: item.sizeOfManufacturingIndustry,
+          volumeProducedPerDay: item.volumeProducedPerDay
+        }
+      };
+    });
+  }
 
   private getMaterialIcon(materialTypes: string[]): string {
     const types = materialTypes.map(t => t.toLowerCase());
@@ -505,16 +540,11 @@ private transformApiResponse(apiData: any[]): Material[] {
   private addMaterialMarkers(): void {
     if (!this.map || !this.materialMarkersLayer) return;
 
-    // Clear existing markers
     this.materialMarkersLayer.clearLayers();
     this.markers = [];
 
     this.materials().forEach(material => {
-      // Check if material and material.type exist
-      if (!material || !material.type) {
-        console.warn('Invalid material data:', material);
-        return;
-      }
+      if (!material || !material.type) return;
 
       const markerColor = this.getMarkerColor(material);
       
@@ -548,24 +578,75 @@ private transformApiResponse(apiData: any[]): Material[] {
     }).addTo(this.map!);
 
     this.selectedSite.set({ lat: latlng.lat, lng: latlng.lng });
-    this.analyzeSite(latlng);
+    
+    // Debounced analysis to prevent rapid successive calls
+    const now = Date.now();
+    if (now - this.lastAnalysisTime > this.ANALYSIS_DEBOUNCE) {
+      this.analyzeSite(latlng);
+      this.lastAnalysisTime = now;
+    } else {
+      setTimeout(() => this.analyzeSite(latlng), this.ANALYSIS_DEBOUNCE);
+    }
   }
 
   private analyzeSite(latlng: L.LatLng): void {
     this.isAnalyzing.set(true);
     
+    // Use setTimeout to yield to UI
     setTimeout(() => {
+      // Create point using turf.point instead of turf.Point type
       const sitePoint = turf.point([latlng.lng, latlng.lat]);
-      const restrictions: string[] = [];
       
-      this.restrictedZonesData.forEach(zone => {
-        try {
-          const zonePolygon = turf.polygon(zone.coordinates);
-          const isInZone = turf.booleanPointInPolygon(sitePoint, zonePolygon);
-          
-          if (isInZone) {
-            restrictions.push(`🚫 Site is inside ${zone.name} (${zone.type})`);
-          } else {
+      // Check cache first
+      const cacheKey = `${latlng.lat.toFixed(4)},${latlng.lng.toFixed(4)}`;
+      if (this.analysisCache.has(cacheKey)) {
+        this.analysisResult.set(this.analysisCache.get(cacheKey)!);
+        this.isAnalyzing.set(false);
+        return;
+      }
+
+      const restrictions = this.checkRestrictionsOptimized(sitePoint);
+      const nearestMaterials = this.findNearestMaterialsOptimized(latlng);
+      const recommendations = this.generateRecommendations(restrictions, nearestMaterials);
+      
+      const result: AnalysisResult = {
+        isValid: restrictions.length === 0,
+        restrictions,
+        nearestMaterials,
+        recommendations
+      };
+      
+      // Cache the result
+      this.analysisCache.set(cacheKey, result);
+      this.analysisResult.set(result);
+      this.isAnalyzing.set(false);
+    }, 0);
+  }
+
+  // Optimized restriction checking with spatial filtering - FIXED: Remove turf.Point type
+  private checkRestrictionsOptimized(sitePoint: any): string[] {
+    const restrictions: string[] = [];
+    const siteLng = sitePoint.geometry.coordinates[0];
+    const siteLat = sitePoint.geometry.coordinates[1];
+
+    for (const zone of this.restrictedZonesData) {
+      // Quick bounds check before expensive polygon operations
+      if (zone.bounds) {
+        const [minLng, minLat, maxLng, maxLat] = zone.bounds;
+        if (siteLng < minLng || siteLng > maxLng || siteLat < minLat || siteLat > maxLat) {
+          continue; // Skip if point is outside bounds
+        }
+      }
+
+      try {
+        const zonePolygon = turf.polygon(zone.coordinates);
+        const isInZone = turf.booleanPointInPolygon(sitePoint, zonePolygon);
+        
+        if (isInZone) {
+          restrictions.push(`🚫 Site is inside ${zone.name} (${zone.type})`);
+        } else {
+          // Only check buffer for important zones
+          if (zone.type === 'Protected Area' || zone.type === 'Airport') {
             const buffer = turf.buffer(zonePolygon, zone.bufferDistance / 1000, { units: 'kilometers' });
             if (buffer) {
               const isInBuffer = turf.booleanPointInPolygon(sitePoint, buffer);
@@ -574,40 +655,32 @@ private transformApiResponse(apiData: any[]): Material[] {
               }
             }
           }
-        } catch (error) {
-          console.warn('Error checking zone:', zone.name, error);
         }
-      });
+      } catch (error) {
+        console.warn('Error checking zone:', zone.name, error);
+      }
+    }
 
-      const nearestMaterials = this.findNearestMaterials(latlng);
-      const recommendations = this.generateRecommendations(restrictions, nearestMaterials);
-      
-      this.analysisResult.set({
-        isValid: restrictions.length === 0,
-        restrictions,
-        nearestMaterials,
-        recommendations
-      });
-      
-      this.isAnalyzing.set(false);
-    }, 1000);
+    return restrictions;
   }
 
-  private findNearestMaterials(site: L.LatLng): AnalysisResult['nearestMaterials'] {
+  // Optimized nearest materials search
+  private findNearestMaterialsOptimized(site: L.LatLng): AnalysisResult['nearestMaterials'] {
     const sitePoint = turf.point([site.lng, site.lat]);
+    const maxDistance = 50000; // 50km maximum search radius
     
     return this.materials()
       .map(material => {
         const materialPoint = turf.point([material.location.longitude, material.location.latitude]);
-        const distance = turf.distance(sitePoint, materialPoint, { units: 'kilometers' }) * 1000; // Convert to meters
-        const travelTime = (distance / 1000) / 40 * 60; // Assuming 40 km/h average speed
+        const distance = turf.distance(sitePoint, materialPoint, { units: 'kilometers' }) * 1000;
         
         return {
           material,
           distance: Math.round(distance),
-          travelTime: Math.round(travelTime)
+          travelTime: Math.round((distance / 1000) / 40 * 60) // 40 km/h average
         };
       })
+      .filter(item => item.distance <= maxDistance) // Filter distant materials
       .sort((a, b) => a.distance - b.distance)
       .slice(0, 5);
   }
@@ -668,7 +741,6 @@ private transformApiResponse(apiData: any[]): Material[] {
   }
 
   private getMarkerColor(material: Material): string {
-    // Added null checks for material.type
     if (!material || !material.type) {
       return GovernmentColors.kbrcGray;
     }
@@ -718,17 +790,20 @@ private transformApiResponse(apiData: any[]): Material[] {
   }
 
   private createMaterialPopup(material: Material): string {
+    const additionalInfo = (material as any).additionalInfo || {};
+    
     return `
-      <div style="min-width: 200px;">
+      <div style="min-width: 250px;">
         <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 8px;">
           <span style="font-size: 16px;">${material.icon || '📦'}</span>
           <h4 style="margin: 0; color: ${GovernmentColors.kbrcDarkBlue};">${material.name}</h4>
         </div>
-        <p><strong>Location:</strong> ${material.location.name}</p>
-        <p><strong>Types:</strong> ${material.type.join(', ')}</p>
-        <p><strong>County:</strong> ${material.location.county}</p>
-        <p><strong>Sub-County:</strong> ${material.location.subCounty}</p>
-        <p><strong>Ward:</strong> ${material.location.ward}</p>
+        <p><strong>📍 Location:</strong> ${material.location.name}</p>
+        <p><strong>🏷️ Types:</strong> ${material.type.join(', ')}</p>
+        <p><strong>📋 Usage:</strong> ${additionalInfo.materialUsage || 'Not specified'}</p>
+        <p><strong>👥 Employees:</strong> ${additionalInfo.numberOfPeopleEmployed || 'Not specified'}</p>
+        <p><strong>🏭 Industry Size:</strong> ${additionalInfo.sizeOfManufacturingIndustry || 'Not specified'}</p>
+        <p><strong>📊 Daily Production:</strong> ${additionalInfo.volumeProducedPerDay || 'Not specified'}</p>
       </div>
     `;
   }
