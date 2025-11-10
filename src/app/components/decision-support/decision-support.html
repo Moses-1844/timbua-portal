@@ -1,0 +1,142 @@
+<div class="decision-support-container">
+  <div class="header-section">
+    <h2>🏗️ Construction Site Decision Support</h2>
+    <p>Click on the map to analyze a potential construction site. The system will check restrictions and find nearby material sources.</p>
+  </div>
+
+  <div class="content-wrapper">
+    <!-- Map Section -->
+    <div class="map-section">
+      <div class="map-controls">
+        <button class="control-btn" (click)="toggleRestrictedZones(true)">
+          🚫 Show Restricted Zones
+        </button>
+        <button class="control-btn" (click)="toggleRestrictedZones(false)">
+          🗺️ Hide Restricted Zones
+        </button>
+        <button class="control-btn clear-btn" (click)="clearSite()">
+          🗑️ Clear Site
+        </button>
+      </div>
+      
+      <div id="decision-map" class="decision-map"></div>
+
+      <!-- Map Legend -->
+      <div class="map-legend">
+        <h4>Map Legend</h4>
+        <div class="legend-item">
+          <div class="legend-marker site-marker-legend"></div>
+          <span>Selected Site</span>
+        </div>
+        <div class="legend-item">
+          <div class="legend-marker material-marker-legend" style="background: #006600;"></div>
+          <span>Material Sources</span>
+        </div>
+        <div class="legend-item">
+          <div class="legend-marker restricted-zone-legend"></div>
+          <span>Restricted Zones</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Analysis Panel -->
+    <div class="analysis-panel">
+      @if (isLoading()) {
+        <div class="loading-state">
+          <div class="loading-spinner"></div>
+          <p>Loading materials data...</p>
+        </div>
+      }
+
+      @if (selectedSite() && isAnalyzing()) {
+        <div class="analyzing-state">
+          <div class="analyzing-spinner"></div>
+          <p>Analyzing site location...</p>
+        </div>
+      }
+
+      @if (analysisResult() && selectedSite() && !isAnalyzing()) {
+        <div class="analysis-result">
+          <!-- Site Status -->
+          <div class="status-card" [class.valid]="analysisResult()!.isValid" [class.invalid]="!analysisResult()!.isValid">
+            <div class="status-icon">
+              @if (analysisResult()!.isValid) {
+                ✅
+              } @else {
+                ⚠️
+              }
+            </div>
+            <div class="status-content">
+              <h3>
+                @if (analysisResult()!.isValid) {
+                  Site Appears Suitable
+                } @else {
+                  Site Has Restrictions
+                }
+              </h3>
+              <p>Lat: {{ selectedSite()!.lat | number:'1.4-4' }}, Lng: {{ selectedSite()!.lng | number:'1.4-4' }}</p>
+            </div>
+          </div>
+
+          <!-- Restrictions -->
+          @if (analysisResult()!.restrictions.length > 0) {
+            <div class="restrictions-section">
+              <h4>🚫 Restrictions & Warnings</h4>
+              <div class="restrictions-list">
+                @for (restriction of analysisResult()!.restrictions; track restriction) {
+                  <div class="restriction-item">
+                    {{ restriction }}
+                  </div>
+                }
+              </div>
+            </div>
+          }
+
+          <!-- Nearest Materials -->
+          <div class="materials-section">
+            <h4>📦 Nearest Material Sources</h4>
+            <div class="materials-list">
+              @for (item of analysisResult()!.nearestMaterials; track item.material.id) {
+                <div class="material-item">
+                  <div class="material-icon">{{ item.material.icon || '📦' }}</div>
+                  <div class="material-info">
+                    <strong>{{ item.material.name }}</strong>
+                    <div class="material-details">
+                      <span>{{ item.material.location.name }}</span>
+                      <span class="distance">{{ Math.round(item.distance) }}m away</span>
+                      <span class="travel-time">(~{{ item.travelTime }} min travel)</span>
+                    </div>
+                    <div class="material-types">
+                      @for (type of item.material.type; track type) {
+                        <span class="material-type-tag">{{ type }}</span>
+                      }
+                    </div>
+                  </div>
+                </div>
+              }
+            </div>
+          </div>
+
+          <!-- Recommendations -->
+          <div class="recommendations-section">
+            <h4>💡 Recommendations</h4>
+            <div class="recommendations-list">
+              @for (recommendation of analysisResult()!.recommendations; track recommendation) {
+                <div class="recommendation-item">
+                  {{ recommendation }}
+                </div>
+              }
+            </div>
+          </div>
+        </div>
+      } @else if (!selectedSite()) {
+        <div class="empty-state">
+          <div class="empty-icon">🗺️</div>
+          <h3>Select a Site</h3>
+          <p>Click anywhere on the map to analyze a potential construction site.</p>
+          <p>The system will check for restrictions and find the nearest material sources.</p>
+        </div>
+      }
+    </div>
+  </div>
+</div>

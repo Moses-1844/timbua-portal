@@ -1,0 +1,20 @@
+export const GovernmentColors = {
+  // Kenya Government Colors
+  kenyaBlack: '#000000',
+  kenyaRed: '#BB0000',
+  kenyaGreen: '#006600',
+  kenyaWhite: '#FFFFFF',
+  
+  // KBRC Colors
+  kbrcBlue: '#0056B3',
+  kbrcLightBlue: '#1E90FF',
+  kbrcDarkBlue: '#003366',
+  kbrcGray: '#666666',
+  
+  // Additional colors for UI
+  background: '#F8F9FA',
+  cardBackground: '#FFFFFF',
+  border: '#E0E0E0',
+  textPrimary: '#333333',
+  textSecondary: '#666666'
+};

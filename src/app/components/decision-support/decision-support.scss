@@ -1,0 +1,316 @@
+@use '../../config/colors.config' as colors;
+
+.decision-support-container {
+  padding: 20px;
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+.header-section {
+  text-align: center;
+  margin-bottom: 30px;
+  
+  h2 {
+    color: colors.$kbrcDarkBlue;
+    margin-bottom: 10px;
+  }
+  
+  p {
+    color: colors.$textSecondary;
+    font-size: 1.1em;
+    max-width: 600px;
+    margin: 0 auto;
+  }
+}
+
+.content-wrapper {
+  display: grid;
+  grid-template-columns: 1fr 400px;
+  gap: 20px;
+  height: 70vh;
+}
+
+.map-section {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+}
+
+.map-controls {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 15px;
+  flex-wrap: wrap;
+}
+
+.control-btn {
+  background: colors.$kbrcBlue;
+  color: colors.$kenyaWhite;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 0.9em;
+  transition: background-color 0.3s ease;
+
+  &:hover {
+    background: darken(colors.$kbrcBlue, 10%);
+  }
+
+  &.clear-btn {
+    background: colors.$kenyaRed;
+    
+    &:hover {
+      background: darken(colors.$kenyaRed, 10%);
+    }
+  }
+}
+
+.decision-map {
+  flex: 1;
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.map-legend {
+  margin-top: 15px;
+  padding: 15px;
+  background: colors.$kenyaWhite;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+
+  h4 {
+    color: colors.$kbrcDarkBlue;
+    margin-bottom: 10px;
+    font-size: 0.9em;
+  }
+}
+
+.legend-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 5px;
+  font-size: 0.8em;
+}
+
+.legend-marker {
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  border: 2px solid white;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+}
+
+.site-marker-legend {
+  background: colors.$kenyaRed;
+}
+
+.material-marker-legend {
+  background: colors.$kenyaGreen;
+}
+
+.restricted-zone-legend {
+  background: colors.$kenyaRed;
+  opacity: 0.3;
+}
+
+.analysis-panel {
+  background: colors.$kenyaWhite;
+  border-radius: 8px;
+  padding: 20px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  overflow-y: auto;
+}
+
+.loading-state, .analyzing-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 200px;
+  color: colors.$textSecondary;
+}
+
+.loading-spinner, .analyzing-spinner {
+  width: 40px;
+  height: 40px;
+  border: 4px solid colors.$background;
+  border-top: 4px solid colors.$kbrcBlue;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin-bottom: 15px;
+}
+
+.analyzing-spinner {
+  border-top: 4px solid colors.$kenyaGreen;
+}
+
+.analysis-result {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.status-card {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  padding: 15px;
+  border-radius: 8px;
+  border-left: 4px solid;
+
+  &.valid {
+    background: lighten(colors.$kenyaGreen, 45%);
+    border-left-color: colors.$kenyaGreen;
+  }
+
+  &.invalid {
+    background: lighten(colors.$kenyaRed, 45%);
+    border-left-color: colors.$kenyaRed;
+  }
+
+  .status-icon {
+    font-size: 2em;
+  }
+
+  .status-content {
+    h3 {
+      margin: 0 0 5px 0;
+      color: colors.$kbrcDarkBlue;
+    }
+
+    p {
+      margin: 0;
+      color: colors.$textSecondary;
+      font-size: 0.9em;
+    }
+  }
+}
+
+.restrictions-section, .materials-section, .recommendations-section {
+  h4 {
+    color: colors.$kbrcDarkBlue;
+    margin-bottom: 15px;
+    font-size: 1.1em;
+  }
+}
+
+.restrictions-list, .recommendations-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.restriction-item, .recommendation-item {
+  padding: 10px;
+  background: colors.$background;
+  border-radius: 4px;
+  font-size: 0.9em;
+  border-left: 3px solid colors.$kenyaRed;
+}
+
+.recommendation-item {
+  border-left-color: colors.$kenyaGreen;
+}
+
+.materials-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.material-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 12px;
+  background: colors.$background;
+  border-radius: 6px;
+  border-left: 3px solid colors.$kbrcBlue;
+
+  .material-icon {
+    font-size: 1.2em;
+    margin-top: 2px;
+  }
+
+  .material-info {
+    flex: 1;
+
+    strong {
+      color: colors.$kbrcDarkBlue;
+      display: block;
+      margin-bottom: 4px;
+    }
+  }
+
+  .material-details {
+    display: flex;
+    gap: 10px;
+    font-size: 0.8em;
+    color: colors.$textSecondary;
+    margin-bottom: 6px;
+
+    .distance {
+      color: colors.$kenyaGreen;
+      font-weight: 600;
+    }
+
+    .travel-time {
+      color: colors.$kbrcBlue;
+    }
+  }
+
+  .material-types {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+  }
+}
+
+.material-type-tag {
+  background: colors.$kbrcBlue;
+  color: colors.$kenyaWhite;
+  padding: 2px 6px;
+  border-radius: 10px;
+  font-size: 0.7em;
+  font-weight: 600;
+}
+
+.empty-state {
+  text-align: center;
+  padding: 40px 20px;
+  color: colors.$textSecondary;
+
+  .empty-icon {
+    font-size: 3em;
+    margin-bottom: 15px;
+  }
+
+  h3 {
+    color: colors.$kbrcDarkBlue;
+    margin-bottom: 10px;
+  }
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+// Responsive design
+@media (max-width: 1024px) {
+  .content-wrapper {
+    grid-template-columns: 1fr;
+    height: auto;
+  }
+
+  .decision-map {
+    height: 400px;
+  }
+
+  .analysis-panel {
+    max-height: 500px;
+  }
+}

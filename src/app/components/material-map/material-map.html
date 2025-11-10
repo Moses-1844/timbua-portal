@@ -1,0 +1,192 @@
+<div class="map-container">
+  <div id="map"></div>
+
+  <!-- Data Source Indicator -->
+  @if (usingMockData() && !isLoading()) {
+    <div class="data-source-indicator">
+      <span class="mock-data-badge">📊 Using Sample Data</span>
+    </div>
+  }
+
+  <!-- Loading Overlay -->
+  @if (isLoading()) {
+    <div class="loading-overlay">
+      <div class="loading-spinner"></div>
+      <p>Checking for latest data...</p>
+    </div>
+  }
+
+  <!-- Map Not Initialized Warning -->
+  @if (!mapInitialized() && !isLoading()) {
+    <div class="error-overlay">
+      <div class="error-icon">🗺️</div>
+      <h3>Map Not Loaded</h3>
+      <p>The map could not be initialized. Please check the browser console for errors.</p>
+      <button class="retry-btn" (click)="initMap()">Retry Map</button>
+    </div>
+  }
+
+  <!-- API Error Notice -->
+  @if (hasError() && usingMockData() && !isLoading()) {
+    <div class="api-error-notice">
+      <div class="error-icon">⚠️</div>
+      <div class="error-content">
+        <h4>Connection Issue</h4>
+        <p>Using sample data. Real-time data unavailable.</p>
+        <button class="retry-btn-small" (click)="retryLoadMaterials()">Retry Connection</button>
+      </div>
+    </div>
+  }
+
+  <!-- Controls Panel -->
+  @if (materials().length > 0 && mapInitialized()) {
+    <div class="controls-panel">
+      <h3>Filter Materials</h3>
+      
+      @if (usingMockData()) {
+        <div class="mock-data-warning">
+          <small>Sample data - {{ materials().length }} locations</small>
+        </div>
+      }
+      
+      <div class="filter-group">
+        <label for="materialFilter">Material Name</label>
+        <input 
+          id="materialFilter" 
+          type="text" 
+          placeholder="Search materials..."
+          [value]="filters().material"
+          (input)="onFilterChange('material', $any($event.target).value)">
+      </div>
+
+      <div class="filter-group">
+        <label for="typeFilter">Material Type</label>
+        <select 
+          id="typeFilter" 
+          [value]="filters().type"
+          (change)="onFilterChange('type', $any($event.target).value)">
+          <option value="">All Types</option>
+          <option value="Blocks">🧱 Blocks</option>
+          <option value="Rocks">🪨 Rocks</option>
+          <option value="Sand">🏖️ Sand</option>
+          <option value="Ballast">⛰️ Ballast</option>
+          <option value="Slabs">🔲 Slabs</option>
+          <option value="Tiles">🧩 Tiles</option>
+          <option value="Kokoto">🌴 Kokoto</option>
+          <option value="Galana">🪵 Galana</option>
+          <option value="Maram">🎋 Maram</option>
+        </select>
+      </div>
+
+      <div class="filter-group">
+        <label for="regionFilter">County</label>
+        <select 
+          id="regionFilter" 
+          [value]="filters().region"
+          (change)="onFilterChange('region', $any($event.target).value)">
+          <option value="">All Counties</option>
+          <option value="Kilifi">Kilifi</option>
+          <option value="Mombasa">Mombasa</option>
+        </select>
+      </div>
+
+      <div class="filter-buttons">
+        <button class="apply-btn" (click)="applyFilters()">Apply Filters</button>
+        <button class="clear-btn" (click)="clearFilters()">Clear All</button>
+      </div>
+
+      <!-- Materials Count -->
+      <div class="materials-count">
+        Showing {{ filteredMaterials().length }} of {{ materials().length }} materials
+        @if (usingMockData()) {
+          <br><small>(Sample Data)</small>
+        }
+      </div>
+
+      <!-- Legend -->
+      <div class="legend">
+        <h4>Material Icons</h4>
+        <div class="legend-item">
+          <span class="legend-icon">🧱</span>
+          <span>Blocks</span>
+        </div>
+        <div class="legend-item">
+          <span class="legend-icon">🏖️</span>
+          <span>Sand</span>
+        </div>
+        <div class="legend-item">
+          <span class="legend-icon">⛰️</span>
+          <span>Ballast</span>
+        </div>
+        <div class="legend-item">
+          <span class="legend-icon">🔲</span>
+          <span>Slabs/Tiles</span>
+        </div>
+      </div>
+    </div>
+  }
+
+  <!-- Material Details Panel -->
+  @if (selectedMaterial(); as material) {
+    <div class="material-details">
+      <div class="material-header">
+        <span class="material-icon-large">{{ material.icon || '📦' }}</span>
+        <h3>{{ material.name }}</h3>
+      </div>
+      
+      <div class="detail-section">
+        <h4>Location Information</h4>
+        <p><strong>Location:</strong> {{ material.location.name }}</p>
+        <p><strong>County:</strong> {{ material.location.county }}</p>
+        <p><strong>Sub-County:</strong> {{ material.location.subCounty }}</p>
+        <p><strong>Ward:</strong> {{ material.location.ward }}</p>
+        <p><strong>Coordinates:</strong> {{ material.location.latitude }}, {{ material.location.longitude }}</p>
+      </div>
+
+      <div class="detail-section">
+        <h4>Material Types</h4>
+        <div class="material-types">
+          @for (type of material.type; track type) {
+            <span class="material-type-badge">
+              {{ getTypeIcon(type) }} {{ type }}
+            </span>
+          }
+        </div>
+      </div>
+
+      <div class="detail-section">
+        <h4>Research Details</h4>
+        <p><strong>Questionnaire No:</strong> {{ material.questionnaireNo }}</p>
+        <p><strong>Research Assistant:</strong> {{ material.researchAssistantNo }}</p>
+      </div>
+
+      @if (material.challenges && material.challenges.length > 0) {
+        <div class="detail-section">
+          <h4>Challenges</h4>
+          <ul>
+            @for (challenge of material.challenges; track challenge) {
+              <li>{{ challenge }}</li>
+            }
+          </ul>
+        </div>
+      }
+
+      @if (material.recommendations && material.recommendations.length > 0) {
+        <div class="detail-section">
+          <h4>Recommendations</h4>
+          <ul>
+            @for (recommendation of material.recommendations; track recommendation) {
+              <li>{{ recommendation }}</li>
+            }
+          </ul>
+        </div>
+      }
+
+      @if (usingMockData()) {
+        <div class="mock-data-notice">
+          <small>📊 Sample data for demonstration</small>
+        </div>
+      }
+    </div>
+  }
+</div>
