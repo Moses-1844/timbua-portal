@@ -120,6 +120,73 @@
             </div>
           </div>
 
+          <!-- AI Analysis Section -->
+          @if (aiRecommendation() && !isAIAnalyzing()) {
+            <div class="ai-recommendation-card">
+              <div class="ai-header">
+                <h3>🤖 AI Site Analysis</h3>
+                <span class="confidence-badge">
+                  {{ (aiRecommendation()!.confidence || 0) * 100 }}% confidence
+                </span>
+              </div>
+
+              <div class="risk-indicator risk-{{ aiRecommendation()!.riskLevel }}">
+                Risk Level: {{ aiRecommendation()!.riskLevel?.toUpperCase() }}
+              </div>
+
+              <div class="ai-summary">
+                <strong>Summary:</strong> {{ aiRecommendation()!.summary }}
+              </div>
+
+              <div class="ai-recommendation">
+                <strong>Recommendation:</strong> {{ aiRecommendation()!.recommendation }}
+              </div>
+
+              @if (aiRecommendation()!.alternativeLocation) {
+                <div class="alternative-location">
+                  <strong>📍 Better Location:</strong>
+                  <div class="alt-location-details">
+                    {{ aiRecommendation()!.alternativeLocation!.lat.toFixed(4) }}, 
+                    {{ aiRecommendation()!.alternativeLocation!.lng.toFixed(4) }}
+                    <br>
+                    <em>{{ aiRecommendation()!.alternativeLocation!.reason }}</em>
+                    <button (click)="focusOnAlternative(aiRecommendation()!.alternativeLocation!)" 
+                            class="focus-btn">
+                      👁️ View on Map
+                    </button>
+                  </div>
+                </div>
+              }
+
+              <div class="key-factors">
+                <strong>Key Factors:</strong>
+                <ul>
+                  <li *ngFor="let factor of aiRecommendation()!.keyFactors">{{ factor }}</li>
+                </ul>
+              </div>
+
+              <div class="next-steps">
+                <strong>Next Steps:</strong>
+                <ol>
+                  <li *ngFor="let step of aiRecommendation()!.nextSteps">{{ step }}</li>
+                </ol>
+              </div>
+            </div>
+          }
+
+          @if (isAIAnalyzing()) {
+            <div class="ai-loading">
+              <div class="loading-spinner"></div>
+              <p>AI is analyzing site context and generating recommendations...</p>
+            </div>
+          }
+
+          @if (aiError()) {
+            <div class="ai-error">
+              ⚠️ {{ aiError() }}
+            </div>
+          }
+
           <!-- Restrictions -->
           @if (analysisResult()!.restrictions.length > 0) {
             <div class="restrictions-section">
@@ -169,8 +236,8 @@
             </div>
           }
 
-          <!-- Recommendations -->
-          @if (analysisResult()!.recommendations.length > 0) {
+          <!-- Basic Recommendations -->
+          @if (analysisResult()!.recommendations.length > 0 && !aiRecommendation()) {
             <div class="recommendations-section">
               <h4>💡 Recommendations</h4>
               <div class="recommendations-list">

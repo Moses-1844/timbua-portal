@@ -1,4 +1,4 @@
-import { Component, OnInit, AfterViewInit, inject, signal } from '@angular/core';
+import { Component, OnInit, AfterViewInit, inject, signal, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { HttpClient } from '@angular/common/http';
 import * as L from 'leaflet';
@@ -6,6 +6,7 @@ import * as turf from '@turf/turf';
 import { MaterialService } from '../../services/material.service';
 import { Material } from '../../models/material.model';
 import { GovernmentColors } from '../../config/colors.config';
+import { CohereAIService, AIRecommendation, SiteContext } from '../../services/cohere-ai.service';
 
 interface RestrictedZone {
   id: string;
@@ -26,6 +27,9 @@ interface AnalysisResult {
     travelTime: number;
   }[];
   recommendations: string[];
+  riskLevel?: 'low' | 'medium' | 'high';
+  costImplications?: string[];
+  timelineImpact?: string;
 }
 
 interface GeoJSONFeature {
@@ -52,13 +56,15 @@ interface GeoJSONData {
   templateUrl: './decision-support.html',
   styleUrls: ['./decision-support.scss']
 })
-export class DecisionSupport implements OnInit, AfterViewInit {
+export class DecisionSupport implements OnInit, AfterViewInit, OnDestroy {
   private materialService = inject(MaterialService);
   private http = inject(HttpClient);
+  private cohereAIService = inject(CohereAIService);
   
   private map: L.Map | undefined;
   private markers: L.Marker[] = [];
   private siteMarker: L.Marker | null = null;
+  private alternativeMarker: L.Marker | null = null;
   private restrictedZonesLayer: L.LayerGroup | undefined;
   private bufferZonesLayer: L.LayerGroup | undefined;
   private materialMarkersLayer: L.LayerGroup | undefined;
@@ -66,9 +72,12 @@ export class DecisionSupport implements OnInit, AfterViewInit {
   materials = signal<Material[]>([]);
   selectedSite = signal<{ lat: number; lng: number } | null>(null);
   analysisResult = signal<AnalysisResult | null>(null);
+  aiRecommendation = signal<AIRecommendation | null>(null);
   isLoading = signal(false);
   isAnalyzing = signal(false);
+  isAIAnalyzing = signal(false);
   isLoadingRestrictions = signal(false);
+  aiError = signal<string | null>(null);
   
   Math = Math;
   restrictedZonesData: RestrictedZone[] = [];
@@ -88,14 +97,31 @@ export class DecisionSupport implements OnInit, AfterViewInit {
     this.initMap();
   }
 
+  ngOnDestroy() {
+    this.cleanup();
+  }
+
+  private cleanup(): void {
+    if (this.map) {
+      this.map.remove();
+      this.map = undefined;
+    }
+    
+    this.analysisCache.clear();
+    this.materialCache.clear();
+    this.markers = [];
+    this.siteMarker = null;
+    this.alternativeMarker = null;
+  }
+
   public async loadRestrictedZones(): Promise<void> {
     this.isLoadingRestrictions.set(true);
     
     try {
       await this.loadGeoJSONData();
-      console.log('Loaded restricted zones from GeoJSON:', this.restrictedZonesData.length);
+      console.log('✅ Loaded restricted zones from GeoJSON:', this.restrictedZonesData.length);
     } catch (error) {
-      console.error('Error loading restricted zones from GeoJSON:', error);
+      console.error('❌ Error loading restricted zones from GeoJSON:', error);
       this.loadManualRestrictedZones();
     } finally {
       this.isLoadingRestrictions.set(false);
@@ -103,24 +129,35 @@ export class DecisionSupport implements OnInit, AfterViewInit {
   }
 
   private async loadGeoJSONData(): Promise<void> {
-    try {
-      console.log('Attempting to load GeoJSON data...');
-      
-      const response = await fetch('/geojson.geojson');
-      if (!response.ok) throw new Error(`HTTP ${response.status}`);
-      
-      const geojsonData: GeoJSONData = await response.json();
-      
-      if (geojsonData?.features) {
-        console.log(`📊 Processing ${geojsonData.features.length} features from GeoJSON`);
-        await this.processGeoJSONFeaturesOptimized(geojsonData.features);
-      } else {
-        throw new Error('Invalid GeoJSON data structure - no features found');
+    const possiblePaths = [
+      '/geojson.geojson',
+      '/assets/geojson/restricted-areas.geojson',
+      'geojson.geojson',
+      './geojson.geojson'
+    ];
+
+    for (const path of possiblePaths) {
+      try {
+        console.log(`🔍 Trying to load from: ${path}`);
+        const response = await fetch(path);
+        
+        if (response.ok) {
+          const geojsonData: GeoJSONData = await response.json();
+          
+          if (geojsonData?.features && geojsonData.features.length > 0) {
+            console.log(`✅ Successfully loaded from: ${path}`);
+            console.log(`📊 Processing ${geojsonData.features.length} features`);
+            await this.processGeoJSONFeaturesOptimized(geojsonData.features);
+            return;
+          }
+        }
+      } catch (error) {
+        console.log(`❌ Failed to load from ${path}:`, error);
+        continue;
       }
-    } catch (error) {
-      console.error('🚨 Failed to load GeoJSON file:', error);
-      throw error;
     }
+    
+    throw new Error('Could not load GeoJSON from any known path');
   }
 
   private async processGeoJSONFeaturesOptimized(features: GeoJSONFeature[]): Promise<void> {
@@ -137,6 +174,7 @@ export class DecisionSupport implements OnInit, AfterViewInit {
       const batchResults = this.processFeatureBatch(batch, startIndex);
       this.restrictedZonesData.push(...batchResults);
 
+      // Yield to UI thread between batches
       if (batchIndex < totalBatches - 1) {
         await new Promise(resolve => setTimeout(resolve, 0));
       }
@@ -150,7 +188,10 @@ export class DecisionSupport implements OnInit, AfterViewInit {
 
     for (let i = 0; i < features.length; i++) {
       const feature = features[i];
-      if (!feature.properties?.name) continue;
+      if (!feature.properties?.name) {
+        console.log('⏩ Skipping feature without name');
+        continue;
+      }
 
       try {
         const zoneType = this.determineZoneType(feature);
@@ -159,17 +200,20 @@ export class DecisionSupport implements OnInit, AfterViewInit {
         let coordinates: number[][][] = [];
 
         if (feature.geometry.type === 'Polygon') {
-          coordinates = this.simplifyPolygon(feature.geometry.coordinates);
+          coordinates = this.simplifyPolygon(feature.geometry.coordinates as number[][][]);
         } else if (feature.geometry.type === 'MultiPolygon') {
-          coordinates = this.simplifyPolygon(feature.geometry.coordinates[0]);
+          coordinates = this.simplifyPolygon((feature.geometry.coordinates as number[][][][])[0]);
         } else if (feature.geometry.type === 'LineString') {
-          // Handle roads and rivers as LineStrings
-          coordinates = this.lineStringToPolygon(feature.geometry.coordinates, bufferDistance / 1000);
+          coordinates = this.lineStringToPolygon(
+            feature.geometry.coordinates as number[][], 
+            bufferDistance / 1000
+          );
         } else if (feature.geometry.type === 'Point') {
-          const point = feature.geometry.coordinates;
+          const point = feature.geometry.coordinates as number[];
           const circle = turf.circle(point, 0.2, { units: 'kilometers', steps: 8 });
-          coordinates = [(circle.geometry as any).coordinates];
+          coordinates = (circle.geometry as any).coordinates as number[][][];
         } else {
+          console.log(`⏩ Skipping unsupported geometry type: ${feature.geometry.type}`);
           continue;
         }
 
@@ -185,45 +229,42 @@ export class DecisionSupport implements OnInit, AfterViewInit {
           
           zone.bounds = this.calculateBounds(coordinates[0]);
           results.push(zone);
+          console.log(`✅ Created zone: ${zone.name} with ${coordinates[0].length} points`);
+        } else {
+          console.log(`⏩ Skipping zone with no valid coordinates: ${feature.properties.name}`);
         }
       } catch (error) {
-        console.warn('Error processing GeoJSON feature:', feature.properties.name, error);
+        console.warn('❌ Error processing GeoJSON feature:', feature.properties.name, error);
       }
     }
 
     return results;
   }
 
-  // Convert LineString to Polygon for roads and rivers - FIXED: Handle undefined buffer
   private lineStringToPolygon(coordinates: number[][], bufferDistance: number): number[][][] {
     try {
       const line = turf.lineString(coordinates);
       const buffered = turf.buffer(line, bufferDistance, { units: 'kilometers' });
       
-      // FIX: Check if buffered is defined and has geometry
-      if (buffered && buffered.geometry) {
-        return (buffered.geometry as any).coordinates;
+      if (buffered?.geometry?.coordinates) {
+        return buffered.geometry.coordinates as number[][][];
       } else {
         throw new Error('Buffer operation failed');
       }
     } catch (error) {
       console.warn('Error converting LineString to Polygon:', error);
-      // Fallback: create a simple buffer around the line
       return this.createSimpleLineBuffer(coordinates, bufferDistance);
     }
   }
 
-  // Fallback method for LineString buffering
   private createSimpleLineBuffer(coordinates: number[][], bufferDistance: number): number[][][] {
     if (coordinates.length < 2) return [coordinates];
     
     const bufferCoords: number[][] = [];
-    const earthRadius = 6371; // km
+    const earthRadius = 6371;
     
-    // Add buffer to both sides of the line
     coordinates.forEach((coord, index) => {
       if (index === 0 || index === coordinates.length - 1) {
-        // For endpoints, create a circular buffer
         const lat = coord[1];
         const lng = coord[0];
         const latOffset = (bufferDistance / earthRadius) * (180 / Math.PI);
@@ -269,18 +310,15 @@ export class DecisionSupport implements OnInit, AfterViewInit {
     const name = feature.properties.name?.toLowerCase() || '';
     const otherProps = JSON.stringify(feature.properties).toLowerCase();
 
-    // Check for airport-related terms
     if (name.includes('airport') || name.includes('aerodrome') || otherProps.includes('aeroway')) {
       return 'Airport';
     }
     
-    // Check for protected area terms
     if (name.includes('national park') || name.includes('reserve') || name.includes('protected') || 
         name.includes('conservancy') || name.includes('wildlife') || name.includes('forest')) {
       return 'Protected Area';
     }
     
-    // Check for water body terms - EXPANDED
     if (name.includes('lake') || name.includes('river') || name.includes('water') || 
         name.includes('reservoir') || name.includes('wetland') || name.includes('swamp') ||
         name.includes('dam') || name.includes('stream') || name.includes('creek') ||
@@ -288,7 +326,6 @@ export class DecisionSupport implements OnInit, AfterViewInit {
       return 'Water Body';
     }
 
-    // Check for road and transportation terms - NEW
     if (name.includes('highway') || name.includes('road') || name.includes('street') ||
         name.includes('avenue') || name.includes('railway') || name.includes('railroad') ||
         name.includes('rail track') || name.includes('highway') || name.includes('motorway') ||
@@ -297,7 +334,6 @@ export class DecisionSupport implements OnInit, AfterViewInit {
       return 'Transportation Corridor';
     }
 
-    // Default based on properties
     if (feature.properties['boundary'] === 'national_park' || feature.properties['boundary'] === 'protected_area') {
       return 'Protected Area';
     }
@@ -319,32 +355,23 @@ export class DecisionSupport implements OnInit, AfterViewInit {
 
   private getBufferDistance(zoneType: string): number {
     switch (zoneType) {
-      case 'Protected Area':
-        return 2000; // 2km buffer
-      case 'Airport':
-        return 3000; // 3km buffer
-      case 'Water Body':
-        return 500;  // 500m buffer
-      case 'Transportation Corridor':
-        return 200;  // 200m buffer for roads and railways
-      default:
-        return 1000; // 1km buffer for other restricted areas
+      case 'Protected Area': return 2000;
+      case 'Airport': return 3000;
+      case 'Water Body': return 500;
+      case 'Transportation Corridor': return 200;
+      default: return 1000;
     }
   }
 
   private loadManualRestrictedZones(): void {
-    // Enhanced fallback data with water bodies and roads
+    console.log('🔄 Loading manual restricted zones as fallback');
     this.restrictedZonesData = [
       {
         id: 'manual-1',
         name: 'Nairobi National Park',
         type: 'Protected Area',
         coordinates: [[
-          [36.75, -1.40],
-          [36.95, -1.40],
-          [36.95, -1.20],
-          [36.75, -1.20],
-          [36.75, -1.40]
+          [36.75, -1.40], [36.95, -1.40], [36.95, -1.20], [36.75, -1.20], [36.75, -1.40]
         ]],
         bufferDistance: 2000,
         source: 'manual'
@@ -354,11 +381,7 @@ export class DecisionSupport implements OnInit, AfterViewInit {
         name: 'Jomo Kenyatta International Airport',
         type: 'Airport',
         coordinates: [[
-          [36.92, -1.33],
-          [36.98, -1.33],
-          [36.98, -1.30],
-          [36.92, -1.30],
-          [36.92, -1.33]
+          [36.92, -1.33], [36.98, -1.33], [36.98, -1.30], [36.92, -1.30], [36.92, -1.33]
         ]],
         bufferDistance: 3000,
         source: 'manual'
@@ -368,11 +391,7 @@ export class DecisionSupport implements OnInit, AfterViewInit {
         name: 'Lake Naivasha',
         type: 'Water Body',
         coordinates: [[
-          [36.35, -0.70],
-          [36.45, -0.70],
-          [36.45, -0.75],
-          [36.35, -0.75],
-          [36.35, -0.70]
+          [36.35, -0.70], [36.45, -0.70], [36.45, -0.75], [36.35, -0.75], [36.35, -0.70]
         ]],
         bufferDistance: 500,
         source: 'manual'
@@ -382,37 +401,7 @@ export class DecisionSupport implements OnInit, AfterViewInit {
         name: 'Nairobi-Mombasa Highway',
         type: 'Transportation Corridor',
         coordinates: [[
-          [36.82, -1.30],
-          [37.00, -1.35],
-          [37.20, -1.40],
-          [37.40, -1.45]
-        ]],
-        bufferDistance: 200,
-        source: 'manual'
-      },
-      {
-        id: 'manual-5',
-        name: 'Athi River',
-        type: 'Water Body',
-        coordinates: [[
-          [36.98, -1.45],
-          [37.05, -1.48],
-          [37.12, -1.50],
-          [37.20, -1.52]
-        ]],
-        bufferDistance: 500,
-        source: 'manual'
-      },
-      {
-        id: 'manual-6',
-        name: 'Mombasa-Nairobi Railway',
-        type: 'Transportation Corridor',
-        coordinates: [[
-          [39.65, -4.05],
-          [39.10, -3.80],
-          [38.50, -3.20],
-          [37.80, -2.50],
-          [37.20, -1.80]
+          [36.82, -1.30], [37.00, -1.35], [37.20, -1.40], [37.40, -1.45], [36.82, -1.30]
         ]],
         bufferDistance: 200,
         source: 'manual'
@@ -422,14 +411,12 @@ export class DecisionSupport implements OnInit, AfterViewInit {
 
   private initMap(): void {
     this.map = L.map('decision-map', {
-      center: [-1.2921, 36.8219],
+      center: [-1.2921, 36.8219], // Nairobi coordinates
       zoom: 7,
       zoomControl: false
     });
 
-    L.control.zoom({
-      position: 'topright'
-    }).addTo(this.map);
+    L.control.zoom({ position: 'topright' }).addTo(this.map);
 
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
       attribution: '© OpenStreetMap contributors',
@@ -441,7 +428,7 @@ export class DecisionSupport implements OnInit, AfterViewInit {
     this.bufferZonesLayer = L.layerGroup();
     this.materialMarkersLayer = L.layerGroup();
 
-    const overlayMaps: { [key: string]: L.LayerGroup } = {
+    const overlayMaps = {
       "Restricted Zones": this.restrictedZonesLayer,
       "Buffer Zones": this.bufferZonesLayer,
       "Material Sites": this.materialMarkersLayer
@@ -452,21 +439,29 @@ export class DecisionSupport implements OnInit, AfterViewInit {
       collapsed: false
     }).addTo(this.map);
 
+    // Add all layers by default
     this.restrictedZonesLayer.addTo(this.map);
     this.bufferZonesLayer.addTo(this.map);
     this.materialMarkersLayer.addTo(this.map);
 
+    // Add restricted zones after a short delay to ensure map is fully loaded
     setTimeout(() => {
       this.addRestrictedZones();
     }, 1000);
 
+    // Add click handler for site selection
     this.map.on('click', (e: L.LeafletMouseEvent) => {
       this.onMapClick(e.latlng);
     });
+
+    console.log('🗺️ Map initialized successfully');
   }
 
   private addRestrictedZones(): void {
-    if (!this.map || this.restrictedZonesData.length === 0 || !this.restrictedZonesLayer || !this.bufferZonesLayer) return;
+    if (!this.map || this.restrictedZonesData.length === 0 || !this.restrictedZonesLayer || !this.bufferZonesLayer) {
+      console.warn('⚠️ Cannot add restricted zones - missing dependencies');
+      return;
+    }
 
     this.restrictedZonesLayer.clearLayers();
     this.bufferZonesLayer.clearLayers();
@@ -487,8 +482,8 @@ export class DecisionSupport implements OnInit, AfterViewInit {
     if (!zone.bounds) return true;
     
     const zoneBounds = L.latLngBounds(
-      [zone.bounds[1], zone.bounds[0]],
-      [zone.bounds[3], zone.bounds[2]]
+      [zone.bounds[1], zone.bounds[0]], // minLat, minLng
+      [zone.bounds[3], zone.bounds[2]]  // maxLat, maxLng
     );
     
     return mapBounds.intersects(zoneBounds);
@@ -496,6 +491,22 @@ export class DecisionSupport implements OnInit, AfterViewInit {
 
   private addZoneToMap(zone: RestrictedZone): void {
     try {
+      // Validate polygon coordinates
+      if (zone.coordinates.length === 0 || zone.coordinates[0].length < 4) {
+        console.warn(`⚠️ Skipping zone ${zone.name}: Invalid coordinates`);
+        return;
+      }
+
+      // Check if polygon is closed (first and last points should be equal)
+      const firstCoord = zone.coordinates[0][0];
+      const lastCoord = zone.coordinates[0][zone.coordinates[0].length - 1];
+      
+      if (firstCoord[0] !== lastCoord[0] || firstCoord[1] !== lastCoord[1]) {
+        console.warn(`⚠️ Auto-closing polygon for ${zone.name}`);
+        // Auto-close the polygon by adding the first point at the end
+        zone.coordinates[0].push([firstCoord[0], firstCoord[1]]);
+      }
+
       const leafletCoords = zone.coordinates[0].map(coord => [coord[1], coord[0]] as [number, number]);
       
       const polygon = L.polygon(leafletCoords, {
@@ -506,28 +517,33 @@ export class DecisionSupport implements OnInit, AfterViewInit {
         smoothFactor: 1
       }).addTo(this.restrictedZonesLayer!);
 
-      // Add buffer zones for all zone types
-      const zonePolygon = turf.polygon(zone.coordinates);
-      const buffer = turf.buffer(zonePolygon, zone.bufferDistance / 1000, { units: 'kilometers' });
-      
-      // FIX: Check if buffer is defined and has geometry
-      if (buffer && buffer.geometry) {
-        const bufferCoords = (buffer.geometry as any).coordinates[0].map((coord: number[]) => 
-          [coord[1], coord[0]] as [number, number]
-        );
+      // Create buffer zone with error handling
+      try {
+        const zonePolygon = turf.polygon(zone.coordinates);
+        const buffer = turf.buffer(zonePolygon, zone.bufferDistance / 1000, { units: 'kilometers' });
         
-        L.polygon(bufferCoords, {
-          color: this.getZoneColor(zone.type),
-          fillColor: this.getZoneColor(zone.type),
-          fillOpacity: 0.1,
-          weight: 1,
-          dashArray: '5,5',
-          smoothFactor: 1
-        }).addTo(this.bufferZonesLayer!);
+        if (buffer?.geometry?.coordinates) {
+          const bufferCoords = buffer.geometry.coordinates as number[][][];
+          
+          if (bufferCoords.length > 0 && bufferCoords[0].length > 0) {
+            const leafletBufferCoords = bufferCoords[0].map(coord => [coord[1], coord[0]] as [number, number]);
+            
+            L.polygon(leafletBufferCoords, {
+              color: this.getZoneColor(zone.type),
+              fillColor: this.getZoneColor(zone.type),
+              fillOpacity: 0.1,
+              weight: 1,
+              dashArray: '5,5',
+              smoothFactor: 1
+            }).addTo(this.bufferZonesLayer!);
+          }
+        }
+      } catch (bufferError) {
+        console.warn(`⚠️ Could not create buffer for ${zone.name}:`, bufferError);
       }
 
       polygon.bindPopup(`
-        <div>
+        <div style="min-width: 250px;">
           <h3>${zone.name}</h3>
           <p><strong>Type:</strong> ${zone.type}</p>
           <p><strong>Buffer:</strong> ${zone.bufferDistance}m</p>
@@ -537,22 +553,17 @@ export class DecisionSupport implements OnInit, AfterViewInit {
       `);
 
     } catch (error) {
-      console.warn('Error adding zone to map:', zone.name, error);
+      console.warn('❌ Error adding zone to map:', zone.name, error);
     }
   }
 
   private getZoneColor(zoneType: string): string {
     switch (zoneType) {
-      case 'Protected Area':
-        return GovernmentColors.kenyaGreen;
-      case 'Airport':
-        return GovernmentColors.kenyaRed;
-      case 'Water Body':
-        return GovernmentColors.kbrcBlue;
-      case 'Transportation Corridor':
-        return GovernmentColors.kbrcDarkBlue;
-      default:
-        return GovernmentColors.kbrcGray;
+      case 'Protected Area': return GovernmentColors.kenyaGreen;
+      case 'Airport': return GovernmentColors.kenyaRed;
+      case 'Water Body': return GovernmentColors.kbrcBlue;
+      case 'Transportation Corridor': return GovernmentColors.kbrcDarkBlue;
+      default: return GovernmentColors.kbrcGray;
     }
   }
 
@@ -565,18 +576,20 @@ export class DecisionSupport implements OnInit, AfterViewInit {
         this.materials.set(materials);
         this.addMaterialMarkers();
         this.isLoading.set(false);
-        console.log('Loaded materials from API:', materials.length);
+        console.log('✅ Loaded materials from API:', materials.length);
       },
       error: (error) => {
-        console.error('Error loading materials from API:', error);
+        console.error('❌ Error loading materials from API:', error);
+        // Fallback to local service
         this.materialService.getMaterials().subscribe({
           next: (materials) => {
             this.materials.set(materials);
             this.addMaterialMarkers();
             this.isLoading.set(false);
+            console.log('✅ Loaded materials from local service:', materials.length);
           },
           error: (serviceError) => {
-            console.error('Error loading materials from service:', serviceError);
+            console.error('❌ Error loading materials from service:', serviceError);
             this.materials.set([]);
             this.isLoading.set(false);
           }
@@ -674,9 +687,13 @@ export class DecisionSupport implements OnInit, AfterViewInit {
       marker.addTo(this.materialMarkersLayer!);
       this.markers.push(marker);
     });
+
+    console.log(`📦 Added ${this.markers.length} material markers to map`);
   }
 
   private onMapClick(latlng: L.LatLng): void {
+    this.clearAlternativeMarker();
+    
     if (this.siteMarker) {
       this.map!.removeLayer(this.siteMarker);
     }
@@ -700,20 +717,24 @@ export class DecisionSupport implements OnInit, AfterViewInit {
     } else {
       setTimeout(() => this.analyzeSite(latlng), this.ANALYSIS_DEBOUNCE);
     }
+
+    console.log(`📍 Site selected: ${latlng.lat.toFixed(4)}, ${latlng.lng.toFixed(4)}`);
   }
 
-  private analyzeSite(latlng: L.LatLng): void {
+  private async analyzeSite(latlng: L.LatLng): Promise<void> {
     this.isAnalyzing.set(true);
     
     // Use setTimeout to yield to UI
-    setTimeout(() => {
+    setTimeout(async () => {
       const sitePoint = turf.point([latlng.lng, latlng.lat]);
       
       // Check cache first
       const cacheKey = `${latlng.lat.toFixed(4)},${latlng.lng.toFixed(4)}`;
       if (this.analysisCache.has(cacheKey)) {
-        this.analysisResult.set(this.analysisCache.get(cacheKey)!);
+        const cached = this.analysisCache.get(cacheKey)!;
+        this.analysisResult.set(cached);
         this.isAnalyzing.set(false);
+        await this.generateAIRecommendations(cached, latlng);
         return;
       }
 
@@ -732,10 +753,110 @@ export class DecisionSupport implements OnInit, AfterViewInit {
       this.analysisCache.set(cacheKey, result);
       this.analysisResult.set(result);
       this.isAnalyzing.set(false);
+      
+      // Generate AI recommendations
+      await this.generateAIRecommendations(result, latlng);
     }, 0);
   }
 
-  // Optimized restriction checking with spatial filtering
+  private async generateAIRecommendations(analysisResult: AnalysisResult, latlng: L.LatLng): Promise<void> {
+    this.isAIAnalyzing.set(true);
+    this.aiError.set(null);
+
+    try {
+      const context: SiteContext = {
+        selectedSite: { lat: latlng.lat, lng: latlng.lng },
+        nearestMaterials: analysisResult.nearestMaterials,
+        restrictions: analysisResult.restrictions,
+        analysisResult: analysisResult
+      };
+
+      console.log('🤖 Generating AI recommendations with Cohere...');
+      const recommendation = await this.cohereAIService.generateRecommendations(context);
+      this.aiRecommendation.set(recommendation);
+      
+      if (recommendation.alternativeLocation) {
+        console.log('📍 AI suggested alternative location:', recommendation.alternativeLocation);
+        this.addAlternativeLocationMarker(recommendation.alternativeLocation);
+      }
+      
+      console.log('✅ AI analysis completed successfully');
+    } catch (error) {
+      console.error('❌ Cohere AI recommendation failed:', error);
+      this.aiError.set('AI analysis temporarily unavailable - using expert recommendations');
+    } finally {
+      this.isAIAnalyzing.set(false);
+    }
+  }
+
+  private addAlternativeLocationMarker(location: { lat: number; lng: number; reason: string; distance: number }): void {
+    if (!this.map) return;
+
+    this.alternativeMarker = L.marker([location.lat, location.lng], {
+      icon: L.divIcon({
+        className: 'alternative-marker',
+        html: this.createAlternativeMarkerHtml(),
+        iconSize: [35, 35],
+        iconAnchor: [17, 35]
+      })
+    });
+
+    this.alternativeMarker.bindPopup(`
+      <div style="min-width: 250px;">
+        <h3>🤖 AI Suggested Location</h3>
+        <p><strong>📍:</strong> ${location.lat.toFixed(4)}, ${location.lng.toFixed(4)}</p>
+        <p><strong>📝 Reason:</strong> ${location.reason}</p>
+        <p><strong>📏 Distance:</strong> ${location.distance}m from original site</p>
+        <button onclick="this.closest('.leaflet-popup')._source._map.panTo([${location.lat}, ${location.lng}]);">
+          Focus on this location
+        </button>
+      </div>
+    `);
+
+    this.alternativeMarker.addTo(this.map);
+  }
+
+  private createAlternativeMarkerHtml(): string {
+    return `
+      <div style="
+        background-color: #10B981;
+        width: 35px;
+        height: 35px;
+        border-radius: 50%;
+        border: 3px solid white;
+        box-shadow: 0 2px 6px rgba(0,0,0,0.4);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 16px;
+        color: white;
+        animation: pulse 2s infinite;
+      ">💡</div>
+      <style>
+        @keyframes pulse {
+          0% { transform: scale(1); }
+          50% { transform: scale(1.1); }
+          100% { transform: scale(1); }
+        }
+      </style>
+    `;
+  }
+
+  focusOnAlternative(location: { lat: number; lng: number }): void {
+    if (!this.map) return;
+    
+    this.map.panTo([location.lat, location.lng]);
+    this.map.setZoom(14);
+    console.log(`🎯 Focused on alternative location: ${location.lat.toFixed(4)}, ${location.lng.toFixed(4)}`);
+  }
+
+  private clearAlternativeMarker(): void {
+    if (this.alternativeMarker) {
+      this.map?.removeLayer(this.alternativeMarker);
+      this.alternativeMarker = null;
+    }
+  }
+
   private checkRestrictionsOptimized(sitePoint: any): string[] {
     const restrictions: string[] = [];
     const siteLng = sitePoint.geometry.coordinates[0];
@@ -758,8 +879,7 @@ export class DecisionSupport implements OnInit, AfterViewInit {
           restrictions.push(`🚫 Site is inside ${zone.name} (${zone.type})`);
         } else {
           const buffer = turf.buffer(zonePolygon, zone.bufferDistance / 1000, { units: 'kilometers' });
-          // FIX: Check if buffer is defined and has geometry
-          if (buffer && buffer.geometry) {
+          if (buffer?.geometry?.coordinates) {
             const isInBuffer = turf.booleanPointInPolygon(sitePoint, buffer);
             if (isInBuffer) {
               restrictions.push(`⚠️ Site is within ${zone.bufferDistance}m buffer of ${zone.name}`);
@@ -774,7 +894,6 @@ export class DecisionSupport implements OnInit, AfterViewInit {
     return restrictions;
   }
 
-  // Optimized nearest materials search
   private findNearestMaterialsOptimized(site: L.LatLng): AnalysisResult['nearestMaterials'] {
     const sitePoint = turf.point([site.lng, site.lat]);
     const maxDistance = 50000; // 50km maximum search radius
@@ -932,8 +1051,12 @@ export class DecisionSupport implements OnInit, AfterViewInit {
       this.map!.removeLayer(this.siteMarker);
       this.siteMarker = null;
     }
+    this.clearAlternativeMarker();
     this.selectedSite.set(null);
     this.analysisResult.set(null);
+    this.aiRecommendation.set(null);
+    this.aiError.set(null);
+    console.log('🗑️ Site cleared');
   }
 
   toggleLayer(layer: 'restricted' | 'buffer' | 'materials', show: boolean): void {
@@ -943,18 +1066,34 @@ export class DecisionSupport implements OnInit, AfterViewInit {
       case 'restricted':
         if (this.restrictedZonesLayer) {
           show ? this.map.addLayer(this.restrictedZonesLayer) : this.map.removeLayer(this.restrictedZonesLayer);
+          console.log(`🚫 Restricted zones ${show ? 'shown' : 'hidden'}`);
         }
         break;
       case 'buffer':
         if (this.bufferZonesLayer) {
           show ? this.map.addLayer(this.bufferZonesLayer) : this.map.removeLayer(this.bufferZonesLayer);
+          console.log(`📏 Buffer zones ${show ? 'shown' : 'hidden'}`);
         }
         break;
       case 'materials':
         if (this.materialMarkersLayer) {
           show ? this.map.addLayer(this.materialMarkersLayer) : this.map.removeLayer(this.materialMarkersLayer);
+          console.log(`📦 Material markers ${show ? 'shown' : 'hidden'}`);
         }
         break;
     }
+  }
+
+  // Public method to check if map is loaded
+  isMapLoaded(): boolean {
+    return !!this.map;
+  }
+
+  // Public method to get current analysis status
+  getAnalysisStatus(): string {
+    if (this.isAnalyzing()) return 'analyzing';
+    if (this.isAIAnalyzing()) return 'ai-analyzing';
+    if (this.analysisResult()) return 'completed';
+    return 'idle';
   }
 }

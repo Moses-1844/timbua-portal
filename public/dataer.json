@@ -1,0 +1,861 @@
+[
+  {
+    "code": 1,
+    "name": "Mombasa",
+    "boundary": {
+      "north": -4.00,
+      "south": -4.15,
+      "east": 39.75,
+      "west": 39.60
+    },
+    "subCounties": [
+      { "name": "Changamwe", "boundary": { "north": -4.02, "south": -4.08, "east": 39.65, "west": 39.60 } },
+      { "name": "Jomvu", "boundary": { "north": -4.05, "south": -4.10, "east": 39.70, "west": 39.65 } },
+      { "name": "Kisauni", "boundary": { "north": -4.00, "south": -4.08, "east": 39.75, "west": 39.68 } },
+      { "name": "Nyali", "boundary": { "north": -4.02, "south": -4.08, "east": 39.75, "west": 39.70 } },
+      { "name": "Likoni", "boundary": { "north": -4.08, "south": -4.15, "east": 39.68, "west": 39.62 } },
+      { "name": "Mvita", "boundary": { "north": -4.05, "south": -4.07, "east": 39.68, "west": 39.65 } }
+    ]
+  },
+  {
+    "code": 2,
+    "name": "Kwale",
+    "boundary": {
+      "north": -3.50,
+      "south": -4.65,
+      "east": 39.50,
+      "west": 39.00
+    },
+    "subCounties": [
+      { "name": "Msambweni", "boundary": { "north": -4.20, "south": -4.50, "east": 39.50, "west": 39.30 } },
+      { "name": "Lunga Lunga", "boundary": { "north": -4.30, "south": -4.65, "east": 39.20, "west": 39.00 } },
+      { "name": "Matuga", "boundary": { "north": -4.15, "south": -4.40, "east": 39.40, "west": 39.15 } },
+      { "name": "Kinango", "boundary": { "north": -3.50, "south": -4.30, "east": 39.30, "west": 39.00 } }
+    ]
+  },
+  {
+    "code": 3,
+    "name": "Kilifi",
+    "boundary": {
+      "north": -2.50,
+      "south": -4.00,
+      "east": 40.20,
+      "west": 39.50
+    },
+    "subCounties": [
+      { "name": "Kilifi North", "boundary": { "north": -3.50, "south": -3.80, "east": 39.90, "west": 39.70 } },
+      { "name": "Kilifi South", "boundary": { "north": -3.80, "south": -4.00, "east": 39.85, "west": 39.65 } },
+      { "name": "Kaloleni", "boundary": { "north": -3.60, "south": -3.90, "east": 39.70, "west": 39.50 } },
+      { "name": "Rabai", "boundary": { "north": -3.70, "south": -3.95, "east": 39.65, "west": 39.55 } },
+      { "name": "Ganze", "boundary": { "north": -3.50, "south": -4.00, "east": 39.70, "west": 39.40 } },
+      { "name": "Malindi", "boundary": { "north": -2.50, "south": -3.50, "east": 40.20, "west": 39.90 } },
+      { "name": "Magarini", "boundary": { "north": -3.00, "south": -3.80, "east": 40.00, "west": 39.70 } }
+    ]
+  },
+  {
+    "code": 4,
+    "name": "Tana River",
+    "boundary": {
+      "north": -1.00,
+      "south": -2.50,
+      "east": 40.50,
+      "west": 39.00
+    },
+    "subCounties": [
+      { "name": "Garsen", "boundary": { "north": -1.50, "south": -2.20, "east": 40.50, "west": 39.80 } },
+      { "name": "Galole", "boundary": { "north": -1.80, "south": -2.30, "east": 40.20, "west": 39.50 } },
+      { "name": "Bura", "boundary": { "north": -1.00, "south": -2.00, "east": 40.00, "west": 39.00 } }
+    ]
+  },
+  {
+    "code": 5,
+    "name": "Lamu",
+    "boundary": {
+      "north": -1.50,
+      "south": -2.50,
+      "east": 41.50,
+      "west": 40.50
+    },
+    "subCounties": [
+      { "name": "Lamu East", "boundary": { "north": -1.50, "south": -2.20, "east": 41.50, "west": 41.00 } },
+      { "name": "Lamu West", "boundary": { "north": -2.00, "south": -2.50, "east": 41.00, "west": 40.50 } }
+    ]
+  },
+  {
+    "code": 6,
+    "name": "Taita Taveta",
+    "boundary": {
+      "north": -2.50,
+      "south": -4.00,
+      "east": 38.80,
+      "west": 37.80
+    },
+    "subCounties": [
+      { "name": "Wundanyi", "boundary": { "north": -3.20, "south": -3.60, "east": 38.40, "west": 38.20 } },
+      { "name": "Mwatate", "boundary": { "north": -3.20, "south": -3.80, "east": 38.60, "west": 38.30 } },
+      { "name": "Voi", "boundary": { "north": -3.00, "south": -3.60, "east": 38.80, "west": 38.40 } },
+      { "name": "Taveta", "boundary": { "north": -2.50, "south": -3.50, "east": 38.00, "west": 37.80 } }
+    ]
+  },
+  {
+    "code": 7,
+    "name": "Garissa",
+    "boundary": {
+      "north": 0.50,
+      "south": -1.50,
+      "east": 41.50,
+      "west": 39.00
+    },
+    "subCounties": [
+      { "name": "Garissa Township", "boundary": { "north": -0.20, "south": -0.60, "east": 39.80, "west": 39.40 } },
+      { "name": "Balambala", "boundary": { "north": -0.10, "south": -0.80, "east": 40.00, "west": 39.50 } },
+      { "name": "Lagdera", "boundary": { "north": 0.00, "south": -1.00, "east": 40.50, "west": 39.80 } },
+      { "name": "Dadaab", "boundary": { "north": 0.50, "south": -0.50, "east": 41.50, "west": 40.20 } },
+      { "name": "Fafi", "boundary": { "north": 0.20, "south": -1.20, "east": 41.00, "west": 40.00 } },
+      { "name": "Ijara", "boundary": { "north": -0.50, "south": -1.50, "east": 41.20, "west": 40.30 } }
+    ]
+  },
+  {
+    "code": 8,
+    "name": "Wajir",
+    "boundary": {
+      "north": 2.00,
+      "south": 0.50,
+      "east": 41.50,
+      "west": 39.00
+    },
+    "subCounties": [
+      { "name": "Wajir East", "boundary": { "north": 1.20, "south": 0.80, "east": 40.50, "west": 39.80 } },
+      { "name": "Wajir North", "boundary": { "north": 2.00, "south": 1.20, "east": 40.50, "west": 39.50 } },
+      { "name": "Wajir West", "boundary": { "north": 1.50, "south": 0.80, "east": 39.80, "west": 39.00 } },
+      { "name": "Wajir South", "boundary": { "north": 1.00, "south": 0.50, "east": 40.20, "west": 39.50 } },
+      { "name": "Tarbaj", "boundary": { "north": 1.80, "south": 1.20, "east": 40.20, "west": 39.50 } },
+      { "name": "Eldas", "boundary": { "north": 1.20, "south": 0.70, "east": 39.80, "west": 39.20 } }
+    ]
+  },
+  {
+    "code": 9,
+    "name": "Mandera",
+    "boundary": {
+      "north": 3.50,
+      "south": 1.50,
+      "east": 42.00,
+      "west": 40.00
+    },
+    "subCounties": [
+      { "name": "Mandera East", "boundary": { "north": 3.00, "south": 2.00, "east": 41.50, "west": 40.80 } },
+      { "name": "Mandera West", "boundary": { "north": 3.20, "south": 2.20, "east": 40.80, "west": 40.00 } },
+      { "name": "Mandera North", "boundary": { "north": 3.50, "south": 3.00, "east": 41.20, "west": 40.50 } },
+      { "name": "Mandera South", "boundary": { "north": 2.20, "south": 1.50, "east": 41.20, "west": 40.30 } },
+      { "name": "Banissa", "boundary": { "north": 2.80, "south": 2.20, "east": 41.00, "west": 40.20 } },
+      { "name": "Lafey", "boundary": { "north": 2.50, "south": 1.80, "east": 41.50, "west": 40.80 } }
+    ]
+  },
+  {
+    "code": 10,
+    "name": "Marsabit",
+    "boundary": {
+      "north": 4.50,
+      "south": 1.50,
+      "east": 39.50,
+      "west": 36.50
+    },
+    "subCounties": [
+      { "name": "Moyale", "boundary": { "north": 3.50, "south": 2.50, "east": 39.50, "west": 38.50 } },
+      { "name": "North Horr", "boundary": { "north": 4.50, "south": 2.50, "east": 38.50, "west": 37.00 } },
+      { "name": "Saku", "boundary": { "north": 2.50, "south": 1.50, "east": 38.00, "west": 37.00 } },
+      { "name": "Laisamis", "boundary": { "north": 2.00, "south": 1.00, "east": 37.50, "west": 36.50 } }
+    ]
+  },
+  {
+    "code": 11,
+    "name": "Isiolo",
+    "boundary": {
+      "north": 1.50,
+      "south": -0.50,
+      "east": 38.50,
+      "west": 37.50
+    },
+    "subCounties": [
+      { "name": "Isiolo", "boundary": { "north": 0.80, "south": 0.20, "east": 38.00, "west": 37.70 } },
+      { "name": "Garbatulla", "boundary": { "north": 1.50, "south": 0.50, "east": 38.50, "west": 38.00 } },
+      { "name": "Merti", "boundary": { "north": 1.00, "south": -0.50, "east": 38.20, "west": 37.50 } }
+    ]
+  },
+  {
+    "code": 12,
+    "name": "Meru",
+    "boundary": {
+      "north": 0.50,
+      "south": -1.00,
+      "east": 38.50,
+      "west": 37.50
+    },
+    "subCounties": [
+      { "name": "Buuri", "boundary": { "north": 0.20, "south": -0.20, "east": 37.80, "west": 37.50 } },
+      { "name": "Igembe Central", "boundary": { "north": 0.50, "south": 0.10, "east": 38.00, "west": 37.70 } },
+      { "name": "Igembe North", "boundary": { "north": 0.50, "south": 0.20, "east": 38.50, "west": 38.00 } },
+      { "name": "Igembe South", "boundary": { "north": 0.30, "south": 0.00, "east": 38.20, "west": 37.80 } },
+      { "name": "Imenti Central", "boundary": { "north": 0.10, "south": -0.30, "east": 37.80, "west": 37.60 } },
+      { "name": "Imenti North", "boundary": { "north": 0.20, "south": -0.20, "east": 37.90, "west": 37.70 } },
+      { "name": "Imenti South", "boundary": { "north": -0.20, "south": -0.60, "east": 37.80, "west": 37.60 } },
+      { "name": "Tigania East", "boundary": { "north": 0.30, "south": -0.10, "east": 38.20, "west": 37.90 } },
+      { "name": "Tigania West", "boundary": { "north": 0.20, "south": -0.20, "east": 37.90, "west": 37.70 } }
+    ]
+  },
+  {
+    "code": 13,
+    "name": "Tharaka-Nithi",
+    "boundary": {
+      "north": 0.20,
+      "south": -1.00,
+      "east": 38.20,
+      "west": 37.50
+    },
+    "subCounties": [
+      { "name": "Tharaka", "boundary": { "north": 0.20, "south": -0.30, "east": 38.20, "west": 37.80 } },
+      { "name": "Chuka", "boundary": { "north": -0.20, "south": -0.50, "east": 37.90, "west": 37.70 } },
+      { "name": "Igambang'ombe", "boundary": { "north": -0.30, "south": -0.70, "east": 37.90, "west": 37.70 } },
+      { "name": "Maara", "boundary": { "north": -0.10, "south": -0.60, "east": 37.80, "west": 37.50 } }
+    ]
+  },
+  {
+    "code": 14,
+    "name": "Embu",
+    "boundary": {
+      "north": -0.20,
+      "south": -1.00,
+      "east": 37.80,
+      "west": 37.40
+    },
+    "subCounties": [
+      { "name": "Manyatta", "boundary": { "north": -0.40, "south": -0.60, "east": 37.60, "west": 37.50 } },
+      { "name": "Runyenjes", "boundary": { "north": -0.30, "south": -0.70, "east": 37.70, "west": 37.50 } },
+      { "name": "Mbeere North", "boundary": { "north": -0.50, "south": -0.90, "east": 37.70, "west": 37.40 } },
+      { "name": "Mbeere South", "boundary": { "north": -0.70, "south": -1.00, "east": 37.80, "west": 37.50 } }
+    ]
+  },
+  {
+    "code": 15,
+    "name": "Kitui",
+    "boundary": {
+      "north": -0.50,
+      "south": -3.00,
+      "east": 38.80,
+      "west": 37.50
+    },
+    "subCounties": [
+      { "name": "Kitui Central", "boundary": { "north": -1.20, "south": -1.80, "east": 38.20, "west": 37.90 } },
+      { "name": "Kitui East", "boundary": { "north": -1.00, "south": -2.00, "east": 38.80, "west": 38.20 } },
+      { "name": "Kitui South", "boundary": { "north": -1.80, "south": -2.50, "east": 38.30, "west": 37.90 } },
+      { "name": "Kitui West", "boundary": { "north": -1.50, "south": -2.20, "east": 38.00, "west": 37.60 } },
+      { "name": "Kitui Rural", "boundary": { "north": -1.00, "south": -2.00, "east": 38.20, "west": 37.80 } },
+      { "name": "Mwingi Central", "boundary": { "north": -0.50, "south": -1.50, "east": 38.20, "west": 37.80 } },
+      { "name": "Mwingi North", "boundary": { "north": -0.50, "south": -1.20, "east": 38.50, "west": 38.00 } },
+      { "name": "Mwingi West", "boundary": { "north": -0.80, "south": -1.50, "east": 38.00, "west": 37.50 } }
+    ]
+  },
+  {
+    "code": 16,
+    "name": "Machakos",
+    "boundary": {
+      "north": -0.80,
+      "south": -2.00,
+      "east": 37.50,
+      "west": 36.80
+    },
+    "subCounties": [
+      { "name": "Machakos Town", "boundary": { "north": -1.30, "south": -1.60, "east": 37.30, "west": 37.10 } },
+      { "name": "Mavoko", "boundary": { "north": -1.20, "south": -1.50, "east": 37.10, "west": 36.90 } },
+      { "name": "Kangundo", "boundary": { "north": -1.20, "south": -1.50, "east": 37.40, "west": 37.20 } },
+      { "name": "Matungulu", "boundary": { "north": -1.10, "south": -1.50, "east": 37.30, "west": 37.10 } },
+      { "name": "Kathiani", "boundary": { "north": -1.30, "south": -1.70, "east": 37.40, "west": 37.20 } },
+      { "name": "Masinga", "boundary": { "north": -0.80, "south": -1.30, "east": 37.50, "west": 37.20 } },
+      { "name": "Yatta", "boundary": { "north": -1.20, "south": -1.80, "east": 37.50, "west": 37.30 } },
+      { "name": "Mwala", "boundary": { "north": -1.30, "south": -2.00, "east": 37.50, "west": 37.20 } }
+    ]
+  },
+  {
+    "code": 17,
+    "name": "Makueni",
+    "boundary": {
+      "north": -1.50,
+      "south": -3.00,
+      "east": 38.20,
+      "west": 37.20
+    },
+    "subCounties": [
+      { "name": "Makueni", "boundary": { "north": -1.80, "south": -2.20, "east": 37.70, "west": 37.50 } },
+      { "name": "Kaiti", "boundary": { "north": -1.70, "south": -2.20, "east": 37.70, "west": 37.40 } },
+      { "name": "Kibwezi West", "boundary": { "north": -2.00, "south": -2.80, "east": 38.00, "west": 37.60 } },
+      { "name": "Kibwezi East", "boundary": { "north": -2.20, "south": -3.00, "east": 38.20, "west": 37.80 } },
+      { "name": "Mbooni", "boundary": { "north": -1.50, "south": -2.00, "east": 37.60, "west": 37.30 } },
+      { "name": "Kilome", "boundary": { "north": -1.60, "south": -2.20, "east": 37.50, "west": 37.20 } }
+    ]
+  },
+  {
+    "code": 18,
+    "name": "Nyandarua",
+    "boundary": {
+      "north": -0.10,
+      "south": -1.00,
+      "east": 36.80,
+      "west": 36.20
+    },
+    "subCounties": [
+      { "name": "Kinangop", "boundary": { "north": -0.50, "south": -0.90, "east": 36.60, "west": 36.30 } },
+      { "name": "Kipipiri", "boundary": { "north": -0.30, "south": -0.70, "east": 36.50, "west": 36.20 } },
+      { "name": "Ol Kalou", "boundary": { "north": -0.20, "south": -0.60, "east": 36.40, "west": 36.10 } },
+      { "name": "Ol Joro Orok", "boundary": { "north": -0.10, "south": -0.50, "east": 36.60, "west": 36.30 } },
+      { "name": "Ndaragwa", "boundary": { "north": -0.30, "south": -0.80, "east": 36.80, "west": 36.50 } }
+    ]
+  },
+  {
+    "code": 19,
+    "name": "Nyeri",
+    "boundary": {
+      "north": -0.20,
+      "south": -1.00,
+      "east": 37.20,
+      "west": 36.50
+    },
+    "subCounties": [
+      { "name": "Nyeri Town", "boundary": { "north": -0.40, "south": -0.50, "east": 36.90, "west": 36.85 } },
+      { "name": "Kieni East", "boundary": { "north": -0.20, "south": -0.60, "east": 37.00, "west": 36.70 } },
+      { "name": "Kieni West", "boundary": { "north": -0.30, "south": -0.70, "east": 36.80, "west": 36.50 } },
+      { "name": "Mathira East", "boundary": { "north": -0.40, "south": -0.70, "east": 37.10, "west": 36.90 } },
+      { "name": "Mathira West", "boundary": { "north": -0.45, "south": -0.75, "east": 36.95, "west": 36.80 } },
+      { "name": "Mukurweini", "boundary": { "north": -0.60, "south": -0.90, "east": 36.90, "west": 36.70 } },
+      { "name": "Othaya", "boundary": { "north": -0.50, "south": -0.80, "east": 36.95, "west": 36.80 } },
+      { "name": "Tetu", "boundary": { "north": -0.40, "south": -0.70, "east": 36.90, "west": 36.80 } }
+    ]
+  },
+  {
+    "code": 20,
+    "name": "Kirinyaga",
+    "boundary": {
+      "north": -0.40,
+      "south": -1.00,
+      "east": 37.50,
+      "west": 37.20
+    },
+    "subCounties": [
+      { "name": "Kirinyaga Central", "boundary": { "north": -0.50, "south": -0.70, "east": 37.35, "west": 37.25 } },
+      { "name": "Mwea East", "boundary": { "north": -0.60, "south": -0.90, "east": 37.50, "west": 37.35 } },
+      { "name": "Mwea West", "boundary": { "north": -0.65, "south": -0.95, "east": 37.40, "west": 37.25 } },
+      { "name": "Gichugu", "boundary": { "north": -0.50, "south": -0.80, "east": 37.45, "west": 37.30 } },
+      { "name": "Ndia", "boundary": { "north": -0.55, "south": -0.85, "east": 37.35, "west": 37.20 } }
+    ]
+  },
+  {
+    "code": 21,
+    "name": "Murang'a",
+    "boundary": {
+      "north": -0.60,
+      "south": -1.20,
+      "east": 37.30,
+      "west": 36.80
+    },
+    "subCounties": [
+      { "name": "Kandara", "boundary": { "north": -0.80, "south": -1.00, "east": 37.10, "west": 36.90 } },
+      { "name": "Kangema", "boundary": { "north": -0.65, "south": -0.90, "east": 36.95, "west": 36.85 } },
+      { "name": "Kigumo", "boundary": { "north": -0.70, "south": -0.95, "east": 37.00, "west": 36.90 } },
+      { "name": "Kiharu", "boundary": { "north": -0.70, "south": -0.95, "east": 37.10, "west": 36.95 } },
+      { "name": "Mathioya", "boundary": { "north": -0.65, "south": -0.90, "east": 37.05, "west": 36.95 } },
+      { "name": "Maragwa", "boundary": { "north": -0.80, "south": -1.10, "east": 37.30, "west": 37.10 } },
+      { "name": "Gatanga", "boundary": { "north": -0.70, "south": -1.00, "east": 37.00, "west": 36.80 } }
+    ]
+  },
+  {
+    "code": 22,
+    "name": "Kiambu",
+    "boundary": {
+      "north": -0.90,
+      "south": -1.50,
+      "east": 37.10,
+      "west": 36.50
+    },
+    "subCounties": [
+      { "name": "Kiambu", "boundary": { "north": -1.10, "south": -1.30, "east": 36.90, "west": 36.80 } },
+      { "name": "Gatundu North", "boundary": { "north": -0.90, "south": -1.10, "east": 36.95, "west": 36.85 } },
+      { "name": "Gatundu South", "boundary": { "north": -1.00, "south": -1.20, "east": 36.95, "west": 36.85 } },
+      { "name": "Githunguri", "boundary": { "north": -1.05, "south": -1.25, "east": 36.90, "west": 36.80 } },
+      { "name": "Juja", "boundary": { "north": -1.00, "south": -1.20, "east": 37.10, "west": 36.95 } },
+      { "name": "Kabete", "boundary": { "north": -1.15, "south": -1.35, "east": 36.75, "west": 36.65 } },
+      { "name": "Kikuyu", "boundary": { "north": -1.20, "south": -1.40, "east": 36.70, "west": 36.60 } },
+      { "name": "Limuru", "boundary": { "north": -1.10, "south": -1.30, "east": 36.65, "west": 36.55 } },
+      { "name": "Lari", "boundary": { "north": -0.95, "south": -1.25, "east": 36.60, "west": 36.50 } },
+      { "name": "Ruiru", "boundary": { "north": -1.05, "south": -1.25, "east": 37.05, "west": 36.90 } },
+      { "name": "Thika Town", "boundary": { "north": -1.00, "south": -1.20, "east": 37.10, "west": 37.00 } }
+    ]
+  },
+  {
+    "code": 23,
+    "name": "Turkana",
+    "boundary": {
+      "north": 4.50,
+      "south": 2.00,
+      "east": 36.50,
+      "west": 34.50
+    },
+    "subCounties": [
+      { "name": "Turkana Central", "boundary": { "north": 3.00, "south": 2.50, "east": 35.80, "west": 35.20 } },
+      { "name": "Turkana East", "boundary": { "north": 3.50, "south": 2.80, "east": 36.50, "west": 35.80 } },
+      { "name": "Turkana North", "boundary": { "north": 4.50, "south": 3.50, "east": 35.80, "west": 34.80 } },
+      { "name": "Turkana South", "boundary": { "north": 2.50, "south": 2.00, "east": 35.50, "west": 34.80 } },
+      { "name": "Turkana West", "boundary": { "north": 3.50, "south": 2.50, "east": 35.20, "west": 34.50 } },
+      { "name": "Loima", "boundary": { "north": 3.20, "south": 2.70, "east": 35.50, "west": 34.80 } }
+    ]
+  },
+  {
+    "code": 24,
+    "name": "West Pokot",
+    "boundary": {
+      "north": 2.00,
+      "south": 0.50,
+      "east": 35.50,
+      "west": 34.50
+    },
+    "subCounties": [
+      { "name": "Kapenguria", "boundary": { "north": 1.30, "south": 1.00, "east": 35.20, "west": 34.90 } },
+      { "name": "Kacheliba", "boundary": { "north": 1.50, "south": 1.20, "east": 35.10, "west": 34.70 } },
+      { "name": "Pokot South", "boundary": { "north": 1.20, "south": 0.80, "east": 35.30, "west": 35.00 } },
+      { "name": "Sigor", "boundary": { "north": 1.80, "south": 1.40, "east": 35.50, "west": 35.10 } }
+    ]
+  },
+  {
+    "code": 25,
+    "name": "Samburu",
+    "boundary": {
+      "north": 2.00,
+      "south": 0.50,
+      "east": 37.50,
+      "west": 36.00
+    },
+    "subCounties": [
+      { "name": "Samburu East", "boundary": { "north": 1.20, "south": 0.80, "east": 37.50, "west": 37.00 } },
+      { "name": "Samburu North", "boundary": { "north": 2.00, "south": 1.20, "east": 37.20, "west": 36.50 } },
+      { "name": "Samburu West", "boundary": { "north": 1.20, "south": 0.50, "east": 36.80, "west": 36.00 } }
+    ]
+  },
+  {
+    "code": 26,
+    "name": "Trans Nzoia",
+    "boundary": {
+      "north": 1.20,
+      "south": 0.50,
+      "east": 35.20,
+      "west": 34.50
+    },
+    "subCounties": [
+      { "name": "Kiminini", "boundary": { "north": 0.90, "south": 0.70, "east": 35.00, "west": 34.80 } },
+      { "name": "Kwanza", "boundary": { "north": 1.00, "south": 0.80, "east": 34.90, "west": 34.70 } },
+      { "name": "Saboti", "boundary": { "north": 0.85, "south": 0.65, "east": 35.10, "west": 34.90 } },
+      { "name": "Endebess", "boundary": { "north": 1.10, "south": 0.90, "east": 34.80, "west": 34.60 } },
+      { "name": "Cherangany", "boundary": { "north": 1.20, "south": 1.00, "east": 35.20, "west": 35.00 } }
+    ]
+  },
+  {
+    "code": 27,
+    "name": "Uasin Gishu",
+    "boundary": {
+      "north": 0.50,
+      "south": 0.00,
+      "east": 35.80,
+      "west": 35.00
+    },
+    "subCounties": [
+      { "name": "Ainabkoi", "boundary": { "north": 0.30, "south": 0.10, "east": 35.50, "west": 35.30 } },
+      { "name": "Kapseret", "boundary": { "north": 0.25, "south": 0.05, "east": 35.60, "west": 35.40 } },
+      { "name": "Kesses", "boundary": { "north": 0.35, "south": 0.15, "east": 35.40, "west": 35.20 } },
+      { "name": "Moiben", "boundary": { "north": 0.40, "south": 0.20, "east": 35.50, "west": 35.30 } },
+      { "name": "Soy", "boundary": { "north": 0.45, "south": 0.25, "east": 35.30, "west": 35.10 } },
+      { "name": "Turbo", "boundary": { "north": 0.30, "south": 0.10, "east": 35.80, "west": 35.60 } }
+    ]
+  },
+  {
+    "code": 28,
+    "name": "Elgeyo Marakwet",
+    "boundary": {
+      "north": 1.20,
+      "south": 0.20,
+      "east": 35.80,
+      "west": 35.20
+    },
+    "subCounties": [
+      { "name": "Keiyo North", "boundary": { "north": 0.80, "south": 0.50, "east": 35.60, "west": 35.40 } },
+      { "name": "Keiyo South", "boundary": { "north": 0.60, "south": 0.30, "east": 35.70, "west": 35.50 } },
+      { "name": "Marakwet East", "boundary": { "north": 1.20, "south": 0.80, "east": 35.80, "west": 35.60 } },
+      { "name": "Marakwet West", "boundary": { "north": 1.00, "south": 0.60, "east": 35.60, "west": 35.20 } }
+    ]
+  },
+  {
+    "code": 29,
+    "name": "Nandi",
+    "boundary": {
+      "north": 0.30,
+      "south": -0.20,
+      "east": 35.30,
+      "west": 34.80
+    },
+    "subCounties": [
+      { "name": "Aldai", "boundary": { "north": 0.10, "south": -0.10, "east": 35.10, "west": 34.90 } },
+      { "name": "Chesumei", "boundary": { "north": 0.20, "south": 0.00, "east": 35.20, "west": 35.00 } },
+      { "name": "Emgwen", "boundary": { "north": 0.15, "south": -0.05, "east": 35.15, "west": 34.95 } },
+      { "name": "Mosop", "boundary": { "north": 0.25, "south": 0.05, "east": 35.25, "west": 35.05 } },
+      { "name": "Nandi Hills", "boundary": { "north": 0.30, "south": 0.10, "east": 35.30, "west": 35.10 } },
+      { "name": "Tinderet", "boundary": { "north": 0.00, "south": -0.20, "east": 35.10, "west": 34.80 } }
+    ]
+  },
+  {
+    "code": 30,
+    "name": "Baringo",
+    "boundary": {
+      "north": 1.50,
+      "south": 0.00,
+      "east": 36.20,
+      "west": 35.20
+    },
+    "subCounties": [
+      { "name": "Baringo Central", "boundary": { "north": 0.60, "south": 0.30, "east": 35.90, "west": 35.60 } },
+      { "name": "Baringo North", "boundary": { "north": 1.00, "south": 0.60, "east": 35.80, "west": 35.50 } },
+      { "name": "Baringo South", "boundary": { "north": 0.30, "south": 0.00, "east": 35.90, "west": 35.60 } },
+      { "name": "Eldama Ravine", "boundary": { "north": 0.40, "south": 0.10, "east": 35.70, "west": 35.40 } },
+      { "name": "Mogotio", "boundary": { "north": 0.20, "south": -0.10, "east": 36.00, "west": 35.70 } },
+      { "name": "Tiaty", "boundary": { "north": 1.50, "south": 0.80, "east": 36.20, "west": 35.80 } }
+    ]
+  },
+  {
+    "code": 31,
+    "name": "Laikipia",
+    "boundary": {
+      "north": 0.50,
+      "south": -0.50,
+      "east": 37.00,
+      "west": 36.00
+    },
+    "subCounties": [
+      { "name": "Laikipia East", "boundary": { "north": 0.20, "south": -0.20, "east": 37.00, "west": 36.50 } },
+      { "name": "Laikipia North", "boundary": { "north": 0.50, "south": 0.10, "east": 36.80, "west": 36.20 } },
+      { "name": "Laikipia West", "boundary": { "north": 0.10, "south": -0.50, "east": 36.50, "west": 36.00 } }
+    ]
+  },
+  {
+    "code": 32,
+    "name": "Nakuru",
+    "boundary": {
+      "north": -0.10,
+      "south": -1.50,
+      "east": 36.50,
+      "west": 35.20
+    },
+    "subCounties": [
+      { "name": "Nakuru Town East", "boundary": { "north": -0.25, "south": -0.35, "east": 36.10, "west": 36.05 } },
+      { "name": "Nakuru Town West", "boundary": { "north": -0.30, "south": -0.40, "east": 36.05, "west": 36.00 } },
+      { "name": "Naivasha", "boundary": { "north": -0.50, "south": -1.00, "east": 36.50, "west": 36.20 } },
+      { "name": "Gilgil", "boundary": { "north": -0.30, "south": -0.80, "east": 36.30, "west": 36.00 } },
+      { "name": "Kuresoi North", "boundary": { "north": -0.10, "south": -0.50, "east": 35.80, "west": 35.50 } },
+      { "name": "Kuresoi South", "boundary": { "north": -0.50, "south": -0.90, "east": 35.70, "west": 35.40 } },
+      { "name": "Molo", "boundary": { "north": -0.40, "south": -0.80, "east": 35.60, "west": 35.30 } },
+      { "name": "Rongai", "boundary": { "north": -0.20, "south": -0.60, "east": 35.90, "west": 35.60 } },
+      { "name": "Subukia", "boundary": { "north": -0.10, "south": -0.40, "east": 36.20, "west": 35.90 } },
+      { "name": "Bahati", "boundary": { "north": -0.20, "south": -0.50, "east": 36.10, "west": 35.80 } }
+    ]
+  },
+  {
+    "code": 33,
+    "name": "Narok",
+    "boundary": {
+      "north": -0.50,
+      "south": -2.00,
+      "east": 36.00,
+      "west": 34.50
+    },
+    "subCounties": [
+      { "name": "Narok North", "boundary": { "north": -0.50, "south": -1.20, "east": 35.80, "west": 35.20 } },
+      { "name": "Narok South", "boundary": { "north": -1.20, "south": -2.00, "east": 35.80, "west": 35.20 } },
+      { "name": "Narok East", "boundary": { "north": -0.80, "south": -1.50, "east": 36.00, "west": 35.60 } },
+      { "name": "Narok West", "boundary": { "north": -0.80, "south": -1.60, "east": 35.40, "west": 34.80 } },
+      { "name": "Trans Mara East", "boundary": { "north": -0.90, "south": -1.50, "east": 34.90, "west": 34.50 } },
+      { "name": "Trans Mara West", "boundary": { "north": -1.00, "south": -1.70, "east": 34.70, "west": 34.50 } }
+    ]
+  },
+  {
+    "code": 34,
+    "name": "Kajiado",
+    "boundary": {
+      "north": -1.00,
+      "south": -3.00,
+      "east": 37.50,
+      "west": 36.00
+    },
+    "subCounties": [
+      { "name": "Kajiado North", "boundary": { "north": -1.00, "south": -1.50, "east": 36.90, "west": 36.60 } },
+      { "name": "Kajiado South", "boundary": { "north": -2.00, "south": -2.80, "east": 36.80, "west": 36.30 } },
+      { "name": "Kajiado East", "boundary": { "north": -1.50, "south": -2.50, "east": 37.50, "west": 37.00 } },
+      { "name": "Kajiado West", "boundary": { "north": -1.80, "south": -2.50, "east": 36.50, "west": 36.00 } },
+      { "name": "Loitokitok", "boundary": { "north": -2.50, "south": -3.00, "east": 37.50, "west": 37.00 } }
+    ]
+  },
+  {
+    "code": 35,
+    "name": "Kericho",
+    "boundary": {
+      "north": -0.10,
+      "south": -1.00,
+      "east": 35.50,
+      "west": 34.80
+    },
+    "subCounties": [
+      { "name": "Ainamoi", "boundary": { "north": -0.30, "south": -0.50, "east": 35.30, "west": 35.10 } },
+      { "name": "Belgut", "boundary": { "north": -0.20, "south": -0.40, "east": 35.40, "west": 35.20 } },
+      { "name": "Bureti", "boundary": { "north": -0.40, "south": -0.70, "east": 35.30, "west": 35.00 } },
+      { "name": "Kipkelion East", "boundary": { "north": -0.10, "south": -0.40, "east": 35.40, "west": 35.20 } },
+      { "name": "Kipkelion West", "boundary": { "north": -0.20, "south": -0.50, "east": 35.20, "west": 34.90 } },
+      { "name": "Sigowet-Soin", "boundary": { "north": -0.50, "south": -0.80, "east": 35.10, "west": 34.80 } }
+    ]
+  },
+  {
+    "code": 36,
+    "name": "Bomet",
+    "boundary": {
+      "north": -0.40,
+      "south": -1.20,
+      "east": 35.50,
+      "west": 34.80
+    },
+    "subCounties": [
+      { "name": "Bomet Central", "boundary": { "north": -0.70, "south": -0.90, "east": 35.30, "west": 35.10 } },
+      { "name": "Bomet East", "boundary": { "north": -0.60, "south": -0.90, "east": 35.40, "west": 35.20 } },
+      { "name": "Chepalungu", "boundary": { "north": -0.80, "south": -1.10, "east": 35.30, "west": 35.00 } },
+      { "name": "Konoin", "boundary": { "north": -0.50, "south": -0.90, "east": 35.20, "west": 34.90 } },
+      { "name": "Sotik", "boundary": { "north": -0.70, "south": -1.00, "east": 35.10, "west": 34.80 } }
+    ]
+  },
+  {
+    "code": 37,
+    "name": "Kakamega",
+    "boundary": {
+      "north": 0.50,
+      "south": -0.50,
+      "east": 35.00,
+      "west": 34.20
+    },
+    "subCounties": [
+      { "name": "Butere", "boundary": { "north": 0.20, "south": 0.00, "east": 34.70, "west": 34.50 } },
+      { "name": "Ikolomani", "boundary": { "north": 0.30, "south": 0.10, "east": 34.80, "west": 34.60 } },
+      { "name": "Khwisero", "boundary": { "north": 0.25, "south": 0.05, "east": 34.70, "west": 34.50 } },
+      { "name": "Likuyani", "boundary": { "north": 0.40, "south": 0.20, "east": 34.90, "west": 34.70 } },
+      { "name": "Lugari", "boundary": { "north": 0.50, "south": 0.30, "east": 35.00, "west": 34.80 } },
+      { "name": "Lurambi", "boundary": { "north": 0.15, "south": -0.05, "east": 34.80, "west": 34.60 } },
+      { "name": "Malava", "boundary": { "north": 0.35, "south": 0.15, "east": 34.90, "west": 34.70 } },
+      { "name": "Matungu", "boundary": { "north": 0.10, "south": -0.10, "east": 34.70, "west": 34.50 } },
+      { "name": "Mumias East", "boundary": { "north": 0.05, "south": -0.15, "east": 34.60, "west": 34.40 } },
+      { "name": "Mumias West", "boundary": { "north": 0.00, "south": -0.20, "east": 34.60, "west": 34.40 } },
+      { "name": "Navakholo", "boundary": { "north": 0.20, "south": 0.00, "east": 34.80, "west": 34.60 } },
+      { "name": "Shinyalu", "boundary": { "north": 0.10, "south": -0.10, "east": 34.70, "west": 34.50 } }
+    ]
+  },
+  {
+    "code": 38,
+    "name": "Vihiga",
+    "boundary": {
+      "north": 0.20,
+      "south": -0.20,
+      "east": 34.90,
+      "west": 34.50
+    },
+    "subCounties": [
+      { "name": "Emuhaya", "boundary": { "north": 0.00, "south": -0.10, "east": 34.70, "west": 34.60 } },
+      { "name": "Hamisi", "boundary": { "north": 0.05, "south": -0.05, "east": 34.80, "west": 34.70 } },
+      { "name": "Luanda", "boundary": { "north": 0.00, "south": -0.10, "east": 34.75, "west": 34.65 } },
+      { "name": "Sabatia", "boundary": { "north": 0.10, "south": 0.00, "east": 34.80, "west": 34.70 } },
+      { "name": "Vihiga", "boundary": { "north": 0.20, "south": 0.10, "east": 34.90, "west": 34.80 } }
+    ]
+  },
+  {
+    "code": 39,
+    "name": "Bungoma",
+    "boundary": {
+      "north": 1.00,
+      "south": 0.20,
+      "east": 34.80,
+      "west": 34.20
+    },
+    "subCounties": [
+      { "name": "Bumula", "boundary": { "north": 0.60, "south": 0.40, "east": 34.50, "west": 34.30 } },
+      { "name": "Kabuchai", "boundary": { "north": 0.70, "south": 0.50, "east": 34.70, "west": 34.50 } },
+      { "name": "Kanduyi", "boundary": { "north": 0.50, "south": 0.30, "east": 34.60, "west": 34.40 } },
+      { "name": "Kimilili", "boundary": { "north": 0.80, "south": 0.60, "east": 34.80, "west": 34.60 } },
+      { "name": "Mt. Elgon", "boundary": { "north": 1.00, "south": 0.80, "east": 34.70, "west": 34.40 } },
+      { "name": "Sirisia", "boundary": { "north": 0.65, "south": 0.45, "east": 34.55, "west": 34.35 } },
+      { "name": "Tongaren", "boundary": { "north": 0.55, "south": 0.35, "east": 34.65, "west": 34.45 } },
+      { "name": "Webuye East", "boundary": { "north": 0.45, "south": 0.25, "east": 34.80, "west": 34.60 } },
+      { "name": "Webuye West", "boundary": { "north": 0.40, "south": 0.20, "east": 34.75, "west": 34.55 } }
+    ]
+  },
+  {
+    "code": 40,
+    "name": "Busia",
+    "boundary": {
+      "north": 0.80,
+      "south": -0.10,
+      "east": 34.30,
+      "west": 33.80
+    },
+    "subCounties": [
+      { "name": "Bunyala", "boundary": { "north": 0.20, "south": 0.00, "east": 33.95, "west": 33.80 } },
+      { "name": "Butula", "boundary": { "north": 0.40, "south": 0.20, "east": 34.10, "west": 33.90 } },
+      { "name": "Matayos", "boundary": { "north": 0.30, "south": 0.10, "east": 34.20, "west": 34.00 } },
+      { "name": "Nambale", "boundary": { "north": 0.50, "south": 0.30, "east": 34.30, "west": 34.10 } },
+      { "name": "Teso North", "boundary": { "north": 0.70, "south": 0.50, "east": 34.20, "west": 34.00 } },
+      { "name": "Teso South", "boundary": { "north": 0.60, "south": 0.40, "east": 34.30, "west": 34.10 } },
+      { "name": "Samia", "boundary": { "north": 0.80, "south": 0.60, "east": 34.30, "west": 34.00 } }
+    ]
+  },
+  {
+    "code": 41,
+    "name": "Siaya",
+    "boundary": {
+      "north": 0.50,
+      "south": -0.20,
+      "east": 34.50,
+      "west": 33.80
+    },
+    "subCounties": [
+      { "name": "Alego Usonga", "boundary": { "north": 0.30, "south": 0.10, "east": 34.30, "west": 34.10 } },
+      { "name": "Bondo", "boundary": { "north": 0.10, "south": -0.10, "east": 34.20, "west": 33.90 } },
+      { "name": "Gem", "boundary": { "north": 0.20, "south": 0.00, "east": 34.40, "west": 34.20 } },
+      { "name": "Rarieda", "boundary": { "north": 0.00, "south": -0.20, "east": 34.50, "west": 34.20 } },
+      { "name": "Ugenya", "boundary": { "north": 0.40, "south": 0.20, "east": 34.30, "west": 34.10 } },
+      { "name": "Ugunja", "boundary": { "north": 0.35, "south": 0.15, "east": 34.35, "west": 34.15 } }
+    ]
+  },
+  {
+    "code": 42,
+    "name": "Kisumu",
+    "boundary": {
+      "north": 0.30,
+      "south": -0.50,
+      "east": 35.00,
+      "west": 34.40
+    },
+    "subCounties": [
+      { "name": "Kisumu Central", "boundary": { "north": -0.05, "south": -0.15, "east": 34.78, "west": 34.72 } },
+      { "name": "Kisumu East", "boundary": { "north": -0.10, "south": -0.25, "east": 34.85, "west": 34.75 } },
+      { "name": "Kisumu West", "boundary": { "north": -0.08, "south": -0.20, "east": 34.75, "west": 34.65 } },
+      { "name": "Muhoroni", "boundary": { "north": -0.05, "south": -0.20, "east": 35.00, "west": 34.85 } },
+      { "name": "Nyakach", "boundary": { "north": -0.20, "south": -0.40, "east": 34.90, "west": 34.70 } },
+      { "name": "Nyando", "boundary": { "north": -0.15, "south": -0.35, "east": 34.80, "west": 34.60 } },
+      { "name": "Seme", "boundary": { "north": 0.00, "south": -0.20, "east": 34.60, "west": 34.40 } }
+    ]
+  },
+  {
+    "code": 43,
+    "name": "Homa Bay",
+    "boundary": {
+      "north": -0.20,
+      "south": -1.00,
+      "east": 34.80,
+      "west": 33.80
+    },
+    "subCounties": [
+      { "name": "Homa Bay Town", "boundary": { "north": -0.50, "south": -0.55, "east": 34.48, "west": 34.45 } },
+      { "name": "Kabondo Kasipul", "boundary": { "north": -0.40, "south": -0.60, "east": 34.70, "west": 34.50 } },
+      { "name": "Karachuonyo", "boundary": { "north": -0.35, "south": -0.55, "east": 34.65, "west": 34.45 } },
+      { "name": "Kasipul", "boundary": { "north": -0.45, "south": -0.65, "east": 34.60, "west": 34.40 } },
+      { "name": "Ndhiwa", "boundary": { "north": -0.60, "south": -0.90, "east": 34.50, "west": 34.20 } },
+      { "name": "Rangwe", "boundary": { "north": -0.50, "south": -0.70, "east": 34.40, "west": 34.20 } },
+      { "name": "Rachuonyo North", "boundary": { "north": -0.30, "south": -0.50, "east": 34.80, "west": 34.60 } },
+      { "name": "Suba North", "boundary": { "north": -0.20, "south": -0.50, "east": 34.30, "west": 33.90 } },
+      { "name": "Suba South", "boundary": { "north": -0.50, "south": -1.00, "east": 34.20, "west": 33.80 } }
+    ]
+  },
+  {
+    "code": 44,
+    "name": "Migori",
+    "boundary": {
+      "north": -0.50,
+      "south": -1.50,
+      "east": 34.50,
+      "west": 33.80
+    },
+    "subCounties": [
+      { "name": "Awendo", "boundary": { "north": -0.70, "south": -0.90, "east": 34.50, "west": 34.30 } },
+      { "name": "Kuria East", "boundary": { "north": -1.00, "south": -1.20, "east": 34.30, "west": 34.10 } },
+      { "name": "Kuria West", "boundary": { "north": -1.10, "south": -1.30, "east": 34.20, "west": 34.00 } },
+      { "name": "Nyatike", "boundary": { "north": -1.00, "south": -1.30, "east": 34.40, "west": 34.10 } },
+      { "name": "Rongo", "boundary": { "north": -0.70, "south": -0.90, "east": 34.50, "west": 34.30 } },
+      { "name": "Suna East", "boundary": { "north": -1.00, "south": -1.20, "east": 34.50, "west": 34.30 } },
+      { "name": "Suna West", "boundary": { "north": -1.10, "south": -1.30, "east": 34.40, "west": 34.20 } },
+      { "name": "Uriri", "boundary": { "north": -0.80, "south": -1.10, "east": 34.50, "west": 34.20 } }
+    ]
+  },
+  {
+    "code": 45,
+    "name": "Kisii",
+    "boundary": {
+      "north": -0.50,
+      "south": -1.00,
+      "east": 35.00,
+      "west": 34.50
+    },
+    "subCounties": [
+      { "name": "Bobasi", "boundary": { "north": -0.70, "south": -0.90, "east": 34.90, "west": 34.70 } },
+      { "name": "Bomachoge Borabu", "boundary": { "north": -0.80, "south": -1.00, "east": 34.80, "west": 34.60 } },
+      { "name": "Bomachoge Chache", "boundary": { "north": -0.75, "south": -0.95, "east": 34.85, "west": 34.65 } },
+      { "name": "Bonchari", "boundary": { "north": -0.65, "south": -0.85, "east": 34.95, "west": 34.75 } },
+      { "name": "Kitutu Chache North", "boundary": { "north": -0.60, "south": -0.80, "east": 34.90, "west": 34.70 } },
+      { "name": "Kitutu Chache South", "boundary": { "north": -0.70, "south": -0.90, "east": 34.85, "west": 34.65 } },
+      { "name": "Nyaribari Chache", "boundary": { "north": -0.65, "south": -0.85, "east": 34.80, "west": 34.60 } },
+      { "name": "Nyaribari Masaba", "boundary": { "north": -0.60, "south": -0.80, "east": 34.85, "west": 34.65 } },
+      { "name": "South Mugirango", "boundary": { "north": -0.70, "south": -0.95, "east": 34.75, "west": 34.55 } }
+    ]
+  },
+  {
+    "code": 46,
+    "name": "Nyamira",
+    "boundary": {
+      "north": -0.50,
+      "south": -1.00,
+      "east": 35.00,
+      "west": 34.70
+    },
+    "subCounties": [
+      { "name": "Borabu", "boundary": { "north": -0.60, "south": -0.80, "east": 34.90, "west": 34.70 } },
+      { "name": "Manga", "boundary": { "north": -0.70, "south": -0.90, "east": 34.95, "west": 34.75 } },
+      { "name": "Masaba North", "boundary": { "north": -0.55, "south": -0.75, "east": 34.85, "west": 34.65 } },
+      { "name": "Nyamira North", "boundary": { "north": -0.50, "south": -0.70, "east": 35.00, "west": 34.80 } },
+      { "name": "Nyamira South", "boundary": { "north": -0.65, "south": -0.85, "east": 34.95, "west": 34.75 } }
+    ]
+  },
+  {
+    "code": 47,
+    "name": "Nairobi City",
+    "boundary": {
+      "north": -1.15,
+      "south": -1.40,
+      "east": 36.95,
+      "west": 36.70
+    },
+    "subCounties": [
+      { "name": "Dagoretti North", "boundary": { "north": -1.25, "south": -1.30, "east": 36.75, "west": 36.72 } },
+      { "name": "Dagoretti South", "boundary": { "north": -1.30, "south": -1.35, "east": 36.77, "west": 36.74 } },
+      { "name": "Embakasi Central", "boundary": { "north": -1.28, "south": -1.33, "east": 36.90, "west": 36.87 } },
+      { "name": "Embakasi East", "boundary": { "north": -1.26, "south": -1.31, "east": 36.95, "west": 36.92 } },
+      { "name": "Embakasi North", "boundary": { "north": -1.24, "south": -1.29, "east": 36.88, "west": 36.85 } },
+      { "name": "Embakasi South", "boundary": { "north": -1.30, "south": -1.35, "east": 36.86, "west": 36.83 } },
+      { "name": "Embakasi West", "boundary": { "north": -1.27, "south": -1.32, "east": 36.82, "west": 36.79 } },
+      { "name": "Kamukunji", "boundary": { "north": -1.26, "south": -1.31, "east": 36.85, "west": 36.82 } },
+      { "name": "Kasarani", "boundary": { "north": -1.20, "south": -1.25, "east": 36.90, "west": 36.87 } },
+      { "name": "Kibra", "boundary": { "north": -1.29, "south": -1.34, "east": 36.79, "west": 36.76 } },
+      { "name": "Lang'ata", "boundary": { "north": -1.32, "south": -1.37, "east": 36.78, "west": 36.75 } },
+      { "name": "Makadara", "boundary": { "north": -1.28, "south": -1.33, "east": 36.87, "west": 36.84 } },
+      { "name": "Mathare", "boundary": { "north": -1.25, "south": -1.30, "east": 36.85, "west": 36.82 } },
+      { "name": "Roysambu", "boundary": { "north": -1.22, "south": -1.27, "east": 36.88, "west": 36.85 } },
+      { "name": "Ruaraka", "boundary": { "north": -1.23, "south": -1.28, "east": 36.87, "west": 36.84 } },
+      { "name": "Starehe", "boundary": { "north": -1.27, "south": -1.32, "east": 36.83, "west": 36.80 } },
+      { "name": "Westlands", "boundary": { "north": -1.23, "south": -1.28, "east": 36.80, "west": 36.77 } }
+    ]
+  }
+]
