@@ -20,7 +20,7 @@ interface CountyData {
   counties: County[];
 }
 
-// County boundary approximations (you can make this more precise)
+// County boundary approximations
 const COUNTY_BOUNDARIES = {
   'Mombasa': { lat: [-4.1, -3.9], lng: [39.5, 39.8] },
   'Kilifi': { lat: [-3.9, -2.5], lng: [39.5, 40.2] },

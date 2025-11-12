@@ -7,7 +7,7 @@
 
 .map-container {
   position: relative;
-  height: 600px;
+  height: 600px; // Fixed height for the map container
   border-radius: 8px;
   overflow: hidden;
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
@@ -93,6 +93,59 @@
   }
 }
 
+// API Error Notice
+.api-error-notice {
+  position: absolute;
+  top: 20px;
+  right: 20px;
+  background: #fff3cd;
+  border: 1px solid #ffeaa7;
+  border-radius: 8px;
+  padding: 15px;
+  z-index: 1000;
+  max-width: 300px;
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+
+  .error-icon {
+    font-size: 1.5em;
+    color: #856404;
+    flex-shrink: 0;
+  }
+
+  .error-content {
+    flex: 1;
+
+    h4 {
+      margin: 0 0 5px 0;
+      color: #856404;
+      font-size: 0.9em;
+    }
+
+    p {
+      margin: 0 0 10px 0;
+      color: #856404;
+      font-size: 0.8em;
+      line-height: 1.4;
+    }
+
+    .retry-btn-small {
+      background: #856404;
+      color: white;
+      border: none;
+      padding: 6px 12px;
+      border-radius: 4px;
+      font-size: 0.8em;
+      cursor: pointer;
+
+      &:hover {
+        background: darken(#856404, 10%);
+      }
+    }
+  }
+}
+
 // Controls Panel
 .controls-panel {
   position: absolute;
@@ -104,6 +157,8 @@
   border-radius: 8px;
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
   min-width: 300px;
+  max-height: calc(100% - 40px); // Fit within map container
+  overflow-y: auto;
 
   h3 {
     color: colors.$kbrcDarkBlue;
@@ -138,7 +193,20 @@
       outline: none;
       border-color: colors.$kbrcBlue;
     }
+
+    &:disabled {
+      background-color: colors.$background;
+      color: colors.$textSecondary;
+      cursor: not-allowed;
+    }
   }
+}
+
+.filter-hint {
+  color: colors.$textSecondary;
+  font-style: italic;
+  margin-top: 5px;
+  display: block;
 }
 
 .filter-buttons {
@@ -187,108 +255,6 @@
   text-align: center;
 }
 
-.material-details {
-  position: absolute;
-  top: 20px;
-  right: 20px;
-  z-index: 1000;
-  background: colors.$kenyaWhite;
-  padding: 20px;
-  border-radius: 8px;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-  max-width: 400px;
-  max-height: 80vh;
-  overflow-y: auto;
-
-  h3 {
-    color: colors.$kbrcDarkBlue;
-    margin-bottom: 15px;
-    border-bottom: 2px solid colors.$kenyaGreen;
-    padding-bottom: 8px;
-  }
-}
-
-.detail-section {
-  margin-bottom: 15px;
-
-  h4 {
-    color: colors.$kbrcBlue;
-    margin-bottom: 8px;
-    font-size: 1em;
-  }
-
-  p {
-    margin: 5px 0;
-    color: colors.$textSecondary;
-    font-size: 0.9em;
-  }
-
-  ul {
-    margin: 5px 0;
-    padding-left: 20px;
-    
-    li {
-      color: colors.$textSecondary;
-      font-size: 0.9em;
-      margin-bottom: 3px;
-    }
-  }
-}
-
-.material-types {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 5px;
-  margin-top: 5px;
-}
-
-.material-type-badge {
-  background: colors.$kbrcBlue;
-  color: colors.$kenyaWhite;
-  padding: 4px 8px;
-  border-radius: 12px;
-  font-size: 0.8em;
-  font-weight: 600;
-}
-
-// Leaflet marker styles
-::ng-deep .custom-marker {
-  background: transparent;
-  border: none;
-}
-
-::ng-deep .leaflet-popup-content {
-  margin: 15px 19px;
-}
-
-::ng-deep .leaflet-popup-content-wrapper {
-  border-radius: 8px;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-}
-
-// Animation
-@keyframes spin {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
-}
-// Add these styles to your existing SCSS
-
-.material-header {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  margin-bottom: 15px;
-
-  .material-icon-large {
-    font-size: 2em;
-  }
-
-  h3 {
-    margin: 0;
-    flex: 1;
-  }
-}
-
 .legend {
   margin-top: 20px;
   padding-top: 15px;
@@ -315,39 +281,45 @@
   }
 }
 
-.material-type-badge {
-  background: colors.$kbrcBlue;
-  color: colors.$kenyaWhite;
-  padding: 6px 10px;
-  border-radius: 12px;
-  font-size: 0.8em;
-  font-weight: 600;
-  display: inline-flex;
-  align-items: center;
-  gap: 5px;
-  margin: 2px;
+// No Data Message
+.no-data-message {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background: colors.$kenyaWhite;
+  padding: 2rem;
+  border-radius: 8px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  text-align: center;
+  z-index: 1000;
+
+  .no-data-icon {
+    font-size: 3em;
+    margin-bottom: 1rem;
+  }
+
+  h3 {
+    color: colors.$textSecondary;
+    margin-bottom: 1rem;
+  }
+
+  p {
+    color: colors.$textSecondary;
+    margin: 0;
+  }
 }
 
-.material-icon-large {
-  font-size: 2em;
-  background: colors.$background;
-  padding: 10px;
-  border-radius: 50%;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 60px;
-  height: 60px;
-}
-.material-details {
+// Material Details Panel - FIXED SIZE AND SCROLLABLE
+.material-details-panel {
   position: absolute;
   top: 20px;
   right: 20px;
   width: 400px;
-  max-height: calc(100vh - 40px);
+  height: calc(100% - 40px); // Fit within map container with padding
   background: white;
   border-radius: 12px;
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
   z-index: 1000;
   display: flex;
   flex-direction: column;
@@ -360,12 +332,37 @@
     padding: 20px;
     background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
     border-bottom: 1px solid #dee2e6;
+    flex-shrink: 0; // Prevent header from shrinking
 
     .header-content {
       display: flex;
-      align-items: center;
+      align-items: flex-start;
       gap: 12px;
       flex: 1;
+      min-width: 0; // Allow text truncation
+    }
+
+    .material-icon-large {
+      font-size: 2rem;
+      flex-shrink: 0;
+      background: white;
+      padding: 8px;
+      border-radius: 8px;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+
+    .material-title {
+      flex: 1;
+      min-width: 0; // Allow text truncation
+
+      h3 {
+        margin: 0 0 8px 0;
+        color: #2c3e50;
+        font-size: 1.25rem;
+        line-height: 1.3;
+        word-wrap: break-word;
+        overflow-wrap: break-word;
+      }
     }
 
     .close-btn {
@@ -388,58 +385,20 @@
       }
 
       &:focus {
-        outline: 2px solid #007bff;
+        outline: 2px solid colors.$kbrcBlue;
         outline-offset: 2px;
       }
     }
   }
 
-  .material-icon-large {
-    font-size: 2rem;
-    flex-shrink: 0;
-  }
-
-  h3 {
-    margin: 0;
-    color: #2c3e50;
-    font-size: 1.25rem;
-    line-height: 1.3;
-    word-wrap: break-word;
-  }
-
-  // Rest of the existing styles...
-  .detail-section {
-    padding: 16px 20px;
-    border-bottom: 1px solid #e9ecef;
-
-    &:last-of-type {
-      border-bottom: none;
-    }
-
-    h4 {
-      margin: 0 0 12px 0;
-      color: #2c3e50;
-      font-size: 1rem;
-      font-weight: 600;
-    }
-
-    p {
-      margin: 8px 0;
-      color: #495057;
-      line-height: 1.4;
-
-      strong {
-        color: #2c3e50;
-      }
-    }
-  }
-
-  // Scrollable content area
-  > .detail-section:not(.material-header) {
-    overflow-y: auto;
+  // Scrollable content area - FIXED
+  .material-content-scrollable {
     flex: 1;
-    padding-right: 4px; // Space for scrollbar
+    overflow-y: auto;
+    overflow-x: hidden;
+    padding: 0;
 
+    // Custom scrollbar styling
     &::-webkit-scrollbar {
       width: 6px;
     }
@@ -457,18 +416,158 @@
     &::-webkit-scrollbar-thumb:hover {
       background: #a8a8a8;
     }
+
+    // Firefox scrollbar
+    scrollbar-width: thin;
+    scrollbar-color: #c1c1c1 #f1f1f1;
   }
+
+  .detail-section {
+    padding: 20px;
+    border-bottom: 1px solid #e9ecef;
+
+    &:last-of-type {
+      border-bottom: none;
+    }
+
+    h4 {
+      margin: 0 0 16px 0;
+      color: colors.$kbrcDarkBlue;
+      font-size: 1rem;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .detail-grid {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .detail-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 10px;
+
+      &.full-width {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 6px;
+      }
+
+      strong {
+        color: colors.$textPrimary;
+        font-weight: 600;
+        font-size: 0.85em;
+        min-width: 140px;
+        flex-shrink: 0;
+      }
+
+      span {
+        color: colors.$textSecondary;
+        font-size: 0.85em;
+        line-height: 1.4;
+        text-align: right;
+        word-break: break-word;
+        flex: 1;
+
+        .full-width & {
+          text-align: left;
+        }
+      }
+    }
+  }
+
+  .material-types {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+
+  .material-type-badge {
+    background: colors.$kbrcBlue;
+    color: colors.$kenyaWhite;
+    padding: 4px 8px;
+    border-radius: 12px;
+    font-size: 0.75em;
+    font-weight: 600;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    white-space: nowrap;
+  }
+
+  .challenges-list {
+    margin: 0;
+    padding-left: 20px;
+    
+    li {
+      color: colors.$textSecondary;
+      font-size: 0.85em;
+      margin-bottom: 6px;
+      line-height: 1.4;
+    }
+  }
+
+  .comments-text {
+    color: colors.$textSecondary;
+    font-size: 0.85em;
+    line-height: 1.5;
+    margin: 0;
+    padding: 12px;
+    background: colors.$background;
+    border-radius: 6px;
+    border-left: 3px solid colors.$kbrcBlue;
+    font-style: italic;
+  }
+}
+
+// Leaflet marker styles
+::ng-deep .custom-marker {
+  background: transparent;
+  border: none;
+}
+
+::ng-deep .leaflet-popup-content {
+  margin: 15px 19px;
+}
+
+::ng-deep .leaflet-popup-content-wrapper {
+  border-radius: 8px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+// Animation
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
 }
 
 // Responsive design for smaller screens
 @media (max-width: 768px) {
-  .material-details {
+  .map-container {
+    height: 500px; // Smaller height on mobile
+  }
+
+  .controls-panel {
+    position: relative;
+    top: auto;
+    left: auto;
+    width: auto;
+    max-height: 300px;
+    margin: 10px;
+  }
+
+  .material-details-panel {
     position: fixed;
     top: 10px;
     right: 10px;
     left: 10px;
     width: auto;
-    max-height: calc(100vh - 20px);
+    height: calc(100vh - 20px); // Full screen on mobile
 
     .material-header {
       padding: 16px;
@@ -479,7 +578,28 @@
     }
 
     .detail-section {
-      padding: 12px 16px;
+      padding: 16px;
+    }
+
+    .detail-item {
+      flex-direction: column !important;
+      align-items: flex-start !important;
+      gap: 4px !important;
+
+      strong {
+        min-width: auto !important;
+        margin-bottom: 2px;
+      }
+
+      span {
+        text-align: left !important;
+      }
     }
   }
+}
+
+// Ensure the map container has proper positioning context
+:host {
+  position: relative;
+  display: block;
 }
