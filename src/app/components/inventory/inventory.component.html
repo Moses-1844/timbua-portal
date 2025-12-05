@@ -1,0 +1,200 @@
+<div class="inventory-container">
+  <!-- Header -->
+  <div class="header">
+    <div class="header-content">
+      <h1><i class="fas fa-warehouse"></i> Material Inventory</h1>
+      <p class="subtitle">Manage your construction materials and track availability</p>
+    </div>
+    <div class="header-actions">     
+      <button class="btn btn-outline-secondary" (click)="refreshInventory()">
+        <i class="fas fa-sync-alt"></i> Refresh
+      </button>
+    </div>
+  </div>
+
+  <!-- Stats Cards -->
+  <div class="stats-cards">
+    <div class="stat-card">
+      <div class="stat-icon total-materials">
+        <i class="fas fa-boxes"></i>
+      </div>
+      <div class="stat-info">
+        <h3>{{materials.length}}</h3>
+        <p>Total Materials</p>
+      </div>
+    </div>
+    
+    <div class="stat-card">
+      <div class="stat-icon available">
+        <i class="fas fa-check-circle"></i>
+      </div>
+      <div class="stat-info">
+        <h3>{{availableMaterialsCount}}</h3>
+        <p>Available</p>
+      </div>
+    </div>
+    
+    <div class="stat-card">
+      <div class="stat-icon categories">
+        <i class="fas fa-tags"></i>
+      </div>
+      <div class="stat-info">
+        <h3>{{categoriesCount}}</h3>
+        <p>Categories</p>
+      </div>
+    </div>
+    
+    <div class="stat-card">
+      <div class="stat-icon value">
+        <i class="fas fa-money-bill-wave"></i>
+      </div>
+      <div class="stat-info">
+        <h3>{{totalValue | currency:'KSH':'symbol':'1.0-0'}}</h3>
+        <p>Total Value</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Error Message -->
+  <div *ngIf="errorMessage" class="alert alert-danger">
+    <i class="fas fa-exclamation-triangle"></i> {{errorMessage}}
+    <button *ngIf="errorMessage.includes('log in')" class="btn btn-link" routerLink="/login">
+      Go to Login
+    </button>
+  </div>
+
+  <!-- Loading State -->
+  <div *ngIf="isLoading" class="loading-state">
+    <div class="spinner-border text-primary" role="status">
+      <span class="visually-hidden">Loading...</span>
+    </div>
+    <p>Loading inventory...</p>
+  </div>
+
+  <!-- Empty State -->
+  <div *ngIf="!isLoading && materials.length === 0 && !errorMessage" class="empty-state">
+    <div class="empty-icon">
+      <i class="fas fa-box-open"></i>
+    </div>
+    <h3>No Materials Found</h3>
+    <p>You haven't added any materials to your inventory yet.</p>
+    <button class="btn btn-primary" (click)="addNewMaterial()">
+      <i class="fas fa-plus"></i> Add Your First Material
+    </button>
+  </div>
+
+  <!-- Materials Table -->
+  <div *ngIf="!isLoading && materials.length > 0" class="materials-table-container">
+    <div class="table-header">
+      <h3>Your Materials</h3>
+      <div class="table-actions">
+        <div class="search-box">
+          <input type="text" #searchInput placeholder="Search materials..." class="form-control" 
+                 (input)="filterMaterials(searchInput.value)">
+          <i class="fas fa-search"></i>
+        </div>
+        <select class="form-control filter-select" #categoryFilter (change)="filterByCategory(categoryFilter.value)">
+          <option value="">All Categories</option>
+          <option *ngFor="let category of getUniqueCategories()" [value]="category">
+            {{category}}
+          </option>
+        </select>
+      </div>
+    </div>
+
+    <div class="table-responsive">
+      <table class="table">
+        <thead>
+          <tr>
+            <th>Material</th>
+            <th>Category</th>
+            <th>Price</th>
+            <th>Location</th>
+            <th>Status</th>
+            <th>Added On</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let material of filteredMaterials || materials">
+            <td>
+              <div class="material-info">
+                <div class="material-name">{{material.name}}</div>
+                <small class="text-muted">{{material.description || 'No description'}}</small>
+              </div>
+            </td>
+            <td>
+              <span class="category-badge">{{material.category}}</span>
+            </td>
+            <td>
+              <strong>{{formatPrice(material.price, material.currency)}}</strong>
+              <div class="text-muted small">per {{material.unit}}</div>
+            </td>
+            <td>
+              <div class="location-info">
+                <i class="fas fa-map-marker-alt"></i>
+                {{material.location}}
+              </div>
+              <div class="text-muted small">{{material.county || 'Kenya'}}</div>
+            </td>
+            <td>
+              <span [class]="material.available ? 'status-badge available' : 'status-badge unavailable'">
+                {{material.available ? 'Available' : 'Unavailable'}}
+              </span>
+            </td>
+            <td>
+              {{formatDate(material.createdAt)}}
+            </td>
+            <td>
+              <div class="action-buttons">
+                <button class="btn btn-sm btn-outline-primary" (click)="editMaterial(material)">
+                  <i class="fas fa-edit"></i>
+                </button>
+                <button class="btn btn-sm btn-outline-secondary" (click)="toggleAvailability(material)">
+                  <i [class]="material.available ? 'fas fa-toggle-on' : 'fas fa-toggle-off'"></i>
+                </button>
+                <button class="btn btn-sm btn-outline-danger" (click)="deleteMaterial(material)">
+                  <i class="fas fa-trash"></i>
+                </button>
+              </div>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Table Footer -->
+    <div class="table-footer">
+      <div class="table-summary">
+        Showing {{(filteredMaterials || materials).length}} of {{materials.length}} materials
+      </div>
+      <div class="pagination">
+        <button class="btn btn-sm btn-outline-secondary" disabled>Previous</button>
+        <span class="page-info">Page 1 of 1</span>
+        <button class="btn btn-sm btn-outline-secondary" disabled>Next</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Quick Actions -->
+  <div *ngIf="!isLoading && materials.length > 0" class="quick-actions">
+    <h3>Quick Actions</h3>
+    <div class="action-buttons">
+      <button class="btn btn-outline-primary" (click)="addNewMaterial()">
+        <i class="fas fa-plus"></i> Add Another Material
+      </button>
+      <button class="btn btn-outline-secondary" (click)="refreshInventory()">
+        <i class="fas fa-sync-alt"></i> Refresh List
+      </button>
+<button class="btn btn-outline-success btn-sm" (click)="exportInventory('excel')" title="Export to Excel">
+      <i class="fas fa-file-excel"></i> Excel
+    </button>
+    <button class="btn btn-outline-danger btn-sm" (click)="exportInventory('pdf')" title="Export to PDF">
+      <i class="fas fa-file-pdf"></i> PDF
+    </button>
+    <button *ngIf="searchTerm || selectedCategory" class="btn btn-outline-secondary btn-sm" (click)="clearFilters()" title="Clear filters">
+      <i class="fas fa-times"></i> Clear
+    </button>
+    </div>
+  </div>
+</div>

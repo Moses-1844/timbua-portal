@@ -1,0 +1,285 @@
+<div class="smart-quotation-container">
+  <!-- Step Indicator -->
+  <div class="step-indicator">
+    <div class="step" [class.active]="currentStep === 1" [class.completed]="currentStep > 1">
+      <span class="step-number">1</span>
+      <span class="step-label">Contractor Info</span>
+    </div>
+    <div class="step" [class.active]="currentStep === 2" [class.completed]="currentStep > 2">
+      <span class="step-number">2</span>
+      <span class="step-label">Select Site</span>
+    </div>
+    <div class="step" [class.active]="currentStep === 3" [class.completed]="currentStep > 3">
+      <span class="step-number">3</span>
+      <span class="step-label">Choose Materials</span>
+    </div>
+    <div class="step" [class.active]="currentStep === 4">
+      <span class="step-number">4</span>
+      <span class="step-label">Select Suppliers</span>
+    </div>
+  </div>
+
+  <!-- Step 1: Contractor Verification -->
+  <div *ngIf="currentStep === 1" class="step-content">
+    <div class="welcome-section">
+      <h2>Smart Quotation Request</h2>
+      <p>Get competitive quotes for your construction materials from nearby suppliers.</p>
+      
+      <div class="contractor-info" *ngIf="getContractorInfo() as contractor">
+        <h3>Contractor Information</h3>
+        <div class="info-grid">
+          <div class="info-item">
+            <strong>Company:</strong> {{ contractor.companyName }}
+          </div>
+          <div class="info-item">
+            <strong>Contact Person:</strong> {{ contractor.contactPerson }}
+          </div>
+          <div class="info-item">
+            <strong>Email:</strong> {{ contractor.email }}
+          </div>
+          <div class="info-item">
+            <strong>Contractor ID:</strong> {{ contractorId }}
+          </div>
+          <div class="info-item">
+            <strong>Status:</strong> 
+            <span class="verified">✓ Verified</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="action-section">
+        <button 
+          (click)="loadContractorSites()" 
+          [disabled]="loading || contractorId === 0"
+          class="btn btn-primary btn-large">
+          {{ loading ? 'Loading...' : 'Start Quotation Process' }}
+        </button>
+        
+        <p class="instruction">
+          Click above to view your construction sites and request material quotes.
+        </p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Step 2: Site Selection -->
+  <div *ngIf="currentStep === 2" class="step-content">
+    <div class="header-section">
+      <h2>Select Construction Site</h2>
+      <p>Choose the site you need materials for:</p>
+    </div>
+
+    <div class="sites-container">
+      <div *ngIf="contractorSites.length === 0 && !loading" class="no-sites">
+        <p>No construction sites found for your account.</p>
+        <button routerLink="/contractor/sites/create" class="btn btn-secondary">
+          Create New Site
+        </button>
+      </div>
+
+      <div *ngIf="loading" class="loading">
+        <p>Loading your sites...</p>
+      </div>
+
+      <div *ngIf="!loading && contractorSites.length > 0" class="sites-grid">
+        <div 
+          *ngFor="let site of contractorSites" 
+          class="site-card"
+          [class.selected]="selectedSite?.id === site.id"
+          (click)="selectSite(site)">
+          <div class="site-header">
+            <h3>{{ site.name }}</h3>
+            <span class="site-type">{{ site.type || 'Construction' }}</span>
+          </div>
+          <div class="site-details">
+            <p><strong>Location:</strong> {{ site.location }}</p>
+            <p><strong>Status:</strong> {{ site.status || 'Active' }}</p>
+            <p><strong>Progress:</strong> {{ site.progress || 0 }}%</p>
+            <p *ngIf="site.estimatedCost">
+              <strong>Estimated Cost:</strong> ${{ site.estimatedCost | number }}
+            </p>
+          </div>
+          <div class="site-select">
+            <button 
+              class="btn btn-sm"
+              [class.btn-primary]="selectedSite?.id === site.id"
+              [class.btn-outline]="selectedSite?.id !== site.id">
+              {{ selectedSite?.id === site.id ? 'Selected' : 'Select' }}
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="actions-section">
+      <button (click)="currentStep = 1" class="btn btn-secondary">Back</button>
+      <button 
+        *ngIf="selectedSite"
+        (click)="getMaterialSuggestions()" 
+        [disabled]="loading"
+        class="btn btn-primary">
+        {{ loading ? 'Analyzing...' : 'Next: Get Material Suggestions' }}
+      </button>
+    </div>
+  </div>
+
+  <!-- Step 3: Material Selection -->
+  <div *ngIf="currentStep === 3" class="step-content">
+    <div class="header-section">
+      <h2>Material Requirements for {{ selectedSite?.name }}</h2>
+      <p>Based on {{ selectedSite?.type }} construction, we suggest these materials:</p>
+      
+      <div class="selected-site-info">
+        <p><strong>Site Type:</strong> {{ selectedSite?.type }}</p>
+        <p><strong>Location:</strong> {{ selectedSite?.location }}</p>
+      </div>
+    </div>
+
+    <div class="materials-container">
+      <div *ngIf="loading" class="loading">
+        <p>Generating material suggestions...</p>
+      </div>
+
+      <div *ngIf="!loading && suggestedMaterials.length > 0" class="materials-list">
+        <div *ngFor="let material of suggestedMaterials; let i = index" class="material-card">
+          <div class="material-header">
+            <h3>{{ material.material }}</h3>
+            <span class="confidence">Confidence: {{ (material.confidence * 100).toFixed(0) }}%</span>
+          </div>
+          
+          <div class="material-details">
+            <p class="reason">{{ material.reason }}</p>
+            
+            <div class="quantity-control">
+              <label>
+                <strong>Estimated Quantity:</strong>
+                <div class="quantity-input-group">
+                  <input 
+                    type="number" 
+                    min="1" 
+                    [value]="selectedMaterials[i]?.adjustedQuantity || material.estimatedQuantity"
+                    (change)="updateMaterialQuantity(i, $event.target.valueAsNumber)"
+                    class="quantity-input">
+                  <span class="unit">{{ material.unit }}</span>
+                </div>
+                <small>AI suggestion: {{ material.estimatedQuantity }} {{ material.unit }}</small>
+              </label>
+            </div>
+          </div>
+          
+          <div class="material-select">
+            <label class="checkbox-container">
+              <input 
+                type="checkbox" 
+                [checked]="selectedMaterials[i]?.selected || false"
+                (change)="onMaterialSelectionChange(i, $event.target.checked)">
+              <span class="checkmark"></span>
+              <span class="checkbox-label">Select Material</span>
+            </label>
+          </div>
+        </div>
+      </div>
+
+      <div *ngIf="!loading && suggestedMaterials.length === 0" class="no-materials">
+        <p>No material suggestions available for this site type.</p>
+      </div>
+    </div>
+
+    <div class="actions-section">
+      <button (click)="currentStep = 2" class="btn btn-secondary">Back to Sites</button>
+      <button 
+        (click)="findNearbySuppliers()" 
+        [disabled]="loading || getSelectedMaterialsCount() === 0"
+        class="btn btn-primary">
+        {{ loading ? 'Searching...' : 'Next: Find Suppliers (' + getSelectedMaterialsCount() + ' selected)' }}
+      </button>
+    </div>
+  </div>
+
+  <!-- Step 4: Supplier Selection -->
+  <div *ngIf="currentStep === 4" class="step-content">
+    <div class="header-section">
+      <h2>Select Suppliers (within 100km radius)</h2>
+      <p>Choose which suppliers to send quotation requests to:</p>
+      
+      <div class="selection-summary">
+        <p><strong>Site:</strong> {{ selectedSite?.name }}</p>
+        <p><strong>Selected Materials:</strong> {{ getSelectedMaterialsCount() }}</p>
+      </div>
+    </div>
+
+    <div class="suppliers-container">
+      <div *ngIf="loading" class="loading">
+        <p>Loading nearby suppliers...</p>
+      </div>
+
+      <div *ngIf="!loading && nearbySuppliers.length === 0" class="no-suppliers">
+        <p>No suppliers found within 100km radius that supply the selected materials.</p>
+        <button (click)="currentStep = 3" class="btn btn-secondary">
+          Back to Materials
+        </button>
+      </div>
+
+      <div *ngIf="!loading && nearbySuppliers.length > 0" class="suppliers-list">
+        <div *ngFor="let supplier of nearbySuppliers" class="supplier-card">
+          <div class="supplier-info">
+            <h3>{{ supplier.companyName }}</h3>
+            <div class="supplier-details">
+              <p><strong>Contact:</strong> {{ supplier.contactPerson }}</p>
+              <p><strong>Phone:</strong> {{ supplier.phoneNumber }}</p>
+              <p><strong>Email:</strong> {{ supplier.email }}</p>
+              <p><strong>Materials Available:</strong> {{ supplier.materials?.length || 0 }} types</p>
+              <p *ngIf="supplier.distance">
+                <strong>Distance:</strong> {{ supplier.distance.toFixed(1) }} km
+              </p>
+            </div>
+          </div>
+          
+          <div class="supplier-select">
+            <label class="checkbox-container">
+              <input 
+                type="checkbox" 
+                [checked]="selectedSuppliers[supplier.id]"
+                (change)="selectedSuppliers[supplier.id] = $event.target.checked">
+              <span class="checkmark"></span>
+              <span class="checkbox-label">Select Supplier</span>
+            </label>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="actions-section">
+      <button (click)="currentStep = 3" class="btn btn-secondary">Back to Materials</button>
+      <button 
+        *ngIf="nearbySuppliers.length > 0"
+        (click)="sendQuotationRequests()" 
+        [disabled]="loading || getSelectedSupplierIds().length === 0"
+        class="btn btn-primary">
+        {{ loading ? 'Sending...' : 'Send Quotation Requests (' + getSelectedSupplierIds().length + ' suppliers)' }}
+      </button>
+    </div>
+
+    <!-- Results Display -->
+    <div *ngIf="quotationResult" class="results-section">
+      <div [class]="quotationResult.success ? 'success-message' : 'error-message'">
+        <h3>{{ quotationResult.success ? 'Success!' : 'Partial Success' }}</h3>
+        <p>{{ quotationResult.sentCount || 0 }} quotation requests sent successfully</p>
+        <p *ngIf="quotationResult.failedCount > 0">{{ quotationResult.failedCount }} requests failed</p>
+        
+        <div class="next-steps">
+          <h4>Next Steps:</h4>
+          <ul>
+            <li>Suppliers will receive notification to submit quotes</li>
+            <li>You can track responses in your dashboard</li>
+            <li>Quotes will be available until the deadline</li>
+          </ul>
+        </div>
+        
+        <button (click)="resetWorkflow()" class="btn btn-primary">
+          Start New Quotation Request
+        </button>
+      </div>
+    </div>
+  </div>
+</div>

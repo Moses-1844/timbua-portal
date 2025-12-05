@@ -1,0 +1,316 @@
+<div class="contractor-profile-container">
+  <!-- Loading State -->
+  <div *ngIf="isLoading" class="loading-state">
+    <div class="loading-spinner"></div>
+    <p>Loading your profile...</p>
+  </div>
+
+  <!-- Error Message -->
+  <div *ngIf="errorMessage" class="error-message">
+    <span class="error-icon">⚠️</span>
+    {{ errorMessage }}
+    <button class="retry-btn" (click)="loadContractorProfile()">Retry</button>
+  </div>
+
+  <!-- Success Message -->
+  <div *ngIf="successMessage" class="success-message">
+    <span class="success-icon">✅</span>
+    {{ successMessage }}
+  </div>
+
+  <!-- Profile Content -->
+  <div *ngIf="contractor && !isLoading" class="profile-content">
+    <!-- Header Section -->
+    <div class="profile-header">
+      <div class="header-info">
+        <h1>{{ contractor.companyName }}</h1>
+        <div class="header-meta">
+          <span [class]="getStatusBadgeClass(contractor.status)">
+            {{ contractor.status }}
+          </span>
+          <span [class]="getVerificationBadgeClass(contractor.isVerified)">
+            {{ contractor.isVerified ? 'Verified' : 'Not Verified' }}
+          </span>
+          <span class="registration-date">
+            Registered: {{ formatDate(contractor.registrationDate) }}
+          </span>
+        </div>
+      </div>
+      <div class="header-actions">
+        <button 
+          *ngIf="!isEditing" 
+          (click)="toggleEdit()" 
+          class="edit-btn"
+        >
+          ✏️ Edit Profile
+        </button>
+        <div *ngIf="isEditing" class="edit-actions">
+          <button 
+            (click)="saveProfile()" 
+            [disabled]="isSubmitting"
+            class="save-btn"
+          >
+            {{ isSubmitting ? 'Saving...' : '💾 Save' }}
+          </button>
+          <button 
+            (click)="cancelEdit()" 
+            [disabled]="isSubmitting"
+            class="cancel-btn"
+          >
+            ❌ Cancel
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Profile Sections -->
+    <div class="profile-sections">
+      <!-- Company Information -->
+      <div class="profile-section">
+        <h2>🏢 Company Information</h2>
+        <div class="section-content">
+          <div class="info-grid">
+            <div class="info-item">
+              <label>Company Name</label>
+              <div *ngIf="!isEditing" class="info-value">{{ contractor.companyName }}</div>
+              <input 
+                *ngIf="isEditing" 
+                [(ngModel)]="contractor.companyName" 
+                class="edit-input"
+                placeholder="Company Name"
+              >
+            </div>
+
+            <div class="info-item">
+              <label>Contact Person</label>
+              <div *ngIf="!isEditing" class="info-value">{{ contractor.contactPerson }}</div>
+              <input 
+                *ngIf="isEditing" 
+                [(ngModel)]="contractor.contactPerson" 
+                class="edit-input"
+                placeholder="Contact Person"
+              >
+            </div>
+
+            <div class="info-item">
+              <label>Email</label>
+              <div class="info-value">{{ contractor.email }}</div>
+              <small class="read-only-note">Email cannot be changed</small>
+            </div>
+
+            <div class="info-item">
+              <label>Phone Number</label>
+              <div *ngIf="!isEditing" class="info-value">{{ contractor.phoneNumber }}</div>
+              <input 
+                *ngIf="isEditing" 
+                [(ngModel)]="contractor.phoneNumber" 
+                class="edit-input"
+                placeholder="Phone Number"
+                type="tel"
+              >
+            </div>
+
+            <div class="info-item">
+              <label>Business Registration</label>
+              <div *ngIf="!isEditing" class="info-value">{{ contractor.businessRegistrationNumber }}</div>
+              <input 
+                *ngIf="isEditing" 
+                [(ngModel)]="contractor.businessRegistrationNumber" 
+                class="edit-input"
+                placeholder="Business Registration Number"
+              >
+            </div>
+
+            <div class="info-item">
+              <label>License Number</label>
+              <div *ngIf="!isEditing" class="info-value">{{ contractor.licenseNumber }}</div>
+              <input 
+                *ngIf="isEditing" 
+                [(ngModel)]="contractor.licenseNumber" 
+                class="edit-input"
+                placeholder="License Number"
+              >
+            </div>
+          </div>
+
+          <div class="info-item full-width">
+            <label>Physical Address</label>
+            <div *ngIf="!isEditing" class="info-value">{{ contractor.physicalAddress }}</div>
+            <textarea 
+              *ngIf="isEditing" 
+              [(ngModel)]="contractor.physicalAddress" 
+              class="edit-textarea"
+              placeholder="Physical Address"
+              rows="3"
+            ></textarea>
+          </div>
+        </div>
+      </div>
+
+      <!-- Professional Details -->
+      <div class="profile-section">
+        <h2>👷 Professional Details</h2>
+        <div class="section-content">
+          <div class="info-grid">
+            <div class="info-item">
+              <label>Specialization</label>
+              <div *ngIf="!isEditing" class="info-value">{{ contractor.specialization }}</div>
+              <select 
+                *ngIf="isEditing" 
+                [(ngModel)]="contractor.specialization" 
+                class="edit-select"
+              >
+                <option value="">Select Specialization</option>
+                <option *ngFor="let spec of specializations" [value]="spec">
+                  {{ spec }}
+                </option>
+              </select>
+            </div>
+
+            <div class="info-item">
+              <label>Years of Experience</label>
+              <div *ngIf="!isEditing" class="info-value">{{ contractor.yearsOfExperience }} years</div>
+              <input 
+                *ngIf="isEditing" 
+                [(ngModel)]="contractor.yearsOfExperience" 
+                class="edit-input"
+                type="number"
+                min="0"
+                max="50"
+                placeholder="Years of Experience"
+              >
+            </div>
+
+            <div class="info-item">
+              <label>Account Status</label>
+              <div [class]="getStatusBadgeClass(contractor.status)">
+                {{ contractor.status }}
+              </div>
+            </div>
+
+            <div class="info-item">
+              <label>Verification Status</label>
+              <div [class]="getVerificationBadgeClass(contractor.isVerified)">
+                {{ contractor.isVerified ? 'Verified' : 'Pending Verification' }}
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Documents Section -->
+      <div class="profile-section">
+        <h2>📄 Documents</h2>
+        <div class="section-content">
+          <div *ngIf="contractor.documents.length === 0" class="empty-state">
+            <p>No documents uploaded yet.</p>
+          </div>
+          
+          <div *ngIf="contractor.documents.length > 0" class="documents-grid">
+            <div *ngFor="let doc of contractor.documents" class="document-card">
+              <div class="document-icon">📎</div>
+              <div class="document-info">
+                <h4>{{ doc.documentName }}</h4>
+                <p class="document-type">{{ doc.documentType }}</p>
+                <p class="document-meta">
+                  {{ formatFileSize(doc.fileSize) }} • 
+                  <span [class]="getDocumentStatusBadgeClass(doc.status)">
+                    {{ doc.status }}
+                  </span>
+                </p>
+              </div>
+              <button 
+                (click)="downloadDocument(doc)" 
+                class="download-btn"
+                [disabled]="!doc.documentUrl"
+              >
+                📥 Download
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Construction Sites -->
+      <div class="profile-section">
+        <h2>🏗️ Construction Sites</h2>
+        <div class="section-content">
+          <div *ngIf="contractor.constructionSites.length === 0" class="empty-state">
+            <p>No construction sites added yet.</p>
+          </div>
+          
+          <div *ngIf="contractor.constructionSites.length > 0" class="sites-grid">
+            <div *ngFor="let site of contractor.constructionSites" class="site-card">
+              <div class="site-header">
+                <h4>{{ site.name }}</h4>
+                <span [class]="getSiteStatusBadgeClass(site.status)">
+                  {{ site.status }}
+                </span>
+              </div>
+              <p class="site-location">📍 {{ site.location }}</p>
+              <div class="site-details">
+                <div class="site-detail">
+                  <strong>Type:</strong> {{ site.type }}
+                </div>
+                <div class="site-detail">
+                  <strong>Estimated Cost:</strong> KES {{ site.estimatedCost | number }}
+                </div>
+                <div class="site-detail">
+                  <strong>Start Date:</strong> {{ formatDate(site.startDate) }}
+                </div>
+                <div class="site-detail">
+                  <strong>End Date:</strong> {{ formatDate(site.endDate) }}
+                </div>
+              </div>
+              <div class="progress-section">
+                <div class="progress-label">
+                  <span>Progress</span>
+                  <span>{{ site.progress }}%</span>
+                </div>
+                <div class="progress-bar">
+                  <div 
+                    class="progress-fill" 
+                    [class]="getProgressColor(site.progress)"
+                    [style.width.%]="site.progress"
+                  ></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Quotation Requests -->
+      <div class="profile-section">
+        <h2>📋 Quotation Requests</h2>
+        <div class="section-content">
+          <div *ngIf="contractor.quotationRequests.length === 0" class="empty-state">
+            <p>No quotation requests yet.</p>
+          </div>
+          
+          <div *ngIf="contractor.quotationRequests.length > 0" class="quotations-grid">
+            <div *ngFor="let quote of contractor.quotationRequests" class="quotation-card">
+              <div class="quotation-header">
+                <h4>{{ quote.material }}</h4>
+                <span [class]="getStatusBadgeClass(quote.status)">
+                  {{ quote.status }}
+                </span>
+              </div>
+              <div class="quotation-details">
+                <div class="quotation-detail">
+                  <strong>Quantity:</strong> {{ quote.quantity }} {{ quote.unit }}
+                </div>
+                <div class="quotation-detail">
+                  <strong>Deadline:</strong> {{ formatDate(quote.deadline) }}
+                </div>
+                <div class="quotation-detail">
+                  <strong>Quotes Received:</strong> {{ quote.quotes.length }}
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

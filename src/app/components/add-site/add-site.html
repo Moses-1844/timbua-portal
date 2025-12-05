@@ -1,0 +1,568 @@
+<div class="add-material-container">
+  <div class="header">
+    <h1><i class="fas fa-warehouse"></i> Add New Material Site</h1>
+    <p class="subtitle">Register your construction material supply location</p>
+  </div>
+
+  <form #materialForm="ngForm" (ngSubmit)="submitMaterialSite()" class="material-form">
+    
+    <!-- Basic Information Section -->
+    <div class="form-section">
+      <h2><i class="fas fa-info-circle"></i> Basic Information</h2>
+      
+      <div class="form-grid">
+        <!-- Site Name -->
+        <div class="form-group">
+          <label for="siteName">
+            <i class="fas fa-sitemap"></i> Site Name *
+          </label>
+          <input type="text" 
+                 id="siteName" 
+                 name="siteName"
+                 [(ngModel)]="materialSite.siteName" 
+                 required
+                 placeholder="e.g., Nairobi Cement Depot"
+                 class="form-control">
+        </div>
+
+        <!-- Material Category -->
+        <div class="form-group">
+          <label for="materialCategory">
+            <i class="fas fa-tags"></i> Material Category *
+          </label>
+          <select id="materialCategory" 
+                  name="materialCategory"
+                  [(ngModel)]="materialSite.materialCategory" 
+                  required
+                  class="form-control">
+            <option value="">Select Category</option>
+            <option *ngFor="let category of materialCategories" [value]="category">
+              {{category}}
+            </option>
+          </select>
+        </div>
+
+        <!-- Material Name -->
+        <div class="form-group">
+          <label for="material">
+            <i class="fas fa-box"></i> Material Name *
+          </label>
+          <input type="text" 
+                 id="material" 
+                 name="material"
+                 [(ngModel)]="materialSite.material" 
+                 required
+                 placeholder="e.g., Portland Cement, Steel Bars"
+                 class="form-control">
+        </div>
+
+        <!-- Description -->
+        <div class="form-group full-width">
+          <label for="description">
+            <i class="fas fa-file-alt"></i> Description
+          </label>
+          <textarea id="description" 
+                    name="description"
+                    [(ngModel)]="materialSite.description" 
+                    rows="3"
+                    placeholder="Brief description of the material and site..."
+                    class="form-control"></textarea>
+        </div>
+      </div>
+    </div>
+
+    <!-- Capacity & Pricing Section -->
+    <div class="form-section">
+      <h2><i class="fas fa-chart-line"></i> Capacity & Pricing</h2>
+      
+      <div class="form-grid">
+        <!-- Total Capacity -->
+        <div class="form-group">
+          <label for="totalCapacity">
+            <i class="fas fa-weight-hanging"></i> Total Capacity *
+          </label>
+          <div class="input-with-unit">
+            <input type="number" 
+                   id="totalCapacity" 
+                   name="totalCapacity"
+                   [(ngModel)]="materialSite.capacity.total" 
+                   (change)="onTotalCapacityChange()"
+                   min="0"
+                   step="0.01"
+                   required
+                   class="form-control">
+            <select [(ngModel)]="materialSite.capacity.unit" 
+                    name="capacityUnit"
+                    class="unit-select">
+              <option *ngFor="let unit of unitTypes" [value]="unit">
+                {{getUnitLabel(unit)}}
+              </option>
+            </select>
+          </div>
+        </div>
+
+        <!-- Available Capacity -->
+        <div class="form-group">
+          <label for="availableCapacity">
+            <i class="fas fa-box-open"></i> Available Capacity *
+          </label>
+          <input type="number" 
+                 id="availableCapacity" 
+                 name="availableCapacity"
+                 [(ngModel)]="materialSite.capacity.available" 
+                 [max]="materialSite.capacity.total"
+                 min="0"
+                 step="0.01"
+                 required
+                 class="form-control">
+          <small class="unit-label">{{getUnitLabel(materialSite.capacity.unit)}} available</small>
+        </div>
+
+        <!-- Price per Unit -->
+        <div class="form-group">
+          <label for="pricePerUnit">
+            <i class="fas fa-money-bill-wave"></i> Price per Unit *
+          </label>
+          <div class="input-with-currency">
+            <select [(ngModel)]="materialSite.pricing.currency" 
+                    name="currency"
+                    class="currency-select">
+              <option value="KSH">KSH</option>
+              <option value="USD">USD</option>
+            </select>
+            <input type="number" 
+                   id="pricePerUnit" 
+                   name="pricePerUnit"
+                   [(ngModel)]="materialSite.pricing.pricePerUnit" 
+                   min="0"
+                   step="0.01"
+                   required
+                   class="form-control">
+            <span class="unit-label">/ {{materialSite.pricing.unit || 'unit'}}</span>
+          </div>
+        </div>
+
+        <!-- Unit Type -->
+        <div class="form-group">
+          <label for="pricingUnit">
+            <i class="fas fa-balance-scale"></i> Pricing Unit *
+          </label>
+          <select id="pricingUnit" 
+                  name="pricingUnit"
+                  [(ngModel)]="materialSite.pricing.unit" 
+                  required
+                  class="form-control">
+            <option value="">Select Unit</option>
+            <option *ngFor="let unit of unitTypes" [value]="unit">
+              {{getUnitLabel(unit)}}
+            </option>
+          </select>
+        </div>
+
+        <!-- Minimum Order -->
+        <div class="form-group">
+          <label for="minOrder">
+            <i class="fas fa-shopping-cart"></i> Minimum Order
+          </label>
+          <input type="number" 
+                 id="minOrder" 
+                 name="minOrder"
+                 [(ngModel)]="materialSite.pricing.minOrder" 
+                 min="0"
+                 step="0.01"
+                 class="form-control">
+          <small class="unit-label">Minimum order quantity</small>
+        </div>
+
+        <!-- Delivery Time -->
+        <div class="form-group">
+          <label for="deliveryTime">
+            <i class="fas fa-truck"></i> Delivery Time
+          </label>
+          <select id="deliveryTime" 
+                  name="deliveryTime"
+                  [(ngModel)]="materialSite.deliveryTime" 
+                  class="form-control">
+            <option value="">Select Delivery Time</option>
+            <option *ngFor="let time of deliveryTimes" [value]="time">
+              {{time}}
+            </option>
+          </select>
+        </div>
+      </div>
+    </div>
+
+    <!-- Location Section -->
+    <div class="form-section">
+      <h2><i class="fas fa-map-marker-alt"></i> Location Information</h2>
+      
+      <!-- Location Search -->
+      <div class="form-group full-width">
+        <label>
+          <i class="fas fa-search"></i> Search Location
+        </label>
+        <div class="search-container">
+          <input type="text" 
+                 #locationSearch
+                 [(ngModel)]="searchQuery"
+                 name="searchQuery"
+                 (input)="filterCounties(searchQuery)"
+                 (focus)="showSearchResults = true"
+                 placeholder="Search for county, sub-county, or town..."
+                 class="form-control search-input">
+          <button type="button" 
+                  class="btn btn-secondary search-btn"
+                  (click)="searchOnMap(searchQuery)">
+            <i class="fas fa-search"></i>
+          </button>
+        </div>
+        
+        <!-- Search Results Dropdown -->
+        <div *ngIf="showSearchResults && searchQuery" class="search-results">
+          <div *ngFor="let county of filteredCounties" class="search-result-item">
+            <div class="county-item" (click)="selectLocation(county)">
+              <i class="fas fa-map-pin"></i>
+              <strong>{{county.name}} County</strong>
+            </div>
+            <div *ngFor="let subCounty of county.subCounties" 
+                 class="subcounty-item"
+                 (click)="selectLocation(county, subCounty)">
+              <i class="fas fa-map-marker-alt"></i>
+              {{subCounty.name}}
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="form-grid">
+        <!-- County Selection -->
+        <div class="form-group">
+          <label for="county">
+            <i class="fas fa-flag"></i> County *
+          </label>
+          <select id="county" 
+                  name="county"
+                  [(ngModel)]="materialSite.county" 
+                  (change)="onCountyChange()"
+                  required
+                  class="form-control">
+            <option value="">Select County</option>
+            <option *ngFor="let county of counties" [value]="county.name">
+              {{county.name}}
+            </option>
+          </select>
+        </div>
+
+        <!-- Sub-County Selection -->
+        <div class="form-group">
+          <label for="subCounty">
+            <i class="fas fa-map"></i> Sub-County
+          </label>
+          <select id="subCounty" 
+                  name="subCounty"
+                  [(ngModel)]="materialSite.subCounty" 
+                  (change)="onSubCountyChange()"
+                  [disabled]="!materialSite.county"
+                  class="form-control">
+            <option value="">Select Sub-County</option>
+            <option *ngFor="let subCounty of availableSubCounties" [value]="subCounty.name">
+              {{subCounty.name}}
+            </option>
+          </select>
+        </div>
+
+        <!-- Specific Location -->
+        <div class="form-group full-width">
+          <label for="materialLocation">
+            <i class="fas fa-location-dot"></i> Specific Location/Address *
+          </label>
+          <input type="text" 
+                 id="materialLocation" 
+                 name="materialLocation"
+                 [(ngModel)]="materialSite.materialLocation" 
+                 required
+                 placeholder="e.g., Industrial Area, Mombasa Road"
+                 class="form-control">
+          <small *ngIf="currentLocationName" class="location-preview">
+            <i class="fas fa-check-circle"></i> {{currentLocationName}}
+          </small>
+        </div>
+      </div>
+
+      <!-- Coordinates and Map Section -->
+      <div class="coordinates-section">
+        <h3><i class="fas fa-globe"></i> Geographic Coordinates</h3>
+        
+        <div class="coordinates-controls">
+          <div class="coordinate-inputs">
+            <div class="coord-input">
+              <label>Latitude</label>
+              <input type="number" 
+                     [(ngModel)]="materialSite.latitude" 
+                     name="latitude"
+                     (change)="onCoordinatesChange()"
+                     step="0.000001"
+                     placeholder="e.g., -1.286389"
+                     class="form-control">
+            </div>
+            <div class="coord-input">
+              <label>Longitude</label>
+              <input type="number" 
+                     [(ngModel)]="materialSite.longitude" 
+                     name="longitude"
+                     (change)="onCoordinatesChange()"
+                     step="0.000001"
+                     placeholder="e.g., 36.817223"
+                     class="form-control">
+            </div>
+          </div>
+          
+          <div class="map-buttons">
+            <button type="button" 
+                    class="btn btn-outline-primary"
+                    (click)="useCurrentLocation()">
+              <i class="fas fa-location-crosshairs"></i> Use Current Location
+            </button>
+            <button type="button" 
+                    class="btn btn-outline-secondary"
+                    (click)="openMapModal()">
+              <i class="fas fa-map"></i> Open Map
+            </button>
+          </div>
+        </div>
+
+        <!-- Map Preview -->
+        <div *ngIf="showMapPreview" class="map-preview">
+          <div class="map-preview-header">
+            <h4>Location Preview</h4>
+            <small>Coordinates: {{materialSite.latitude?.toFixed(6) || '0.000000'}}, {{materialSite.longitude?.toFixed(6) || '0.000000'}}</small>
+          </div>
+          <div class="mini-map" #mapPreviewContainer></div>
+          <small class="map-hint">Click "Open Map" above to select or adjust location</small>
+        </div>
+      </div>
+    </div>
+
+    <!-- Supplier Information Section -->
+    <div class="form-section">
+      <h2><i class="fas fa-user-tie"></i> Supplier Information</h2>
+      
+      <div class="form-grid">
+        <!-- Supplier/Owner Name -->
+        <div class="form-group">
+          <label for="ownerOfMaterial">
+            <i class="fas fa-building"></i> Supplier/Owner Name *
+          </label>
+          <input type="text" 
+                 id="ownerOfMaterial" 
+                 name="ownerOfMaterial"
+                 [(ngModel)]="materialSite.ownerOfMaterial" 
+                 required
+                 placeholder="Company or individual name"
+                 class="form-control">
+        </div>
+
+        <!-- Contact Phone -->
+        <div class="form-group">
+          <label for="contact">
+            <i class="fas fa-phone"></i> Contact Phone *
+          </label>
+          <input type="tel" 
+                 id="contact" 
+                 name="contact"
+                 [(ngModel)]="materialSite.contact" 
+                 required
+                 placeholder="e.g., +254 712 345 678"
+                 class="form-control">
+        </div>
+
+        <!-- Industry Size -->
+        <div class="form-group">
+          <label for="sizeOfManufacturingIndustry">
+            <i class="fas fa-industry"></i> Industry Size
+          </label>
+          <select id="sizeOfManufacturingIndustry" 
+                  name="sizeOfManufacturingIndustry"
+                  [(ngModel)]="materialSite.sizeOfManufacturingIndustry" 
+                  class="form-control">
+            <option value="">Select Size</option>
+            <option *ngFor="let size of industrySizes" [value]="size">
+              {{size}}
+            </option>
+          </select>
+        </div>
+
+        <!-- Period of Manufacture -->
+        <div class="form-group">
+          <label for="periodOfManufacture">
+            <i class="fas fa-calendar"></i> Years in Operation
+          </label>
+          <select id="periodOfManufacture" 
+                  name="periodOfManufacture"
+                  [(ngModel)]="materialSite.periodOfManufacture" 
+                  class="form-control">
+            <option value="">Select Period</option>
+            <option *ngFor="let period of periodsOfManufacture" [value]="period">
+              {{period}}
+            </option>
+          </select>
+        </div>
+      </div>
+
+      <!-- Additional Information -->
+      <div class="form-grid">
+        <div class="form-group">
+          <label for="numberOfPeopleEmployed">
+            <i class="fas fa-users"></i> Employees
+          </label>
+          <input type="text" 
+                 id="numberOfPeopleEmployed" 
+                 name="numberOfPeopleEmployed"
+                 [(ngModel)]="materialSite.numberOfPeopleEmployed" 
+                 placeholder="e.g., 5-10 employees"
+                 class="form-control">
+        </div>
+
+        <div class="form-group">
+          <label for="volumeProducedPerDay">
+            <i class="fas fa-chart-bar"></i> Daily Production
+          </label>
+          <input type="text" 
+                 id="volumeProducedPerDay" 
+                 name="volumeProducedPerDay"
+                 [(ngModel)]="materialSite.volumeProducedPerDay" 
+                 placeholder="e.g., 100 tons per day"
+                 class="form-control">
+        </div>
+
+        <div class="form-group">
+          <label for="materialUsedIn">
+            <i class="fas fa-hard-hat"></i> Primary Use
+          </label>
+          <input type="text" 
+                 id="materialUsedIn" 
+                 name="materialUsedIn"
+                 [(ngModel)]="materialSite.materialUsedIn" 
+                 placeholder="e.g., Construction, Manufacturing"
+                 class="form-control">
+        </div>
+
+        <div class="form-group">
+          <label for="materialUsage">
+            <i class="fas fa-truck-loading"></i> Usage Type
+          </label>
+          <input type="text" 
+                 id="materialUsage" 
+                 name="materialUsage"
+                 [(ngModel)]="materialSite.materialUsage" 
+                 placeholder="e.g., Commercial, Residential"
+                 class="form-control">
+        </div>
+      </div>
+
+      <!-- Comments -->
+      <div class="form-group full-width">
+        <label for="comments">
+          <i class="fas fa-comment"></i> Additional Comments
+        </label>
+        <textarea id="comments" 
+                  name="comments"
+                  [(ngModel)]="materialSite.comments" 
+                  rows="3"
+                  placeholder="Any additional information about the site..."
+                  class="form-control"></textarea>
+      </div>
+    </div>
+
+    <!-- Form Actions -->
+    <div class="form-actions">
+      <button type="button" 
+              class="btn btn-outline-danger"
+              (click)="cancel()">
+        <i class="fas fa-times"></i> Cancel
+      </button>
+      
+      <button type="button" 
+              class="btn btn-outline-secondary"
+              (click)="resetForm()">
+        <i class="fas fa-redo"></i> Reset
+      </button>
+      
+      <button type="submit" 
+              class="btn btn-primary"
+              [disabled]="!materialForm.valid || isSubmitting">
+        <i class="fas fa-save"></i> 
+        {{isSubmitting ? 'Registering...' : 'Register Material Site'}}
+      </button>
+    </div>
+  </form>
+
+  <!-- Map Modal -->
+  <div *ngIf="showMapModal" class="modal-overlay" (click)="closeMapModal()">
+    <div class="modal-content" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <h3>
+          <i class="fas fa-map-marked-alt"></i>
+          Select Location on Map
+        </h3>
+        <button type="button" class="close-btn" (click)="closeMapModal()">
+          <i class="fas fa-times"></i>
+        </button>
+      </div>
+      <div class="modal-body">
+        <div class="map-instructions">
+          <p>
+            <i class="fas fa-info-circle"></i>
+            <strong>Instructions:</strong> 
+            <br>1. Click anywhere on the map to place a marker
+            <br>2. Drag the marker to adjust position
+            <br>3. Use the search box in the top-right corner to find locations
+            <br>4. Click "Use Selected Location" when done
+          </p>
+          <div class="current-coordinates">
+            <strong>Current Coordinates:</strong>
+            {{materialSite.latitude?.toFixed(6) || '0.000000'}}, {{materialSite.longitude?.toFixed(6) || '0.000000'}}
+            <br>
+            <strong>Location:</strong> {{currentLocationName || 'Not set'}}
+          </div>
+        </div>
+        <div class="modal-map-container" #modalMapContainer></div>
+        <div class="map-actions">
+          <button type="button" 
+                  class="btn btn-primary"
+                  (click)="closeMapModal()">
+            <i class="fas fa-check"></i> Use Selected Location
+          </button>
+          <button type="button" 
+                  class="btn btn-outline-secondary"
+                  (click)="useCurrentLocation()">
+            <i class="fas fa-location-crosshairs"></i> Use My Location
+          </button>
+          <button type="button" 
+                  class="btn btn-outline-danger"
+                  (click)="closeMapModal()">
+            <i class="fas fa-times"></i> Cancel
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Error Message -->
+  <div *ngIf="errorMessage" class="alert alert-danger">
+    {{errorMessage}}
+  </div>
+
+  <!-- Debug Panel (Optional) -->
+  <div *ngIf="showDebug" class="debug-panel">
+    <h4>Debug Information</h4>
+    <div class="debug-info">
+      <p><strong>Form Valid:</strong> {{materialForm.valid ? 'Yes' : 'No'}}</p>
+      <p><strong>Coordinates:</strong> {{materialSite.latitude}}, {{materialSite.longitude}}</p>
+      <p><strong>Location Name:</strong> {{currentLocationName || 'Not set'}}</p>
+      <p><strong>Available Sub-Counties:</strong> {{availableSubCounties.length}}</p>
+      <p><strong>Map Initialized:</strong> {{mapInitialized ? 'Yes' : 'No'}}</p>
+      <p><strong>Has Preview Map:</strong> {{previewMap ? 'Yes' : 'No'}}</p>
+    </div>
+  </div>
+</div>

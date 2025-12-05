@@ -1,0 +1,226 @@
+<div class="profile-container">
+  <div class="profile-header">
+    <h1>My Profile</h1>
+    <button class="btn-back" (click)="goBack()">← Back</button>
+  </div>
+
+  <div *ngIf="successMessage" class="success-message">
+    {{ successMessage }}
+  </div>
+  <div *ngIf="errorMessage" class="error-message">
+    {{ errorMessage }}
+  </div>
+
+  <div class="profile-card">
+    <div class="card-header">
+      <h2>Account Information</h2>
+      <button 
+        class="btn-edit"
+        (click)="toggleEdit()"
+        [disabled]="isLoading"
+      >
+        {{ isEditing ? 'Cancel' : 'Edit Profile' }}
+      </button>
+    </div>
+
+    <form class="profile-form" [class.editing]="isEditing">
+      <div class="form-section">
+        <h3>Basic Information</h3>
+        
+        <div class="form-group">
+          <label>Account Type</label>
+          <div class="form-value" *ngIf="!isEditing">
+            {{ profileData.userType | uppercase }}
+          </div>
+          <select 
+            *ngIf="isEditing"
+            [(ngModel)]="profileData.userType" 
+            name="userType"
+            class="form-control"
+            disabled
+          >
+            <option value="contractor">Contractor</option>
+            <option value="supplier">Supplier</option>
+            <option value="admin">Admin</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label>Company Name *</label>
+          <div class="form-value" *ngIf="!isEditing">
+            {{ profileData.companyName }}
+          </div>
+          <input 
+            *ngIf="isEditing"
+            type="text" 
+            [(ngModel)]="profileData.companyName" 
+            name="companyName"
+            class="form-control"
+            placeholder="Enter company name"
+          />
+        </div>
+
+        <div class="form-group">
+          <label>Contact Person *</label>
+          <div class="form-value" *ngIf="!isEditing">
+            {{ profileData.contactPerson }}
+          </div>
+          <input 
+            *ngIf="isEditing"
+            type="text" 
+            [(ngModel)]="profileData.contactPerson" 
+            name="contactPerson"
+            class="form-control"
+            placeholder="Full name"
+          />
+        </div>
+
+        <div class="form-group">
+          <label>Email *</label>
+          <div class="form-value" *ngIf="!isEditing">
+            {{ profileData.email }}
+          </div>
+          <input 
+            *ngIf="isEditing"
+            type="email" 
+            [(ngModel)]="profileData.email" 
+            name="email"
+            class="form-control"
+            placeholder="Email address"
+          />
+        </div>
+
+        <div class="form-group">
+          <label>Phone</label>
+          <div class="form-value" *ngIf="!isEditing">
+            {{ profileData.phone || 'Not provided' }}
+          </div>
+          <input 
+            *ngIf="isEditing"
+            type="tel" 
+            [(ngModel)]="profileData.phone" 
+            name="phone"
+            class="form-control"
+            placeholder="Phone number"
+          />
+        </div>
+      </div>
+
+      <div class="form-section">
+        <h3>Location</h3>
+        
+        <div class="form-group">
+          <label>Address</label>
+          <div class="form-value" *ngIf="!isEditing">
+            {{ profileData.address || 'Not provided' }}
+          </div>
+          <input 
+            *ngIf="isEditing"
+            type="text" 
+            [(ngModel)]="profileData.address" 
+            name="address"
+            class="form-control"
+            placeholder="Street address"
+          />
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label>City</label>
+            <div class="form-value" *ngIf="!isEditing">
+              {{ profileData.city || 'Not provided' }}
+            </div>
+            <input 
+              *ngIf="isEditing"
+              type="text" 
+              [(ngModel)]="profileData.city" 
+              name="city"
+              class="form-control"
+              placeholder="City"
+            />
+          </div>
+
+          <div class="form-group">
+            <label>County</label>
+            <div class="form-value" *ngIf="!isEditing">
+              {{ profileData.county || 'Not provided' }}
+            </div>
+            <input 
+              *ngIf="isEditing"
+              type="text" 
+              [(ngModel)]="profileData.county" 
+              name="county"
+              class="form-control"
+              placeholder="County"
+            />
+          </div>
+
+          <div class="form-group">
+            <label>Postal Code</label>
+            <div class="form-value" *ngIf="!isEditing">
+              {{ profileData.postalCode || 'Not provided' }}
+            </div>
+            <input 
+              *ngIf="isEditing"
+              type="text" 
+              [(ngModel)]="profileData.postalCode" 
+              name="postalCode"
+              class="form-control"
+              placeholder="Postal code"
+            />
+          </div>
+        </div>
+      </div>
+
+      <div class="form-section" *ngIf="profileData.userType === 'supplier'">
+        <h3>Certification</h3>
+        
+        <div class="form-group">
+          <label>
+            <input 
+              type="checkbox" 
+              [(ngModel)]="profileData.kbrcCertified" 
+              name="kbrcCertified"
+              [disabled]="!isEditing"
+            />
+            KBRC Certified
+          </label>
+        </div>
+
+        <div class="form-group" *ngIf="profileData.kbrcCertified">
+          <label>Certification Number</label>
+          <div class="form-value" *ngIf="!isEditing">
+            {{ profileData.certificationNumber || 'Not provided' }}
+          </div>
+          <input 
+            *ngIf="isEditing"
+            type="text" 
+            [(ngModel)]="profileData.certificationNumber" 
+            name="certificationNumber"
+            class="form-control"
+            placeholder="Certification number"
+          />
+        </div>
+      </div>
+
+      <div class="form-actions" *ngIf="isEditing">
+        <button 
+          type="button" 
+          class="btn-save"
+          (click)="saveProfile()"
+          [disabled]="isLoading"
+        >
+          {{ isLoading ? 'Saving...' : 'Save Changes' }}
+        </button>
+        <button 
+          type="button" 
+          class="btn-cancel"
+          (click)="cancel()"
+          [disabled]="isLoading"
+        >
+          Cancel
+        </button>
+      </div>
+    </form>
+  </div>
+</div>

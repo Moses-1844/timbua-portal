@@ -27,7 +27,7 @@ import { environment } from '../../environments/environment';
 })
 export class MaterialService {
   private http = inject(HttpClient);
-  private apiUrl = `${environment.apiUrl}/material-sites`;
+  private apiUrl = `${environment.apiUrl}/api/material-sites`;
 
   getMaterials(): Observable<Material[]> {
     return this.http.get<Material[]>(this.apiUrl).pipe(

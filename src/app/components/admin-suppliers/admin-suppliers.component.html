@@ -1,0 +1,662 @@
+<div class="admin-suppliers-container">
+  <!-- Header -->
+  <div class="header">
+    <h2><i class="fas fa-truck-loading"></i> Suppliers & Material Sites Management</h2>
+    <p class="subtitle">Manage construction material suppliers and material production sites</p>
+  </div>
+
+  <!-- Tabs -->
+  <div class="tabs">
+    <button class="tab-btn" [class.active]="activeTab === 'suppliers'" (click)="activeTab = 'suppliers'">
+      <i class="fas fa-users"></i> Suppliers
+    </button>
+    <button class="tab-btn" [class.active]="activeTab === 'materialSites'" (click)="activeTab = 'materialSites'">
+      <i class="fas fa-hard-hat"></i> Material Sites
+    </button>
+    <button class="tab-btn" [class.active]="activeTab === 'reports'" (click)="activeTab = 'reports'">
+      <i class="fas fa-chart-bar"></i> Reports
+    </button>
+  </div>
+
+  <!-- Suppliers Tab -->
+  <div *ngIf="activeTab === 'suppliers'" class="tab-content">
+    <!-- Actions Bar -->
+    <div class="actions-bar">
+      <div class="search-filter">
+        <div class="search-box">
+          <i class="fas fa-search"></i>
+          <input 
+            type="text" 
+            placeholder="Search suppliers..." 
+            [(ngModel)]="searchTerm"
+            (input)="currentSupplierPage = 1">
+        </div>
+        
+        <select [(ngModel)]="supplierStatusFilter" (change)="currentSupplierPage = 1" class="status-filter">
+          <option value="ALL">All Status</option>
+          <option value="PENDING">Pending</option>
+          <option value="APPROVED">Verified</option>
+          <option value="REJECTED">Rejected</option>
+          <option value="SUSPENDED">Suspended</option>
+        </select>
+      </div>
+
+      <div class="action-buttons">
+        <button class="btn btn-primary" (click)="openSupplierModal()">
+          <i class="fas fa-plus"></i> Add Supplier
+        </button>
+        <button class="btn btn-secondary" (click)="exportSuppliersToCSV()">
+          <i class="fas fa-file-csv"></i> Export CSV
+        </button>
+        <button class="btn btn-secondary" (click)="exportSuppliersToPDF()">
+          <i class="fas fa-file-pdf"></i> Export PDF
+        </button>
+      </div>
+    </div>
+
+    <!-- Suppliers Table -->
+    <div class="table-container">
+      <table class="suppliers-table">
+        <thead>
+          <tr>
+            <th>Company</th>
+            <th>Contact Person</th>
+            <th>Email</th>
+            <th>Phone</th>
+            <th>Business Reg No</th>
+            <th>Status</th>
+            <th>Verified</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let supplier of paginatedSuppliers">
+            <td>
+              <div class="company-info">
+                <strong>{{ supplier.companyName }}</strong>
+                <small>{{ supplier.website || 'No website' }}</small>
+              </div>
+            </td>
+            <td>{{ supplier.contactPerson }}</td>
+            <td>{{ supplier.email }}</td>
+            <td>{{ supplier.phone }}</td>
+            <td>{{ supplier.businessRegistrationNumber }}</td>
+            <td>
+              <span class="status-badge" [ngClass]="getStatusClass(supplier.status)">
+                {{ supplier.status }}
+              </span>
+            </td>
+            <td>
+              <span class="verified-badge" [ngClass]="supplier.verified ? 'verified' : 'not-verified'">
+                {{ supplier.verified ? '✓ Verified' : '✗ Not Verified' }}
+              </span>
+            </td>
+            <td>
+              <div class="action-buttons">
+                <button class="btn-icon btn-view" (click)="openSupplierModal(supplier)" title="Edit">
+                  <i class="fas fa-edit"></i>
+                </button>
+                <button class="btn-icon btn-docs" (click)="viewDocuments(supplier)" title="View Documents">
+                  <i class="fas fa-file-alt"></i>
+                </button>
+                <button *ngIf="!supplier.verified" 
+                        class="btn-icon btn-verify" 
+                        (click)="verifySupplier(supplier.id, true)"
+                        title="Verify">
+                  <i class="fas fa-check-circle"></i>
+                </button>
+                <button *ngIf="supplier.verified" 
+                        class="btn-icon btn-reject" 
+                        (click)="verifySupplier(supplier.id, false)"
+                        title="Reject">
+                  <i class="fas fa-times-circle"></i>
+                </button>
+                <button class="btn-icon btn-delete" (click)="deleteSupplier(supplier.id)" title="Delete">
+                  <i class="fas fa-trash"></i>
+                </button>
+              </div>
+            </td>
+          </tr>
+          <tr *ngIf="paginatedSuppliers.length === 0">
+            <td colspan="8" class="no-data">
+              No suppliers found
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Pagination -->
+    <div class="pagination" *ngIf="totalSupplierPages > 1">
+      <button (click)="currentSupplierPage = currentSupplierPage - 1" [disabled]="currentSupplierPage === 1">
+        <i class="fas fa-chevron-left"></i> Previous
+      </button>
+      <span>Page {{ currentSupplierPage }} of {{ totalSupplierPages }}</span>
+      <button (click)="currentSupplierPage = currentSupplierPage + 1" [disabled]="currentSupplierPage === totalSupplierPages">
+        Next <i class="fas fa-chevron-right"></i>
+      </button>
+    </div>
+  </div>
+
+  <!-- Material Sites Tab -->
+  <div *ngIf="activeTab === 'materialSites'" class="tab-content">
+    <!-- Actions Bar -->
+    <div class="actions-bar">
+      <div class="search-filter">
+        <div class="search-box">
+          <i class="fas fa-search"></i>
+          <input 
+            type="text" 
+            placeholder="Search by material..." 
+            [(ngModel)]="materialFilter"
+            (input)="currentMaterialPage = 1">
+        </div>
+        
+        <div class="search-box">
+          <i class="fas fa-map-marker-alt"></i>
+          <input 
+            type="text" 
+            placeholder="Filter by county..." 
+            [(ngModel)]="countyFilter"
+            (input)="currentMaterialPage = 1">
+        </div>
+      </div>
+
+      <div class="action-buttons">
+        <button class="btn btn-primary" (click)="openMaterialSiteModal()">
+          <i class="fas fa-plus"></i> Add Site
+        </button>
+        <button class="btn btn-secondary" (click)="openBulkUploadModal()">
+          <i class="fas fa-upload"></i> Bulk Upload
+        </button>
+        <button class="btn btn-secondary" (click)="exportMaterialSitesToCSV()">
+          <i class="fas fa-file-csv"></i> Export CSV
+        </button>
+        <button class="btn btn-secondary" (click)="exportMaterialSitesToPDF()">
+          <i class="fas fa-file-pdf"></i> Export PDF
+        </button>
+      </div>
+    </div>
+
+    <!-- Material Sites Table -->
+    <div class="table-container">
+      <table class="material-sites-table">
+        <thead>
+          <tr>
+            <th>Material</th>
+            <th>Location</th>
+            <th>County</th>
+            <th>Sub-County</th>
+            <th>Owner</th>
+            <th>Volume/Day</th>
+            <th>Employees</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let site of paginatedMaterialSites">
+            <td>
+              <span class="material-badge" [style.background-color]="getMaterialColor(site.material)">
+                {{ site.material }}
+              </span>
+            </td>
+            <td>{{ site.materialLocation }}</td>
+            <td>{{ site.county }}</td>
+            <td>{{ site.subCounty }}</td>
+            <td>{{ site.ownerOfMaterial }}</td>
+            <td>{{ site.volumeProducedPerDay }}</td>
+            <td>{{ site.numberOfPeopleEmployed }}</td>
+            <td>
+              <div class="action-buttons">
+                <button class="btn-icon btn-view" (click)="editMaterialSite(site)" title="Edit">
+                  <i class="fas fa-edit"></i>
+                </button>
+                <button class="btn-icon btn-view" title="View Details" 
+                        (click)="viewMaterialSiteDetails(site)">
+                  <i class="fas fa-eye"></i>
+                </button>
+                <button class="btn-icon btn-delete" (click)="deleteMaterialSite(site.id)" title="Delete">
+                  <i class="fas fa-trash"></i>
+                </button>
+              </div>
+            </td>
+          </tr>
+          <tr *ngIf="paginatedMaterialSites.length === 0">
+            <td colspan="8" class="no-data">
+              No material sites found
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Pagination -->
+    <div class="pagination" *ngIf="totalMaterialPages > 1">
+      <button (click)="currentMaterialPage = currentMaterialPage - 1" [disabled]="currentMaterialPage === 1">
+        <i class="fas fa-chevron-left"></i> Previous
+      </button>
+      <span>Page {{ currentMaterialPage }} of {{ totalMaterialPages }}</span>
+      <button (click)="currentMaterialPage = currentMaterialPage + 1" [disabled]="currentMaterialPage === totalMaterialPages">
+        Next <i class="fas fa-chevron-right"></i>
+      </button>
+    </div>
+  </div>
+
+  <!-- Reports Tab -->
+  <div *ngIf="activeTab === 'reports'" class="tab-content">
+    <div class="reports-grid">
+      <div class="report-card">
+        <h3><i class="fas fa-chart-pie"></i> Suppliers Overview</h3>
+        <div class="stats">
+          <div class="stat-item">
+            <span class="stat-value">{{ suppliers.length }}</span>
+            <span class="stat-label">Total Suppliers</span>
+          </div>
+          <div class="stat-item">
+            <span class="stat-value">{{ verifiedSuppliersCount }}</span>
+            <span class="stat-label">Verified</span>
+          </div>
+          <div class="stat-item">
+            <span class="stat-value">{{ pendingSuppliersCount }}</span>
+            <span class="stat-label">Pending</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="report-card">
+        <h3><i class="fas fa-map-marked-alt"></i> Material Sites</h3>
+        <div class="stats">
+          <div class="stat-item">
+            <span class="stat-value">{{ materialSites.length }}</span>
+            <span class="stat-label">Total Sites</span>
+          </div>
+          <div class="stat-item">
+            <span class="stat-value">{{ uniqueMaterialsCount }}</span>
+            <span class="stat-label">Material Types</span>
+          </div>
+          <div class="stat-item">
+            <span class="stat-value">{{ uniqueCountiesCount }}</span>
+            <span class="stat-label">Counties</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="report-card full-width">
+        <h3><i class="fas fa-download"></i> Export Reports</h3>
+        <div class="export-options">
+          <button class="btn btn-secondary" (click)="exportSuppliersToCSV()">
+            <i class="fas fa-file-csv"></i> Suppliers CSV
+          </button>
+          <button class="btn btn-secondary" (click)="exportSuppliersToPDF()">
+            <i class="fas fa-file-pdf"></i> Suppliers PDF
+          </button>
+          <button class="btn btn-secondary" (click)="exportMaterialSitesToCSV()">
+            <i class="fas fa-file-csv"></i> Material Sites CSV
+          </button>
+          <button class="btn btn-secondary" (click)="exportMaterialSitesToPDF()">
+            <i class="fas fa-file-pdf"></i> Material Sites PDF
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Supplier Modal -->
+  <div class="modal-overlay" *ngIf="showSupplierModal">
+    <div class="modal">
+      <div class="modal-header">
+        <h3>{{ editMode ? 'Edit Supplier' : 'Add New Supplier' }}</h3>
+        <button class="close-btn" (click)="closeSupplierModal()">&times;</button>
+      </div>
+      <div class="modal-body">
+        <form (ngSubmit)="saveSupplier()">
+          <div class="form-group">
+            <label>Company Name *</label>
+            <input type="text" 
+                   [ngModel]="editMode ? (selectedSupplier?.companyName || '') : (newSupplier.companyName || '')"
+                   (ngModelChange)="editMode ? (selectedSupplier ? selectedSupplier.companyName = $event : null) : (newSupplier.companyName = $event)"
+                   name="companyName" 
+                   required>
+          </div>
+          
+          <div class="form-row">
+            <div class="form-group">
+              <label>Business Registration Number *</label>
+              <input type="text" 
+                     [ngModel]="editMode ? (selectedSupplier?.businessRegistrationNumber || '') : (newSupplier.businessRegistrationNumber || '')"
+                     (ngModelChange)="editMode ? (selectedSupplier ? selectedSupplier.businessRegistrationNumber = $event : null) : (newSupplier.businessRegistrationNumber = $event)"
+                     name="businessRegistrationNumber" 
+                     required>
+            </div>
+            <div class="form-group">
+              <label>Contact Person *</label>
+              <input type="text" 
+                     [ngModel]="editMode ? (selectedSupplier?.contactPerson || '') : (newSupplier.contactPerson || '')"
+                     (ngModelChange)="editMode ? (selectedSupplier ? selectedSupplier.contactPerson = $event : null) : (newSupplier.contactPerson = $event)"
+                     name="contactPerson" 
+                     required>
+            </div>
+          </div>
+          
+          <div class="form-row">
+            <div class="form-group">
+              <label>Email *</label>
+              <input type="email" 
+                     [ngModel]="editMode ? (selectedSupplier?.email || '') : (newSupplier.email || '')"
+                     (ngModelChange)="editMode ? (selectedSupplier ? selectedSupplier.email = $event : null) : (newSupplier.email = $event)"
+                     name="email" 
+                     required>
+            </div>
+            <div class="form-group">
+              <label>Phone *</label>
+              <input type="tel" 
+                     [ngModel]="editMode ? (selectedSupplier?.phone || '') : (newSupplier.phone || '')"
+                     (ngModelChange)="editMode ? (selectedSupplier ? selectedSupplier.phone = $event : null) : (newSupplier.phone = $event)"
+                     name="phone" 
+                     required>
+            </div>
+          </div>
+          
+          <div class="form-group">
+            <label>Website</label>
+            <input type="url" 
+                   [ngModel]="editMode ? (selectedSupplier?.website || '') : (newSupplier.website || '')"
+                   (ngModelChange)="editMode ? (selectedSupplier ? selectedSupplier.website = $event : null) : (newSupplier.website = $event)"
+                   name="website">
+          </div>
+          
+          <div class="form-group">
+            <label>Description</label>
+            <textarea [ngModel]="editMode ? (selectedSupplier?.description || '') : (newSupplier.description || '')"
+                      (ngModelChange)="editMode ? (selectedSupplier ? selectedSupplier.description = $event : null) : (newSupplier.description = $event)"
+                      name="description"
+                      rows="3"></textarea>
+          </div>
+          
+          <div class="form-row">
+            <div class="form-group">
+              <label>Years in Business</label>
+              <input type="number" 
+                     [ngModel]="editMode ? (selectedSupplier?.yearsInBusiness || 0) : (newSupplier.yearsInBusiness || 0)"
+                     (ngModelChange)="editMode ? (selectedSupplier ? selectedSupplier.yearsInBusiness = +$event : null) : (newSupplier.yearsInBusiness = +$event)"
+                     name="yearsInBusiness" 
+                     min="0">
+            </div>
+            <div class="form-group" *ngIf="!editMode">
+              <label>Password *</label>
+              <input type="password" 
+                     [(ngModel)]="newSupplier.password"
+                     name="password" 
+                     required
+                     placeholder="Default password will be generated">
+            </div>
+          </div>
+          
+          <div class="form-actions">
+            <button type="button" class="btn btn-secondary" (click)="closeSupplierModal()">Cancel</button>
+            <button type="submit" class="btn btn-primary">Save Supplier</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- Documents Modal -->
+  <div class="modal-overlay" *ngIf="showDocumentsModal">
+    <div class="modal modal-wide">
+      <div class="modal-header">
+        <h3>Documents - {{ selectedSupplier?.companyName }}</h3>
+        <button class="close-btn" (click)="showDocumentsModal = false">&times;</button>
+      </div>
+      <div class="modal-body">
+        <div class="upload-section">
+          <h4>Upload New Document</h4>
+          <input type="file" (change)="onFileSelected($event)" accept=".pdf,.doc,.docx,.jpg,.png">
+          <button class="btn btn-primary" (click)="uploadDocument()" [disabled]="!selectedFile">
+            <i class="fas fa-upload"></i> Upload
+          </button>
+        </div>
+        
+        <div class="documents-list">
+          <h4>Existing Documents</h4>
+          <div *ngFor="let doc of supplierDocuments" class="document-item">
+            <div class="document-info">
+              <h5>{{ doc.fileName }}</h5>
+              <p>{{ doc.fileType }} • Uploaded: {{ doc.uploadedAt | date:'short' }}</p>
+            </div>
+            <div class="document-actions">
+              <a [href]="doc.url" target="_blank" class="btn-icon" *ngIf="doc.url">
+                <i class="fas fa-eye"></i> View
+              </a>
+              <a [href]="doc.url" download class="btn-icon" *ngIf="doc.url">
+                <i class="fas fa-download"></i> Download
+              </a>
+            </div>
+          </div>
+          <div *ngIf="supplierDocuments.length === 0" class="no-documents">
+            No documents uploaded yet.
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Material Site Modal -->
+  <div class="modal-overlay" *ngIf="showMaterialSiteModal">
+    <div class="modal modal-wide">
+      <div class="modal-header">
+        <h3>Add Material Site</h3>
+        <button class="close-btn" (click)="closeMaterialSiteModal()">&times;</button>
+      </div>
+      <div class="modal-body">
+        <form (ngSubmit)="saveMaterialSite()">
+          <div class="form-row">
+            <div class="form-group">
+              <label>Material *</label>
+              <input type="text" [(ngModel)]="newMaterialSite.material" name="material" required>
+            </div>
+            <div class="form-group">
+              <label>Location *</label>
+              <input type="text" [(ngModel)]="newMaterialSite.materialLocation" name="materialLocation" required>
+            </div>
+          </div>
+          
+          <div class="form-row">
+            <div class="form-group">
+              <label>County *</label>
+              <input type="text" [(ngModel)]="newMaterialSite.county" name="county" required>
+            </div>
+            <div class="form-group">
+              <label>Sub-County</label>
+              <input type="text" [(ngModel)]="newMaterialSite.subCounty" name="subCounty">
+            </div>
+          </div>
+          
+          <div class="form-row">
+            <div class="form-group">
+              <label>Latitude</label>
+              <input type="number" step="any" [(ngModel)]="newMaterialSite.latitude" name="latitude">
+            </div>
+            <div class="form-group">
+              <label>Longitude</label>
+              <input type="number" step="any" [(ngModel)]="newMaterialSite.longitude" name="longitude">
+            </div>
+          </div>
+          
+          <div class="form-group">
+            <label>Owner of Material</label>
+            <input type="text" [(ngModel)]="newMaterialSite.ownerOfMaterial" name="ownerOfMaterial">
+          </div>
+          
+          <div class="form-row">
+            <div class="form-group">
+              <label>Material Used In</label>
+              <input type="text" [(ngModel)]="newMaterialSite.materialUsedIn" name="materialUsedIn">
+            </div>
+            <div class="form-group">
+              <label>Material Usage</label>
+              <input type="text" [(ngModel)]="newMaterialSite.materialUsage" name="materialUsage">
+            </div>
+          </div>
+          
+          <div class="form-row">
+            <div class="form-group">
+              <label>Volume Produced Per Day</label>
+              <input type="text" [(ngModel)]="newMaterialSite.volumeProducedPerDay" name="volumeProducedPerDay">
+            </div>
+            <div class="form-group">
+              <label>Number of People Employed</label>
+              <input type="text" [(ngModel)]="newMaterialSite.numberOfPeopleEmployed" name="numberOfPeopleEmployed">
+            </div>
+          </div>
+          
+          <div class="form-group">
+            <label>Comments</label>
+            <textarea [(ngModel)]="newMaterialSite.comments" name="comments" rows="3"></textarea>
+          </div>
+          
+          <div class="form-actions">
+            <button type="button" class="btn btn-secondary" (click)="closeMaterialSiteModal()">Cancel</button>
+            <button type="submit" class="btn btn-primary">Save Material Site</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- Bulk Upload Modal -->
+  <div class="modal-overlay" *ngIf="showBulkUploadModal">
+    <div class="modal modal-extra-wide">
+      <div class="modal-header">
+        <h3>Bulk Upload Material Sites</h3>
+        <button class="close-btn" (click)="closeBulkUploadModal()">&times;</button>
+      </div>
+      <div class="modal-body">
+        <div class="bulk-upload-instructions">
+          <p><i class="fas fa-info-circle"></i> Fill in the details for each material site. Click "Add Row" to add more.</p>
+        </div>
+        
+        <div class="bulk-upload-table">
+          <table>
+            <thead>
+              <tr>
+                <th>Material *</th>
+                <th>Location *</th>
+                <th>County *</th>
+                <th>Sub-County</th>
+                <th>Owner</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let site of bulkMaterialSites; let i = index">
+                <td>
+                  <input type="text" [(ngModel)]="site.material" required>
+                </td>
+                <td>
+                  <input type="text" [(ngModel)]="site.materialLocation" required>
+                </td>
+                <td>
+                  <input type="text" [(ngModel)]="site.county" required>
+                </td>
+                <td>
+                  <input type="text" [(ngModel)]="site.subCounty">
+                </td>
+                <td>
+                  <input type="text" [(ngModel)]="site.ownerOfMaterial">
+                </td>
+                <td>
+                  <button class="btn-icon btn-delete" (click)="removeBulkRow(i)" [disabled]="bulkMaterialSites.length === 1">
+                    <i class="fas fa-trash"></i>
+                  </button>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        
+        <div class="form-actions">
+          <button type="button" class="btn btn-secondary" (click)="addBulkRow()">
+            <i class="fas fa-plus"></i> Add Row
+          </button>
+          <button type="button" class="btn btn-secondary" (click)="closeBulkUploadModal()">Cancel</button>
+          <button type="button" class="btn btn-primary" (click)="saveBulkMaterialSites()">
+            <i class="fas fa-save"></i> Save All Sites
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Edit Material Site Modal -->
+  <div class="modal-overlay" *ngIf="showEditMaterialSiteModal">
+    <div class="modal modal-wide">
+      <div class="modal-header">
+        <h3>Edit Material Site</h3>
+        <button class="close-btn" (click)="closeEditMaterialSiteModal()">&times;</button>
+      </div>
+      <div class="modal-body">
+        <form (ngSubmit)="saveMaterialSite()" *ngIf="editingMaterialSite">
+          <div class="form-row">
+            <div class="form-group">
+              <label>Material *</label>
+              <input type="text" [(ngModel)]="editingMaterialSite.material" name="material" required>
+            </div>
+            <div class="form-group">
+              <label>Location *</label>
+              <input type="text" [(ngModel)]="editingMaterialSite.materialLocation" name="materialLocation" required>
+            </div>
+          </div>
+          
+          <div class="form-row">
+            <div class="form-group">
+              <label>County *</label>
+              <input type="text" [(ngModel)]="editingMaterialSite.county" name="county" required>
+            </div>
+            <div class="form-group">
+              <label>Sub-County</label>
+              <input type="text" [(ngModel)]="editingMaterialSite.subCounty" name="subCounty">
+            </div>
+          </div>
+          
+          <div class="form-row">
+            <div class="form-group">
+              <label>Questionnaire No</label>
+              <input type="number" [(ngModel)]="editingMaterialSite.questionnaireNo" name="questionnaireNo">
+            </div>
+            <div class="form-group">
+              <label>Research Assistant No</label>
+              <input type="text" [(ngModel)]="editingMaterialSite.researchAssistantNo" name="researchAssistantNo">
+            </div>
+          </div>
+          
+          <div class="form-group">
+            <label>Owner of Material</label>
+            <input type="text" [(ngModel)]="editingMaterialSite.ownerOfMaterial" name="ownerOfMaterial">
+          </div>
+          
+          <div class="form-row">
+            <div class="form-group">
+              <label>Volume Produced Per Day</label>
+              <input type="text" [(ngModel)]="editingMaterialSite.volumeProducedPerDay" name="volumeProducedPerDay">
+            </div>
+            <div class="form-group">
+              <label>Number of People Employed</label>
+              <input type="text" [(ngModel)]="editingMaterialSite.numberOfPeopleEmployed" name="numberOfPeopleEmployed">
+            </div>
+          </div>
+          
+          <div class="form-group">
+            <label>Comments</label>
+            <textarea [(ngModel)]="editingMaterialSite.comments" name="comments" rows="3"></textarea>
+          </div>
+          
+          <div class="form-actions">
+            <button type="button" class="btn btn-secondary" (click)="closeEditMaterialSiteModal()">Cancel</button>
+            <button type="submit" class="btn btn-primary">Update Material Site</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>

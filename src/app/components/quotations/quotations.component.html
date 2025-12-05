@@ -1,0 +1,18 @@
+<section class="quotations">
+  <h2>Quotations Sent</h2>
+  <p *ngIf="quotations.length === 0">No quotations yet.</p>
+  <ul *ngIf="quotations.length > 0" class="quote-list">
+    <li *ngFor="let q of quotations">
+      <div class="quote-row">
+        <div class="quote-meta">
+          <div class="quote-to">To: {{ q.to }}</div>
+          <div class="quote-amount">KES {{ q.amount }}</div>
+        </div>
+        <div class="quote-actions">
+          <div class="quote-status">{{ q.status || 'draft' }}</div>
+          <button (click)="markSent(q)" [disabled]="q.status==='sent'">Mark Sent</button>
+        </div>
+      </div>
+    </li>
+  </ul>
+</section>

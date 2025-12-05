@@ -1,0 +1,135 @@
+<div class="login-container">
+  <div class="container">
+    <div class="row justify-content-center">
+      <div class="col-12 col-md-6 col-lg-4">
+        <div class="login-card">
+          <!-- Header Section -->
+          <div class="login-header text-center mb-4">
+            <div class="logo d-flex align-items-center justify-content-center mb-3">
+              <div class="logo-icon me-3">T</div>
+              <h1 class="mb-0">Timbua</h1>
+            </div>
+            <p class="welcome-text mb-0">Welcome back! Please sign in to your account.</p>
+          </div>
+
+          <!-- Success Message -->
+          @if (successMessage) {
+            <div class="alert alert-success alert-dismissible fade show" role="alert">
+              <div class="d-flex align-items-center">
+                <span>{{ successMessage }}</span>
+              </div>
+              <button type="button" class="btn-close" (click)="clearMessages()" aria-label="Close"></button>
+            </div>
+          }
+
+          <!-- Error Message -->
+          @if (errorMessage) {
+            <div class="alert alert-danger alert-dismissible fade show" role="alert">
+              <div class="d-flex align-items-center">
+                <span>{{ errorMessage }}</span>
+              </div>
+              <button type="button" class="btn-close" (click)="clearMessages()" aria-label="Close"></button>
+            </div>
+          }
+
+          <!-- Login Form -->
+          <form (ngSubmit)="onSubmit()" class="login-form">
+            <!-- Email Input -->
+            <div class="mb-3">
+              <label for="email" class="form-label">Email Address</label>
+              <input
+                type="email"
+                id="email"
+                [(ngModel)]="credentials.email"
+                name="email"
+                class="form-control"
+                [class.is-invalid]="emailInvalid"
+                placeholder="Enter your email"
+                required
+                (input)="validateEmail()"
+              >
+              @if (emailInvalid) {
+                <div class="invalid-feedback">
+                  Please enter a valid email address.
+                </div>
+              }
+            </div>
+
+            <!-- Password Input -->
+            <div class="mb-3">
+              <label for="password" class="form-label">Password</label>
+              <input
+                type="password"
+                id="password"
+                [(ngModel)]="credentials.password"
+                name="password"
+                class="form-control"
+                [class.is-invalid]="passwordInvalid"
+                placeholder="Enter your password"
+                required
+                minlength="6"
+                (input)="validatePassword()"
+              >
+              @if (passwordInvalid) {
+                <div class="invalid-feedback">
+                  Password must be at least 6 characters long.
+                </div>
+              }
+            </div>
+
+            <!-- Remember Me & Forgot Password -->
+            <div class="d-flex justify-content-between align-items-center mb-4">
+              <div class="form-check">
+                <input class="form-check-input" type="checkbox" id="rememberMe" [(ngModel)]="rememberMe" name="rememberMe">
+                <label class="form-check-label" for="rememberMe">
+                  Remember me
+                </label>
+              </div>
+              <a href="#" class="forgot-password">Forgot password?</a>
+            </div>
+
+            <!-- Submit Button -->
+            <button
+              type="submit"
+              class="btn login-button w-100"
+              [disabled]="isLoading || !credentials.email || !credentials.password || emailInvalid || passwordInvalid"
+            >
+              @if (!isLoading) {
+                <span class="d-flex align-items-center justify-content-center">
+                  Sign In
+                </span>
+              }
+              @if (isLoading) {
+                <span class="d-flex align-items-center justify-content-center">
+                  <span class="spinner-border spinner-border-sm me-2" role="status"></span>
+                  Signing in...
+                </span>
+              }
+            </button>
+          </form>
+
+          <!-- Demo Accounts Hint -->
+          <div class="demo-accounts mt-4 p-3 bg-light rounded">
+            <h6 class="text-center mb-2">Demo Accounts</h6>
+            <div class="demo-account-item small">
+              <strong>Supplier:</strong> tina@gmail.com / demo123
+              <strong>Contractor:</strong> awuor@gmail.com / demo123
+              <strong>Admin:</strong> admin@gmail.com / demo@123
+            </div>
+            <div class="demo-account-item small">
+              <strong>Note:</strong> Use the credentials above to test
+            </div>
+          </div>
+
+          <!-- Footer -->
+          <div class="login-footer text-center mt-4 pt-3">
+            <p class="mb-0">
+              Don't have an account?
+              <a [routerLink]="['/signup']" class="signup-link">Sign up</a>
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

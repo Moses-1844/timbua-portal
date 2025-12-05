@@ -1,0 +1,359 @@
+<div class="dashboard-layout">
+  <!-- Dashboard Header -->
+  <header class="dashboard-header" [style.background]="colors.kbrcDarkBlue">
+    <div class="header-content">
+      <div class="logo-section">
+        <div class="kenya-flag">
+          <div class="flag-black" [style.background]="colors.kenyaBlack"></div>
+          <div class="flag-red" [style.background]="colors.kenyaRed"></div>
+          <div class="flag-green" [style.background]="colors.kenyaGreen"></div>
+        </div>
+        <h1>Admin Dashboard</h1>
+        <span class="government-badge">Timbua</span>
+      </div>
+      
+      <div class="header-actions">
+        <div class="kbrc-badge" [style.background]="colors.kbrcBlue">
+          Administrator
+        </div>
+        
+        <div class="user-menu">
+          <span class="user-greeting">
+            Welcome, {{ authService.getContactPerson() || authService.getCompanyName() }}
+          </span>
+          <div class="user-dropdown">
+            <button class="dropdown-item" (click)="logout()">Logout</button>
+            <div class="dropdown-menu">
+              
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <div class="dashboard-container">
+    <!-- Sidebar -->
+    <nav class="sidebar" [style.background]="colors.kenyaWhite">
+      <div class="sidebar-content">
+        <div class="sidebar-menu">
+          <h3>Admin Menu</h3>
+          <ul>
+            <li><a routerLink="/admin-dashboard" class="menu-item" [class.active]="!isChildRouteActive()">Dashboard</a></li>
+            <li><a routerLink="/admin-dashboard/contractors" class="menu-item" [class.active]="isActiveRoute('/admin-dashboard/contractors')">Contractors</a></li>
+            <li><a routerLink="/admin-dashboard/suppliers" class="menu-item" [class.active]="isActiveRoute('/admin-dashboard/suppliers')">Suppliers</a></li>
+            <li><a routerLink="/admin-dashboard/materials-map" class="menu-item">Materials Map</a></li>
+            <li><a routerLink="/admin-dashboard/support" class="menu-item">Decision Support</a></li>
+          </ul>
+        </div>
+      </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="dashboard-main">
+      <!-- Router outlet for admin child pages -->
+      <router-outlet></router-outlet>
+
+      <!-- Default dashboard content when no child route is active -->
+      <div *ngIf="!isChildRouteActive()" class="dashboard-content">
+        <!-- Dashboard Header -->
+        <div class="dashboard-header-row">
+          <div>
+            <h2>System Administration</h2>
+            <p>Monitor and manage platform operations and user accounts.</p>
+          </div>
+          <div class="header-actions">
+            <button class="btn-refresh" (click)="refreshDashboard()" [disabled]="isRefreshing">
+              <i class="fas" [class.fa-sync]="!isRefreshing" [class.fa-spinner]="isRefreshing" [class.fa-spin]="isRefreshing"></i>
+              {{ isRefreshing ? 'Refreshing...' : 'Refresh' }}
+            </button>
+            <div class="last-updated">
+              Last updated: {{ isLoading ? 'Loading...' : (dashboardStats.recentActivities[0]?.timestamp | date:'medium') || 'Never' }}
+            </div>
+          </div>
+        </div>
+
+        <!-- Error Message -->
+        <div *ngIf="errorMessage" class="error-alert">
+          <i class="fas fa-exclamation-circle"></i>
+          {{ errorMessage }}
+          <button class="btn-retry" (click)="loadDashboardData()">Retry</button>
+        </div>
+
+        <!-- Loading State -->
+        <div *ngIf="isLoading" class="loading-container">
+          <div class="loading-spinner"></div>
+          <p>Loading dashboard data...</p>
+        </div>
+
+        <!-- Dashboard Content (when loaded) -->
+        <div *ngIf="!isLoading" class="dashboard-loaded-content">
+          <!-- Quick Stats -->
+          <div class="stats-grid">
+            <div class="stat-card" [style.border-color]="colors.kbrcDarkBlue">
+              <div class="stat-icon" [style.background]="colors.kbrcDarkBlue">
+                <i class="fas fa-users"></i>
+              </div>
+              <div class="stat-content">
+                <div class="stat-value">{{ dashboardStats.totalUsers | number }}</div>
+                <div class="stat-label">Total Users</div>
+                <div class="stat-trend">All platform users</div>
+              </div>
+            </div>
+            
+            <div class="stat-card" [style.border-color]="colors.kenyaGreen">
+              <div class="stat-icon" [style.background]="colors.kenyaGreen">
+                <i class="fas fa-hard-hat"></i>
+              </div>
+              <div class="stat-content">
+                <div class="stat-value">{{ dashboardStats.totalContractors | number }}</div>
+                <div class="stat-label">Contractors</div>
+                <div class="stat-trend">{{ dashboardStats.totalSites | number }} active sites</div>
+              </div>
+            </div>
+            
+            <div class="stat-card" [style.border-color]="colors.kenyaRed">
+              <div class="stat-icon" [style.background]="colors.kenyaRed">
+                <i class="fas fa-truck-loading"></i>
+              </div>
+              <div class="stat-content">
+                <div class="stat-value">{{ dashboardStats.totalSuppliers | number }}</div>
+                <div class="stat-label">Suppliers</div>
+                <div class="stat-trend">{{ dashboardStats.totalMaterialSites | number }} material sites</div>
+              </div>
+            </div>
+            
+            <div class="stat-card" [style.border-color]="colors.kbrcBlue">
+              <div class="stat-icon" [style.background]="colors.kbrcBlue">
+                <i class="fas fa-clock"></i>
+              </div>
+              <div class="stat-content">
+                <div class="stat-value">{{ dashboardStats.pendingVerifications | number }}</div>
+                <div class="stat-label">Pending Verifications</div>
+                <div class="stat-trend">Requires attention</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Charts and Actions -->
+          <div class="charts-section">
+            <div class="chart-card">
+              <div class="chart-header">
+                <h3><i class="fas fa-chart-pie"></i> Platform Overview</h3>
+                <div class="data-summary">
+                  <span class="summary-item">
+                    <i class="fas fa-circle" style="color: #003366;"></i>
+                    {{ dashboardStats.totalUsers }} Total Users
+                  </span>
+                  <span class="summary-item">
+                    <i class="fas fa-circle" style="color: #006600;"></i>
+                    {{ dashboardStats.pendingVerifications }} Pending
+                  </span>
+                </div>
+              </div>
+              <div class="chart-container">
+                <div *ngIf="dashboardStats.totalUsers === 0" class="no-data-chart">
+                  <i class="fas fa-chart-bar"></i>
+                  <p>No data available yet</p>
+                </div>
+                <div *ngIf="dashboardStats.totalUsers > 0" class="simple-donut-chart">
+                  <div class="donut-chart">
+                    <div class="chart-segment" 
+                         [style.background]="getDonutChartGradient()">
+                    </div>
+                    <div class="chart-center">
+                      <div class="center-value">{{ dashboardStats.totalUsers }}</div>
+                      <div class="center-label">Total Users</div>
+                    </div>
+                  </div>
+                  <div class="chart-legend">
+                    <div class="legend-item">
+                      <span class="legend-color" style="background: #003366;"></span>
+                      <span class="legend-text">Contractors: {{ dashboardStats.totalContractors }}</span>
+                    </div>
+                    <div class="legend-item">
+                      <span class="legend-color" style="background: #006600;"></span>
+                      <span class="legend-text">Suppliers: {{ dashboardStats.totalSuppliers }}</span>
+                    </div>
+                    <div class="legend-item">
+                      <span class="legend-color" style="background: #BB0000;"></span>
+                      <span class="legend-text">Other Users: {{ getTotalPlatformUsers() - dashboardStats.totalContractors - dashboardStats.totalSuppliers }}</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="quick-actions-card">
+              <div class="chart-header">
+                <h3><i class="fas fa-bolt"></i> Quick Actions</h3>
+                <div class="pending-count" *ngIf="dashboardStats.pendingVerifications > 0">
+                  <span class="count-badge">{{ dashboardStats.pendingVerifications }}</span>
+                  Pending
+                </div>
+              </div>
+              <div class="quick-actions">
+                <button class="quick-action-btn" routerLink="/admin-dashboard/contractors">
+                  <i class="fas fa-hard-hat"></i>
+                  <span>Contractors ({{ dashboardStats.totalContractors }})</span>
+                  <span class="pending-badge" *ngIf="dashboardStats.pendingVerifications > 0">
+                    {{ getPendingContractorCount() }}
+                  </span>
+                </button>
+                <button class="quick-action-btn" routerLink="/admin-dashboard/suppliers">
+                  <i class="fas fa-truck-loading"></i>
+                  <span>Suppliers ({{ dashboardStats.totalSuppliers }})</span>
+                  <span class="pending-badge" *ngIf="dashboardStats.pendingVerifications > 0">
+                    {{ getPendingSupplierCount() }}
+                  </span>
+                </button>
+                <button class="quick-action-btn" routerLink="/admin-dashboard/reports">
+                  <i class="fas fa-file-export"></i>
+                  <span>Generate Report</span>
+                </button>
+                <button class="quick-action-btn" (click)="refreshDashboard()">
+                  <i class="fas" [class.fa-sync]="!isRefreshing" [class.fa-spinner]="isRefreshing" [class.fa-spin]="isRefreshing"></i>
+                  <span>Refresh Data</span>
+                </button>
+              </div>
+              <div class="system-info">
+                <h4>System Information</h4>
+                <div class="info-grid">
+                  <div class="info-item">
+                    <i class="fas fa-map-marker-alt"></i>
+                    <div class="info-content">
+                      <div class="info-label">Material Sites</div>
+                      <div class="info-value">{{ dashboardStats.totalMaterialSites }}</div>
+                    </div>
+                  </div>
+                  <div class="info-item">
+                    <i class="fas fa-hard-hat"></i>
+                    <div class="info-content">
+                      <div class="info-label">Construction Sites</div>
+                      <div class="info-value">{{ dashboardStats.totalSites }}</div>
+                    </div>
+                  </div>
+                  <div class="info-item">
+                    <i class="fas fa-server"></i>
+                    <div class="info-content">
+                      <div class="info-label">API Status</div>
+                      <div class="info-value status-good">Online</div>
+                    </div>
+                  </div>
+                  <div class="info-item">
+                    <i class="fas fa-database"></i>
+                    <div class="info-content">
+                      <div class="info-label">Data Loaded</div>
+                      <div class="info-value">{{ !isLoading ? 'Complete' : 'Loading...' }}</div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Pending Tasks -->
+          <div class="pending-tasks" *ngIf="dashboardStats.pendingVerifications > 0">
+            <h4>Pending Verifications</h4>
+            <div class="task-list">
+              <div class="task-item">
+                <div class="task-icon" style="background: #006600;">
+                  <i class="fas fa-hard-hat"></i>
+                </div>
+                <div class="task-content">
+                  <div class="task-title">Contractor Verifications</div>
+                  <div class="task-count">{{ getPendingContractorCount() }} pending</div>
+                </div>
+                <button class="task-action" routerLink="/admin-dashboard/contractors">
+                  Review
+                </button>
+              </div>
+              <div class="task-item">
+                <div class="task-icon" style="background: #BB0000;">
+                  <i class="fas fa-truck-loading"></i>
+                </div>
+                <div class="task-content">
+                  <div class="task-title">Supplier Approvals</div>
+                  <div class="task-count">{{ getPendingSupplierCount() }} pending</div>
+                </div>
+                <button class="task-action" routerLink="/admin-dashboard/suppliers">
+                  Review
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Recent Activity -->
+          <div class="activity-section">
+            <div class="section-header">
+              <h3><i class="fas fa-history"></i> Recent System Activity</h3>
+              <a routerLink="/admin-dashboard/reports" class="view-all">View All Activity</a>
+            </div>
+            <div class="activity-list">
+              <div *ngIf="recentActivities.length === 0" class="no-activity">
+                <i class="fas fa-inbox"></i>
+                <p>No recent activity to display</p>
+              </div>
+              <div *ngFor="let activity of recentActivities.slice(0, 5)" class="activity-item">
+                <div class="activity-icon" [style.background]="getActivityColor(activity.type)">
+                  <i [class]="getActivityIcon(activity.type)"></i>
+                </div>
+                <div class="activity-content">
+                  <div class="activity-text">{{ activity.description }}</div>
+                  <div class="activity-meta">
+                    <span class="activity-user" *ngIf="activity.userName">
+                      <i class="fas fa-user"></i> {{ activity.userName }}
+                    </span>
+                    <span class="activity-time">
+                      <i class="fas fa-clock"></i> {{ formatActivityTime(activity.timestamp) }}
+                    </span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- System Status -->
+          <div class="status-section">
+            <div class="status-card">
+              <div class="status-header">
+                <h3><i class="fas fa-server"></i> System Status</h3>
+                <span class="status-badge status-good">All Systems Operational</span>
+              </div>
+              <div class="status-grid">
+                <div class="status-item">
+                  <i class="fas fa-database status-icon status-good"></i>
+                  <div class="status-info">
+                    <div class="status-label">Database</div>
+                    <div class="status-desc">Connected and running</div>
+                  </div>
+                </div>
+                <div class="status-item">
+                  <i class="fas fa-plug status-icon status-good"></i>
+                  <div class="status-info">
+                    <div class="status-label">API Service</div>
+                    <div class="status-desc">Responding normally</div>
+                  </div>
+                </div>
+                <div class="status-item">
+                  <i class="fas fa-shield-alt status-icon status-good"></i>
+                  <div class="status-info">
+                    <div class="status-label">Security</div>
+                    <div class="status-desc">All checks passed</div>
+                  </div>
+                </div>
+                <div class="status-item">
+                  <i class="fas fa-tachometer-alt status-icon status-good"></i>
+                  <div class="status-info">
+                    <div class="status-label">Performance</div>
+                    <div class="status-desc">Optimal response times</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+</div>

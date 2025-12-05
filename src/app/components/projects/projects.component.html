@@ -1,0 +1,585 @@
+<div class="projects-container">
+  <!-- Header Section -->
+  <div class="projects-header">
+    <h1>🏗️ My Projects</h1>
+    <p>Manage your construction sites and track progress</p>
+    
+    <!-- Action Buttons -->
+    <div class="header-actions">
+      <button (click)="openAddProject()" class="add-project-btn">
+        ➕ Add New Project
+      </button>
+      <button (click)="loadProjects()" class="refresh-btn">
+        🔄 Refresh
+      </button>
+    </div>
+  </div>
+
+  <!-- Messages -->
+  <div *ngIf="errorMessage" class="error-message">
+    <span class="error-icon">⚠️</span>
+    {{ errorMessage }}
+  </div>
+
+  <div *ngIf="successMessage" class="success-message">
+    <span class="success-icon">✅</span>
+    {{ successMessage }}
+  </div>
+
+  <!-- Loading State -->
+  <div *ngIf="isLoading" class="loading-state">
+    <div class="loading-spinner"></div>
+    <p>Loading your projects...</p>
+  </div>
+
+  <!-- Empty State -->
+  <div *ngIf="!isLoading && projects.length === 0" class="empty-state">
+    <div class="empty-icon">🏗️</div>
+    <h3>No Projects Yet</h3>
+    <p>Get started by creating your first construction project</p>
+    <button (click)="openAddProject()" class="add-project-btn">
+      ➕ Create Your First Project
+    </button>
+  </div>
+
+  <!-- Projects Grid -->
+  <div *ngIf="!isLoading && projects.length > 0" class="projects-grid">
+    <div *ngFor="let project of projects" class="project-card">
+      <!-- Project Header -->
+      <div class="project-header">
+        <h3 class="project-name">{{ project.name }}</h3>
+        <div class="project-actions">
+          <button (click)="openEditProject(project)" class="edit-btn" title="Edit Project">
+            ✏️
+          </button>
+          <button (click)="deleteProject(project.id)" class="delete-btn" title="Delete Project">
+            🗑️
+          </button>
+        </div>
+      </div>
+
+      <!-- Project Details -->
+      <div class="project-details">
+        <div class="detail-row">
+          <span class="detail-label">📍 Location:</span>
+          <span class="detail-value">{{ project.location }}</span>
+        </div>
+        
+        <div class="detail-row">
+          <span class="detail-label">🏷️ Type:</span>
+          <span class="detail-value">{{ project.type }}</span>
+        </div>
+        
+        <div class="detail-row">
+          <span class="detail-label">💰 Estimated Cost:</span>
+          <span class="detail-value">{{ formatCurrency(project.estimatedCost) }}</span>
+        </div>
+        
+        <div class="detail-row">
+          <span class="detail-label">📅 Timeline:</span>
+          <span class="detail-value">
+            {{ formatDate(project.startDate) }} - {{ formatDate(project.endDate) }}
+            <span *ngIf="isProjectOverdue(project.endDate)" class="overdue-badge">
+              Overdue
+            </span>
+            <span *ngIf="!isProjectOverdue(project.endDate)" class="days-remaining">
+              ({{ getDaysRemaining(project.endDate) }} days left)
+            </span>
+          </span>
+        </div>
+
+        <div class="detail-row">
+          <span class="detail-label">🌐 Coordinates:</span>
+          <span class="detail-value">
+            {{ project.coordinates.lat | number:'1.4-4' }}, {{ project.coordinates.lng | number:'1.4-4' }}
+          </span>
+        </div>
+      </div>
+
+      <!-- Progress Section -->
+      <div class="progress-section">
+        <div class="progress-header">
+          <span class="progress-label">Progress</span>
+          <span class="progress-percentage">{{ project.progress }}%</span>
+        </div>
+        <div class="progress-bar">
+          <div 
+            class="progress-fill" 
+            [class]="getProgressColor(project.progress)"
+            [style.width.%]="project.progress"
+          ></div>
+        </div>
+      </div>
+
+      <!-- Status and Documents -->
+      <div class="project-footer">
+        <span [class]="getStatusBadgeClass(project.status)">
+          {{ getStatusLabel(project.status) }}
+        </span>
+        
+        <div class="documents-count">
+          📎 {{ project.documents.length }} documents
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Add/Edit Project Modal -->
+  <div *ngIf="isAddingProject || isEditingProject" class="modal-overlay">
+    <div class="modal-content large-modal">
+      <div class="modal-header">
+        <h2>{{ isEditingProject ? 'Edit Project' : 'Add New Project' }}</h2>
+        <button (click)="closeModal()" class="close-btn">×</button>
+      </div>
+
+      <form (ngSubmit)="submitProject()" class="project-form">
+        <div class="form-grid">
+          <!-- Basic Information -->
+          <div class="form-group">
+            <label for="projectName">Project Name *</label>
+            <input
+              id="projectName"
+              type="text"
+              [(ngModel)]="projectForm.name"
+              name="projectName"
+              placeholder="Enter project name"
+              required
+            >
+          </div>
+
+          <!-- Location with County/Sub-County -->
+          <div class="form-group">
+            <label for="projectLocation">County *</label>
+            <select
+              id="projectLocation"
+              [(ngModel)]="projectForm.location"
+              name="projectLocation"
+              (change)="onCountyChange()"
+              required
+            >
+              <option value="">Select county</option>
+              <option *ngFor="let county of counties" [value]="county.name">
+                {{ county.name }}
+              </option>
+            </select>
+          </div>
+
+          <div class="form-group" *ngIf="availableSubCounties.length > 0">
+            <label for="subCounty">Sub-County</label>
+            <select
+              id="subCounty"
+              [(ngModel)]="selectedSubCounty"
+              name="subCounty"
+              (change)="onSubCountyChange()"
+            >
+              <option value="">Select sub-county</option>
+              <option *ngFor="let subCounty of availableSubCounties" [value]="subCounty.name">
+                {{ subCounty.name }}
+              </option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label for="projectType">Project Type *</label>
+            <select
+              id="projectType"
+              [(ngModel)]="projectForm.type"
+              name="projectType"
+              required
+            >
+              <option value="">Select project type</option>
+              <option *ngFor="let type of projectTypes" [value]="type">
+                {{ type }}
+              </option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label for="estimatedCost">Estimated Cost (KES) *</label>
+            <input
+              id="estimatedCost"
+              type="number"
+              [(ngModel)]="projectForm.estimatedCost"
+              name="estimatedCost"
+              placeholder="Enter estimated cost"
+              min="0"
+              step="1000"
+              required
+            >
+          </div>
+
+          <!-- Status and Progress -->
+          <div class="form-group">
+            <label for="projectStatus">Status</label>
+            <select
+              id="projectStatus"
+              [(ngModel)]="projectForm.status"
+              name="projectStatus"
+            >
+              <option *ngFor="let status of statusOptions" [value]="status.value">
+                {{ status.label }}
+              </option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label for="projectProgress">Progress (%)</label>
+            <input
+              id="projectProgress"
+              type="number"
+              [(ngModel)]="projectForm.progress"
+              name="projectProgress"
+              min="0"
+              max="100"
+              placeholder="0-100"
+            >
+          </div>
+
+          <!-- Dates -->
+          <div class="form-group">
+            <label for="startDate">Start Date *</label>
+            <input
+              id="startDate"
+              type="date"
+              [(ngModel)]="projectForm.startDate"
+              name="startDate"
+              [min]="minStartDate"
+              (change)="onStartDateChange()"
+              required
+            >
+            <small class="date-hint">Can be today or any future date</small>
+          </div>
+
+          <div class="form-group">
+            <label for="endDate">End Date *</label>
+            <input
+              id="endDate"
+              type="date"
+              [(ngModel)]="projectForm.endDate"
+              name="endDate"
+              [min]="minEndDate"
+              (change)="onEndDateChange()"
+              required
+            >
+            <small class="date-hint">Must be after start date</small>
+          </div>
+
+          <!-- Coordinates -->
+          <div class="form-group full-width">
+            <label>Coordinates</label>
+            <div class="coordinates-controls">
+              <div class="coordinates-inputs">
+                <input
+                  type="number"
+                  [(ngModel)]="projectForm.coordinates.lat"
+                  name="latitude"
+                  placeholder="Latitude"
+                  step="any"
+                  class="coordinate-input"
+                >
+                <input
+                  type="number"
+                  [(ngModel)]="projectForm.coordinates.lng"
+                  name="longitude"
+                  placeholder="Longitude"
+                  step="any"
+                  class="coordinate-input"
+                >
+              </div>
+              <div class="coordinates-buttons">
+                <button type="button" (click)="openMapModal()" class="map-btn">
+                  🗺️ Select from Map
+                </button>
+                <button type="button" (click)="getCurrentLocation()" class="location-btn" [disabled]="isGettingLocation">
+                  {{ isGettingLocation ? '📍 Getting Location...' : '📍 Use Current Location' }}
+                </button>
+              </div>
+            </div>
+            <small class="coordinate-hint">Coordinates will be auto-filled when you select a sub-county</small>
+          </div>
+        </div>
+
+        <!-- Site Analysis Section -->
+        <div class="analysis-section" *ngIf="projectForm.coordinates.lat && projectForm.coordinates.lng">
+          <h3>Site Analysis</h3>
+          <div class="analysis-controls">
+            <select [(ngModel)]="buildingType" name="buildingType" class="building-type-select">
+              <option value="residential">Residential</option>
+              <option value="commercial">Commercial</option>
+              <option value="industrial">Industrial</option>
+              <option value="infrastructure">Infrastructure</option>
+            </select>
+            <button type="button" (click)="analyzeSite()" class="analyze-btn" [disabled]="isAnalyzingSite">
+              {{ isAnalyzingSite ? '🔍 Analyzing...' : '🔍 Analyze Site' }}
+            </button>
+          </div>
+          
+          <!-- Progress Bar for Analysis -->
+          <div *ngIf="isAnalyzingSite" class="analysis-progress">
+            <div class="progress-bar">
+              <div class="progress-fill" [style.width.%]="analysisProgress"></div>
+            </div>
+            <div class="progress-text">
+              {{ currentAnalysisStep }} ({{ analysisProgress }}%)
+            </div>
+          </div>
+        </div>
+
+        <!-- Form Actions -->
+        <div class="form-actions">
+          <button type="button" (click)="closeModal()" class="cancel-btn">
+            Cancel
+          </button>
+          <button type="submit" class="submit-btn">
+            {{ isEditingProject ? 'Update Project' : 'Create Project' }}
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Map Modal -->
+  <div *ngIf="showMapModal" class="modal-overlay">
+    <div class="modal-content large-modal">
+      <div class="modal-header">
+        <h2>Select Location on Map</h2>
+        <button (click)="closeModal()" class="close-btn">×</button>
+      </div>
+      <div class="map-container">
+        <div id="map" class="leaflet-map"></div>
+        <div class="map-controls">
+          <div class="current-coordinates">
+            <strong>Selected Coordinates:</strong><br>
+            Latitude: {{ mapCoordinates.lat | number:'1.4-4' }}<br>
+            Longitude: {{ mapCoordinates.lng | number:'1.4-4' }}
+          </div>
+          <div class="map-actions">
+            <button type="button" (click)="getCurrentLocation()" class="location-btn" [disabled]="isGettingLocation">
+              {{ isGettingLocation ? '📍 Getting Location...' : '📍 Use Current Location' }}
+            </button>
+            <button type="button" (click)="confirmLocation()" class="confirm-btn">
+              ✅ Confirm Location
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Site Analysis Modal -->
+  <div *ngIf="showAnalysisModal" class="modal-overlay">
+    <div class="modal-content xlarge-modal">
+      <div class="modal-header">
+        <h2>📊 Comprehensive Site Analysis Report</h2>
+        <button (click)="closeModal()" class="close-btn">×</button>
+      </div>
+      
+      <div class="analysis-report" *ngIf="siteAnalysis">
+        <!-- Buildability Status Banner -->
+        <div class="buildability-banner" 
+             [class.buildable]="siteAnalysis?.metadata?.isBuildable" 
+             [class.not-buildable]="!siteAnalysis?.metadata?.isBuildable">
+          <div class="banner-icon">
+            {{ siteAnalysis?.metadata?.isBuildable ? '✅' : '❌' }}
+          </div>
+          <div class="banner-content">
+            <h3>{{ siteAnalysis?.metadata?.isBuildable ? 'BUILDABLE SITE' : 'RESTRICTED SITE' }}</h3>
+            <p>
+              {{ siteAnalysis?.metadata?.isBuildable 
+                ? 'Construction is possible with standard approvals and conditions'
+                : 'Critical restrictions found - construction may not be permitted'
+              }}
+            </p>
+          </div>
+        </div>
+
+        <!-- Quick Summary -->
+        <div class="quick-summary">
+          <div class="summary-item">
+            <span class="summary-label">📍 Coordinates</span>
+            <span class="summary-value">
+              {{ siteAnalysis?.metadata?.coordinates?.lat | number:'1.4-4' }}, 
+              {{ siteAnalysis?.metadata?.coordinates?.lng | number:'1.4-4' }}
+            </span>
+          </div>
+          <div class="summary-item">
+            <span class="summary-label">🏗️ Building Type</span>
+            <span class="summary-value">{{ siteAnalysis?.metadata?.buildingType }}</span>
+          </div>
+          <div class="summary-item">
+            <span class="summary-label">⚠️ Restrictions Found</span>
+            <span class="summary-value">{{ siteAnalysis?.metadata?.restrictionsFound || 0 }}</span>
+          </div>
+          <div class="summary-item">
+            <span class="summary-label">📅 Analyzed</span>
+             
+          </div>
+        </div>
+
+        <!-- Location Analysis -->
+        <div class="analysis-section">
+          <h3>📍 Location Analysis</h3>
+          <div class="location-details">
+            <p><strong>Address:</strong> {{ siteAnalysis?.locationAnalysis?.addressDetails?.displayName || 'Not available' }}</p>
+            <p><strong>Accessibility:</strong> {{ siteAnalysis?.locationAnalysis?.accessibility }}</p>
+            <p><strong>Terrain:</strong> {{ siteAnalysis?.locationAnalysis?.terrainAnalysis }}</p>
+          </div>
+          
+          <!-- Restricted Areas -->
+          <div *ngIf="(siteAnalysis?.locationAnalysis?.restrictedAreas?.length ?? 0) > 0" 
+               class="restricted-areas">
+            <h4>🚫 Restricted Areas Found (within 5km):</h4>
+            <div class="restricted-areas-grid">
+              <div *ngFor="let area of siteAnalysis?.locationAnalysis?.restrictedAreas || []" 
+                   class="restricted-area-card" 
+                   [class.high-restriction]="area?.restrictionLevel === 'high'"
+                   [class.medium-restriction]="area?.restrictionLevel === 'medium'"
+                   [class.low-restriction]="area?.restrictionLevel === 'low'">
+                <div class="area-header">
+                  <span class="area-type">{{ (area?.type || 'unknown') | titlecase }}</span>
+                  <span class="area-distance">{{ area?.distance || 0 }}m</span>
+                </div>
+                <div class="area-name">{{ area?.name || 'Unnamed Area' }}</div>
+                <div class="area-restriction">
+                  <span class="restriction-badge" 
+                        [class]="'restriction-' + (area?.restrictionLevel || 'low')">
+                    {{ (area?.restrictionLevel || 'low') | titlecase }} Restriction
+                  </span>
+                </div>
+                <div *ngIf="area?.description" class="area-description">
+                  {{ area?.description }}
+                </div>
+              </div>
+            </div>
+          </div>
+          
+          <div *ngIf="(siteAnalysis?.locationAnalysis?.restrictedAreas?.length ?? 0) === 0" 
+               class="no-restrictions">
+            <div class="no-restrictions-icon">✅</div>
+            <p>No restricted areas found within 5km radius</p>
+          </div>
+
+          <!-- Natural Features -->
+          <div *ngIf="(siteAnalysis?.locationAnalysis?.naturalFeatures?.length ?? 0) > 0">
+            <h4>🌿 Natural Features:</h4>
+            <ul>
+              <li *ngFor="let feature of siteAnalysis?.locationAnalysis?.naturalFeatures || []">
+                {{ feature?.name || 'Unnamed feature' }} - {{ feature?.type || 'unknown' }} ({{ feature?.distance || 0 }}m)
+              </li>
+            </ul>
+          </div>
+          
+          <!-- Environmental Factors -->
+          <div *ngIf="(siteAnalysis?.locationAnalysis?.environmentalFactors?.length ?? 0) > 0">
+            <h4>🌍 Environmental Factors:</h4>
+            <ul>
+              <li *ngFor="let factor of siteAnalysis?.locationAnalysis?.environmentalFactors || []">
+                {{ factor }}
+              </li>
+            </ul>
+          </div>
+
+          <!-- Zoning Restrictions -->
+          <div *ngIf="(siteAnalysis?.locationAnalysis?.zoningRestrictions?.length ?? 0) > 0">
+            <h4>📜 Zoning Restrictions:</h4>
+            <ul>
+              <li *ngFor="let restriction of siteAnalysis?.locationAnalysis?.zoningRestrictions || []">
+                {{ restriction }}
+              </li>
+            </ul>
+          </div>
+        </div>
+
+        <!-- Construction Analysis -->
+        <div class="analysis-section">
+          <h3>🏗️ Construction Analysis</h3>
+          <div class="construction-details">
+            <p><strong>Risk Assessment:</strong> {{ siteAnalysis?.constructionAnalysis?.riskAssessment || 'Not assessed' }}</p>
+            <p><strong>Estimated Cost:</strong> {{ formatCurrency(siteAnalysis?.constructionAnalysis?.estimatedCost || 0) }}</p>
+            <p><strong>Timeline:</strong> {{ siteAnalysis?.constructionAnalysis?.timeline || 'Not estimated' }}</p>
+            <p><strong>Soil Recommendation:</strong> {{ siteAnalysis?.constructionAnalysis?.soilRecommendation || 'Consult geotechnical engineer' }}</p>
+            <p><strong>Foundation Type:</strong> {{ siteAnalysis?.constructionAnalysis?.foundationType || 'Standard foundation' }}</p>
+          </div>
+          
+          <h4>📋 Recommendations:</h4>
+          <ul>
+            <li *ngFor="let recommendation of siteAnalysis?.constructionAnalysis?.recommendations || []">
+              {{ recommendation }}
+            </li>
+          </ul>
+          
+          <h4>🧱 Recommended Materials:</h4>
+          <div class="materials-list">
+            <span *ngFor="let material of siteAnalysis?.constructionAnalysis?.materials || []" class="material-tag">
+              {{ material }}
+            </span>
+          </div>
+          
+          <div *ngIf="(siteAnalysis?.constructionAnalysis?.regulatoryConsiderations?.length ?? 0) > 0">
+            <h4>📋 Regulatory Considerations:</h4>
+            <ul>
+              <li *ngFor="let consideration of siteAnalysis?.constructionAnalysis?.regulatoryConsiderations || []">
+                {{ consideration }}
+              </li>
+            </ul>
+          </div>
+
+          <div *ngIf="(siteAnalysis?.constructionAnalysis?.buildingLimitations?.length ?? 0) > 0">
+            <h4>🚧 Building Limitations:</h4>
+            <ul>
+              <li *ngFor="let limitation of siteAnalysis?.constructionAnalysis?.buildingLimitations || []">
+                {{ limitation }}
+              </li>
+            </ul>
+          </div>
+        </div>
+
+        <!-- AI Analysis -->
+        <div class="analysis-section">
+          <h3>🤖 AI Analysis</h3>
+          <p class="ai-summary">{{ siteAnalysis?.aiAnalysis?.summary || 'No analysis summary available' }}</p>
+          
+          <div *ngIf="(siteAnalysis?.aiAnalysis?.keyInsights?.length ?? 0) > 0">
+            <h4>💡 Key Insights:</h4>
+            <ul>
+              <li *ngFor="let insight of siteAnalysis?.aiAnalysis?.keyInsights || []">
+                {{ insight }}
+              </li>
+            </ul>
+          </div>
+          
+          <div *ngIf="(siteAnalysis?.aiAnalysis?.potentialChallenges?.length ?? 0) > 0">
+            <h4>⚠️ Potential Challenges:</h4>
+            <ul>
+              <li *ngFor="let challenge of siteAnalysis?.aiAnalysis?.potentialChallenges || []">
+                {{ challenge }}
+              </li>
+            </ul>
+          </div>
+          
+          <div *ngIf="(siteAnalysis?.aiAnalysis?.opportunities?.length ?? 0) > 0">
+            <h4>🎯 Opportunities:</h4>
+            <ul>
+              <li *ngFor="let opportunity of siteAnalysis?.aiAnalysis?.opportunities || []">
+                {{ opportunity }}
+              </li>
+            </ul>
+          </div>
+        </div>
+
+        <!-- Action Buttons -->
+        <div class="analysis-actions">
+          <button (click)="downloadAnalysisReport()" class="download-btn">
+            📥 Download Full Report
+          </button>
+          <button *ngIf="!siteAnalysis?.metadata?.isBuildable" class="warning-btn">
+            ⚠️ Consult County Planner
+          </button>
+          <button (click)="closeModal()" class="close-analysis-btn">
+            Close
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

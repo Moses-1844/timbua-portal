@@ -21,28 +21,140 @@
   <div class="content-wrapper">
     <!-- Map Section -->
     <div class="map-section">
+      <!-- Enhanced Map Controls -->
       <div class="map-controls">
-        <button class="control-btn" (click)="toggleLayer('restricted', true)">
-          🚫 Show Zones
-        </button>
-        <button class="control-btn" (click)="toggleLayer('restricted', false)">
-          🗺️ Hide Zones
-        </button>
-        <button class="control-btn" (click)="toggleLayer('buffer', true)">
-          📏 Show Buffers
-        </button>
-        <button class="control-btn" (click)="toggleLayer('buffer', false)">
-          🗺️ Hide Buffers
-        </button>
-        <button class="control-btn" (click)="toggleLayer('materials', true)">
-          📦 Show Materials
-        </button>
-        <button class="control-btn" (click)="toggleLayer('materials', false)">
-          🗺️ Hide Materials
-        </button>
-        <button class="control-btn clear-btn" (click)="clearSite()">
-          🗑️ Clear Site
-        </button>
+        <!-- Search Box -->
+        <div class="search-box">
+          <div class="search-input-group">
+            <input
+              type="text"
+              [value]="searchQuery()"
+              (input)="onSearchInput($event)"
+              (keyup.enter)="searchLocation(searchQuery())"
+              placeholder="Search locations in Kenya..."
+              class="search-input"
+            >
+            <button 
+              (click)="searchLocation(searchQuery())" 
+              class="search-btn"
+              [disabled]="isSearching()"
+            >
+              @if (isSearching()) {
+                <div class="mini-spinner"></div>
+              } @else {
+                🔍
+              }
+            </button>
+          </div>
+          
+          <!-- Search Results Dropdown -->
+          @if (searchResults().length > 0) {
+            <div class="search-results">
+              @for (result of searchResults(); track result.place_id) {
+                <div 
+                  class="search-result-item" 
+                  (click)="zoomToLocation(result)"
+                >
+                  <div class="result-name">{{ result.display_name }}</div>
+                  <div class="result-type">{{ result.type }}</div>
+                </div>
+              }
+            </div>
+          }
+        </div>
+
+        <!-- Coordinate Input -->
+        <div class="coordinate-input">
+          <h4>📍 Add Pin by Coordinates</h4>
+          <div class="coord-input-group">
+            <input
+              type="number"
+              step="any"
+              [value]="coordinateInput().lat"
+              (input)="updateCoordinateInput('lat', $event)"
+              placeholder="Latitude"
+              class="coord-input"
+              min="-90"
+              max="90"
+            >
+            <input
+              type="number"
+              step="any"
+              [value]="coordinateInput().lng"
+              (input)="updateCoordinateInput('lng', $event)"
+              placeholder="Longitude"
+              class="coord-input"
+              min="-180"
+              max="180"
+            >
+            <button 
+              (click)="addPinByCoordinates()" 
+              class="coord-btn"
+              [disabled]="!coordinateInput().lat || !coordinateInput().lng"
+            >
+              Add Pin
+            </button>
+          </div>
+        </div>
+
+        <!-- Quick Location Buttons -->
+        <div class="quick-locations">
+          <h4>🏃 Quick Locations</h4>
+          <div class="quick-location-buttons">
+            <button class="quick-btn" (click)="zoomToCurrentLocation()">
+              📍 My Location
+            </button>
+            <button class="quick-btn" (click)="zoomToPredefinedLocation('nairobi')">
+              🏙️ Nairobi
+            </button>
+            <button class="quick-btn" (click)="zoomToPredefinedLocation('mombasa')">
+              🏖️ Mombasa
+            </button>
+            <button class="quick-btn" (click)="zoomToPredefinedLocation('kisumu')">
+              🌊 Kisumu
+            </button>
+            <button class="quick-btn" (click)="zoomToPredefinedLocation('nakuru')">
+              🦩 Nakuru
+            </button>
+            <button class="quick-btn" (click)="zoomToPredefinedLocation('nairobi-national-park')">
+              🦁 Nairobi NP
+            </button>
+            <button class="quick-btn" (click)="zoomToPredefinedLocation('lake-naivasha')">
+              💧 Lake Naivasha
+            </button>
+            <button class="quick-btn" (click)="zoomToPredefinedLocation('rift-valley')">
+              🏞️ Rift Valley
+            </button>
+          </div>
+        </div>
+
+        <!-- Layer Controls -->
+        <div class="layer-controls">
+          <h4>🗺️ Map Layers</h4>
+          <div class="layer-buttons">
+            <button class="control-btn" (click)="toggleLayer('restricted', true)">
+              🚫 Show Zones
+            </button>
+            <button class="control-btn" (click)="toggleLayer('restricted', false)">
+              🗺️ Hide Zones
+            </button>
+            <button class="control-btn" (click)="toggleLayer('buffer', true)">
+              📏 Show Buffers
+            </button>
+            <button class="control-btn" (click)="toggleLayer('buffer', false)">
+              🗺️ Hide Buffers
+            </button>
+            <button class="control-btn" (click)="toggleLayer('materials', true)">
+              📦 Show Materials
+            </button>
+            <button class="control-btn" (click)="toggleLayer('materials', false)">
+              🗺️ Hide Materials
+            </button>
+            <button class="control-btn clear-btn" (click)="clearSite()">
+              🗑️ Clear Site
+            </button>
+          </div>
+        </div>
       </div>
       
       <div id="decision-map" class="decision-map"></div>
@@ -53,6 +165,10 @@
         <div class="legend-item">
           <div class="legend-marker site-marker-legend"></div>
           <span>Selected Site</span>
+        </div>
+        <div class="legend-item">
+          <div class="legend-marker search-marker-legend" style="background: #8B4513;"></div>
+          <span>Search Result</span>
         </div>
         <div class="legend-item">
           <div class="legend-marker material-marker-legend" style="background: #006600;"></div>
@@ -77,6 +193,10 @@
         <div class="legend-item">
           <div class="legend-marker buffer-zone-legend"></div>
           <span>Buffer Zones</span>
+        </div>
+        <div class="legend-item">
+          <div class="legend-marker alternative-marker-legend" style="background: #10B981;"></div>
+          <span>AI Suggested</span>
         </div>
       </div>
     </div>
@@ -126,7 +246,7 @@
               <div class="ai-header">
                 <h3>🤖 AI Site Analysis</h3>
                 <span class="confidence-badge">
-                  {{ (aiRecommendation()!.confidence || 0) * 100 }}% confidence
+                  {{ (aiRecommendation()!.confidence || 0) * 100 | number:'1.0-0' }}% confidence
                 </span>
               </div>
 
@@ -142,36 +262,44 @@
                 <strong>Recommendation:</strong> {{ aiRecommendation()!.recommendation }}
               </div>
 
-              @if (aiRecommendation()!.alternativeLocation) {
-                <div class="alternative-location">
-                  <strong>📍 Better Location:</strong>
-                  <div class="alt-location-details">
-                    {{ aiRecommendation()!.alternativeLocation!.lat.toFixed(4) }}, 
-                    {{ aiRecommendation()!.alternativeLocation!.lng.toFixed(4) }}
-                    <br>
-                    <em>{{ aiRecommendation()!.alternativeLocation!.reason }}</em>
-                    <button (click)="focusOnAlternative(aiRecommendation()!.alternativeLocation!)" 
-                            class="focus-btn">
-                      👁️ View on Map
-                    </button>
-                  </div>
-                </div>
-              }
+
 
               <div class="key-factors">
                 <strong>Key Factors:</strong>
                 <ul>
-                  <li *ngFor="let factor of aiRecommendation()!.keyFactors">{{ factor }}</li>
+                  @for (factor of aiRecommendation()!.keyFactors; track factor) {
+                    <li>{{ factor }}</li>
+                  }
                 </ul>
               </div>
 
               <div class="next-steps">
                 <strong>Next Steps:</strong>
                 <ol>
-                  <li *ngFor="let step of aiRecommendation()!.nextSteps">{{ step }}</li>
+                  @for (step of aiRecommendation()!.nextSteps; track step) {
+                    <li>{{ step }}</li>
+                  }
                 </ol>
               </div>
             </div>
+            <!-- Add this in the analysis section after AI recommendations -->
+@if (analysisResult() && selectedSite() && !isAnalyzing()) {
+  <div class="download-section">
+    <button 
+      (click)="downloadSiteAnalysis()" 
+      class="download-btn"
+      [disabled]="isGeneratingReport()"
+    >
+      @if (isGeneratingReport()) {
+        <div class="mini-spinner"></div>
+        Generating Report...
+      } @else {
+        📥 Download Site Analysis Report
+      }
+    </button>
+    <small>Get a detailed PDF report with all analysis data</small>
+  </div>
+}
           }
 
           @if (isAIAnalyzing()) {
@@ -256,6 +384,17 @@
           <h3>Select a Site</h3>
           <p>Click anywhere on the map to analyze a potential construction site.</p>
           <p>The system will check for restrictions using local GeoJSON data and find the nearest material sources.</p>
+          
+          <div class="selection-options">
+            <h4>📍 Multiple Ways to Select a Site:</h4>
+            <ul>
+              <li><strong>Click on the map</strong> - Direct selection</li>
+              <li><strong>Search for a location</strong> - Use the search box above the map</li>
+              <li><strong>Enter coordinates</strong> - Use the coordinate input form</li>
+              <li><strong>Quick locations</strong> - Use predefined Kenyan locations</li>
+              <li><strong>Your location</strong> - Use the "My Location" button</li>
+            </ul>
+          </div>
           
           @if (materials().length > 0) {
             <div class="materials-count">

@@ -1,0 +1,220 @@
+<!-- src/app/components/supplier-profile/supplier-profile.component.html -->
+<div class="supplier-profile">
+  <div class="profile-header">
+    <h1>Supplier Profile</h1>
+    <p>Manage your company information and profile settings</p>
+  </div>
+
+  <!-- Loading State -->
+  <div *ngIf="isLoading" class="loading-state">
+    <div class="spinner"></div>
+    <p>Loading profile...</p>
+  </div>
+
+  <!-- Error State -->
+  <div *ngIf="error && !isLoading" class="alert alert-error">
+    <span class="material-icons">error</span>
+    {{ error }}
+    <button class="retry-btn" (click)="loadSupplierProfile()">Retry</button>
+  </div>
+
+  <!-- Success Message -->
+  <div *ngIf="success" class="alert alert-success">
+    <span class="material-icons">check_circle</span>
+    {{ success }}
+  </div>
+
+  <!-- Profile Content -->
+  <div *ngIf="supplier && !isLoading" class="profile-content">
+    <!-- Profile Header -->
+    <div class="profile-card">
+      <div class="profile-header-info">
+        <div class="company-logo">
+          <img 
+            *ngIf="supplier.logoUrl" 
+            [src]="supplier.logoUrl" 
+            [alt]="supplier.companyName"
+            class="logo-image">
+          <div *ngIf="!supplier.logoUrl" class="logo-placeholder">
+            <span class="material-icons">business</span>
+          </div>
+        </div>
+        <div class="company-info">
+          <h2>{{ supplier.companyName }}</h2>
+          <div class="verification-status">
+            <span class="status-badge" [class]="getVerificationBadgeClass()">
+              {{ getVerificationStatus() }}
+            </span>
+            <span class="member-since">
+              Member since {{ supplier.createdAt | date:'mediumDate' }}
+            </span>
+          </div>
+        </div>
+        <div class="header-actions" *ngIf="!editMode">
+          <button class="btn btn-primary" (click)="enterEditMode()">
+            <span class="material-icons">edit</span>
+            Edit Profile
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Edit Form -->
+    <form *ngIf="editMode" (ngSubmit)="saveProfile()" class="edit-form">
+      <div class="form-grid">
+        <div class="form-group">
+          <label for="companyName">Company Name *</label>
+          <input
+            type="text"
+            id="companyName"
+            [(ngModel)]="editedSupplier.companyName"
+            name="companyName"
+            required>
+        </div>
+
+        <div class="form-group">
+          <label for="businessRegistrationNumber">Business Registration Number *</label>
+          <input
+            type="text"
+            id="businessRegistrationNumber"
+            [(ngModel)]="editedSupplier.businessRegistrationNumber"
+            name="businessRegistrationNumber"
+            required>
+        </div>
+
+        <div class="form-group">
+          <label for="contactPerson">Contact Person *</label>
+          <input
+            type="text"
+            id="contactPerson"
+            [(ngModel)]="editedSupplier.contactPerson"
+            name="contactPerson"
+            required>
+        </div>
+
+        <div class="form-group">
+          <label for="email">Email *</label>
+          <input
+            type="email"
+            id="email"
+            [(ngModel)]="editedSupplier.email"
+            name="email"
+            required>
+        </div>
+
+        <div class="form-group">
+          <label for="phone">Phone *</label>
+          <input
+            type="tel"
+            id="phone"
+            [(ngModel)]="editedSupplier.phone"
+            name="phone"
+            required>
+        </div>
+
+        <div class="form-group">
+          <label for="website">Website</label>
+          <input
+            type="url"
+            id="website"
+            [(ngModel)]="editedSupplier.website"
+            name="website">
+        </div>
+
+        <div class="form-group full-width">
+          <label for="description">Company Description</label>
+          <textarea
+            id="description"
+            [(ngModel)]="editedSupplier.description"
+            name="description"
+            rows="4"
+            placeholder="Describe your company, services, and expertise..."></textarea>
+        </div>
+
+        <div class="form-group">
+          <label for="yearsInBusiness">Years in Business</label>
+          <input
+            type="number"
+            id="yearsInBusiness"
+            [(ngModel)]="editedSupplier.yearsInBusiness"
+            name="yearsInBusiness"
+            min="0">
+        </div>
+
+        <div class="form-group">
+          <label for="logoUrl">Logo URL</label>
+          <input
+            type="url"
+            id="logoUrl"
+            [(ngModel)]="editedSupplier.logoUrl"
+            name="logoUrl"
+            placeholder="https://example.com/logo.png">
+        </div>
+      </div>
+
+      <div class="form-actions">
+        <button type="button" class="btn btn-secondary" (click)="cancelEdit()">
+          Cancel
+        </button>
+        <button type="submit" class="btn btn-primary" [disabled]="isLoading">
+          <span *ngIf="isLoading" class="spinner-small"></span>
+          {{ isLoading ? 'Saving...' : 'Save Changes' }}
+        </button>
+      </div>
+    </form>
+
+    <!-- Read-only View -->
+    <div *ngIf="!editMode" class="profile-details">
+      <div class="details-grid">
+        <div class="detail-item">
+          <label>Business Registration Number</label>
+          <p>{{ supplier.businessRegistrationNumber }}</p>
+        </div>
+
+        <div class="detail-item">
+          <label>Contact Person</label>
+          <p>{{ supplier.contactPerson }}</p>
+        </div>
+
+        <div class="detail-item">
+          <label>Email</label>
+          <p>{{ supplier.email }}</p>
+        </div>
+
+        <div class="detail-item">
+          <label>Phone</label>
+          <p>{{ supplier.phone }}</p>
+        </div>
+
+        <div class="detail-item">
+          <label>Website</label>
+          <p *ngIf="supplier.website">
+            <a [href]="supplier.website" target="_blank">{{ supplier.website }}</a>
+          </p>
+          <p *ngIf="!supplier.website" class="text-muted">Not provided</p>
+        </div>
+
+        <div class="detail-item">
+          <label>Years in Business</label>
+          <p>{{ supplier.yearsInBusiness || 'Not specified' }}</p>
+        </div>
+
+        <div class="detail-item full-width">
+          <label>Company Description</label>
+          <p *ngIf="supplier.description" class="description-text">{{ supplier.description }}</p>
+          <p *ngIf="!supplier.description" class="text-muted">No description provided</p>
+        </div>
+
+        <div class="detail-item">
+          <label>Verification Status</label>
+          <p>{{ getVerificationStatus() }}</p>
+        </div>
+
+        <div class="detail-item">
+          <label>Verification Date</label>
+          <p>{{ supplier.verificationDate ? (supplier.verificationDate | date:'mediumDate') : 'Not verified' }}</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

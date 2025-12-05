@@ -1,0 +1,458 @@
+@import '../../../assets/styles/shared-variables';
+
+.signup-container {
+  min-height: 100vh;
+  justify-content: center;
+  background: $light-gradient;
+  display: flex;
+  align-items: center;
+  padding: 2rem 1rem;
+  font-family: $font-family;
+}
+
+.signup-card {
+  allign-self: center;
+  background: $white;
+  border-radius: $border-radius-xl;
+  box-shadow: $shadow-xl;
+  padding: 3rem 2.5rem;
+  position: relative;
+  overflow: hidden;
+  
+  &::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 4px;
+    background: $primary-gradient;
+  }
+}
+
+.signup-header {
+  text-align: center;
+  margin-bottom: 2.5rem;
+
+  .logo {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 1.5rem;
+
+    .logo-icon {
+      width: 50px;
+      height: 50px;
+      background: $primary-gradient;
+      border-radius: $border-radius-lg;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: $white;
+      font-size: 1.5rem;
+      font-weight: 700;
+      box-shadow: $shadow-md;
+    }
+
+    h1 {
+      font-size: 2rem;
+      font-weight: 700;
+      background: $primary-gradient;
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      margin: 0 0 0 0.75rem;
+    }
+  }
+
+  .welcome-text {
+    color: $text-light;
+    font-size: 1.125rem;
+    margin: 0;
+    font-weight: 500;
+  }
+}
+
+// Alert Styles (same as login)
+.alert {
+  border: none;
+  border-radius: $border-radius;
+  padding: 1rem 1.25rem;
+  margin-bottom: 1.5rem;
+  box-shadow: $shadow-sm;
+  
+  &.alert-success {
+    background: rgba($success-color, 0.1);
+    color: $secondary-dark;
+    border-left: 4px solid $success-color;
+  }
+  
+  &.alert-danger {
+    background: rgba($error-color, 0.1);
+    color: #b91c1c;
+    border-left: 4px solid $error-color;
+  }
+
+  .btn-close {
+    padding: 0.75rem;
+  }
+}
+
+// Role Selection
+.role-selection {
+  margin-bottom: 2rem;
+
+  .role-card {
+    border: 2px solid $border-color;
+    border-radius: $border-radius-lg;
+    padding: 1.5rem;
+    cursor: pointer;
+    transition: $transition-normal;
+    background: $white;
+    text-align: center;
+    height: 100%;
+
+    &:hover {
+      border-color: $primary-color;
+      transform: translateY(-2px);
+      box-shadow: $shadow-md;
+    }
+
+    &.selected {
+      border-color: $primary-color;
+      background: rgba($primary-color, 0.05);
+      box-shadow: $shadow-md;
+
+      .role-icon {
+        color: $primary-color;
+        transform: scale(1.1);
+      }
+    }
+
+    .role-icon {
+      font-size: 2.5rem;
+      color: $text-light;
+      margin-bottom: 1rem;
+      transition: $transition-normal;
+    }
+
+    .role-header {
+      .form-check-input {
+        &:checked {
+          background-color: $primary-color;
+          border-color: $primary-color;
+        }
+
+        &:focus {
+          border-color: $primary-color;
+          box-shadow: 0 0 0 0.2rem rgba($primary-color, 0.25);
+        }
+      }
+
+      .form-check-label {
+        color: $text-dark;
+        font-weight: 600;
+        font-size: 1.125rem;
+        cursor: pointer;
+      }
+    }
+
+    .role-description {
+      color: $text-light;
+      font-size: 0.875rem;
+      margin-top: 0.5rem;
+      line-height: 1.4;
+    }
+  }
+}
+
+// Section Cards
+.section-card {
+  background: $light-bg;
+  border-radius: $border-radius-lg;
+  padding: 2rem;
+  border: 1px solid $border-color;
+  margin-bottom: 1.5rem;
+  transition: $transition-normal;
+
+  &:hover {
+    border-color: $primary-light;
+  }
+
+  .section-title {
+    color: $dark-color;
+    font-weight: 600;
+    font-size: 1.25rem;
+    margin-bottom: 1.5rem;
+    padding-bottom: 0.75rem;
+    border-bottom: 2px solid $primary-light;
+
+    i {
+      color: $primary-color;
+      margin-right: 0.5rem;
+    }
+  }
+}
+
+// Form Styles (same as login with additions)
+.signup-form {
+  .form-label {
+    color: $text-dark;
+    font-weight: 600;
+    font-size: 0.875rem;
+    margin-bottom: 0.5rem;
+    display: block;
+
+    .text-danger {
+      color: $error-color;
+    }
+  }
+
+  .form-control, .form-select {
+    border: 2px solid $border-color;
+    border-radius: $border-radius;
+    padding: 0.875rem 1rem;
+    font-size: 1rem;
+    background: $white;
+    transition: $transition-normal;
+    box-shadow: $shadow-sm;
+
+    &:focus {
+      border-color: $primary-color;
+      box-shadow: 0 0 0 3px rgba($primary-color, 0.1);
+      outline: none;
+    }
+
+    &.is-invalid {
+      border-color: $error-color;
+      
+      &:focus {
+        box-shadow: 0 0 0 3px rgba($error-color, 0.1);
+      }
+    }
+
+    &::placeholder {
+      color: #9ca3af;
+    }
+  }
+
+  .form-text {
+    font-size: 0.75rem;
+    color: $text-light;
+    margin-top: 0.25rem;
+
+    &.text-success {
+      color: $success-color;
+    }
+
+    &.text-danger {
+      color: $error-color;
+    }
+  }
+
+  textarea.form-control {
+    resize: vertical;
+    min-height: 80px;
+  }
+}
+
+// Password Strength
+.password-strength {
+  margin-top: 0.5rem;
+
+  .strength-bar {
+    height: 4px;
+    background: $border-color;
+    border-radius: 2px;
+    overflow: hidden;
+    margin-bottom: 0.25rem;
+
+    .strength-fill {
+      height: 100%;
+      border-radius: 2px;
+      transition: $transition-normal;
+
+      &.weak {
+        width: 33%;
+        background: $error-color;
+      }
+
+      &.medium {
+        width: 66%;
+        background: $warning-color;
+      }
+
+      &.strong {
+        width: 100%;
+        background: $success-color;
+      }
+    }
+  }
+
+  small {
+    font-size: 0.75rem;
+    color: $text-light;
+  }
+}
+
+// Terms and Conditions
+.form-check {
+  .form-check-input {
+    &:checked {
+      background-color: $primary-color;
+      border-color: $primary-color;
+    }
+
+    &:focus {
+      border-color: $primary-color;
+      box-shadow: 0 0 0 0.2rem rgba($primary-color, 0.25);
+    }
+  }
+
+  .form-check-label {
+    color: $text-dark;
+    font-size: 0.875rem;
+
+    .terms-link {
+      color: $primary-color;
+      text-decoration: none;
+      font-weight: 500;
+
+      &:hover {
+        color: $primary-dark;
+        text-decoration: underline;
+      }
+    }
+  }
+}
+
+// Signup Button
+.signup-button {
+  background: $accent-gradient;
+  border: none;
+  border-radius: $border-radius;
+  padding: 1rem 2rem;
+  font-size: 1rem;
+  font-weight: 600;
+  color: $dark-color;
+  transition: $transition-normal;
+  box-shadow: $shadow-md;
+  position: relative;
+  overflow: hidden;
+  min-width: 200px;
+
+  &:hover:not(:disabled) {
+    transform: translateY(-2px);
+    box-shadow: $shadow-lg;
+  }
+
+  &:active:not(:disabled) {
+    transform: translateY(0);
+  }
+
+  &:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    transform: none;
+    box-shadow: $shadow-sm;
+  }
+
+  &.btn-loading {
+    opacity: 0.8;
+  }
+}
+
+// Footer
+.signup-footer {
+  border-top: 1px solid $border-color;
+  padding-top: 1.5rem;
+
+  p {
+    color: $text-light;
+    font-size: 0.875rem;
+    margin: 0;
+  }
+
+  .login-link {
+    color: $primary-color;
+    text-decoration: none;
+    font-weight: 600;
+    transition: $transition-fast;
+
+    &:hover {
+      color: $primary-dark;
+      text-decoration: underline;
+    }
+  }
+}
+
+// Responsive Design
+@media (max-width: 768px) {
+  .signup-container {
+    padding: 1rem 0.5rem;
+  }
+
+  .signup-card {
+    padding: 2rem 1.5rem;
+    border-radius: $border-radius-lg;
+  }
+
+  .signup-header {
+    .logo {
+      flex-direction: column;
+      gap: 0.75rem;
+
+      h1 {
+        margin: 0;
+        font-size: 1.75rem;
+      }
+    }
+
+    .welcome-text {
+      font-size: 1rem;
+    }
+  }
+
+  .role-card {
+    padding: 1.25rem;
+    margin-bottom: 1rem;
+  }
+
+  .section-card {
+    padding: 1.5rem;
+  }
+
+  .signup-button {
+    width: 100%;
+    min-width: auto;
+  }
+}
+
+@media (max-width: 480px) {
+  .signup-card {
+    padding: 1.5rem 1rem;
+  }
+
+  .role-card {
+    padding: 1rem;
+  }
+
+  .section-card {
+    padding: 1.25rem;
+  }
+}
+
+// Animation for section transitions
+.section-card {
+  animation: fadeInUp 0.5s ease;
+}
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}

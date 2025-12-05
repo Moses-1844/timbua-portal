@@ -2,578 +2,625 @@
   {
     "code": 1,
     "name": "Mombasa",
+    "coordinates": {"lat": -4.0435, "lng": 39.6682},
     "subCounties": [
-      { "name": "Changamwe" },
-      { "name": "Jomvu" },
-      { "name": "Kisauni" },
-      { "name": "Nyali" },
-      { "name": "Likoni" },
-      { "name": "Mvita" }
+      {"name": "Changamwe", "coordinates": {"lat": -4.0333, "lng": 39.6167}},
+      {"name": "Jomvu", "coordinates": {"lat": -4.0667, "lng": 39.6667}},
+      {"name": "Kisauni", "coordinates": {"lat": -4.0000, "lng": 39.7000}},
+      {"name": "Nyali", "coordinates": {"lat": -4.0500, "lng": 39.7000}},
+      {"name": "Likoni", "coordinates": {"lat": -4.1000, "lng": 39.6500}},
+      {"name": "Mvita", "coordinates": {"lat": -4.0500, "lng": 39.6667}}
     ]
   },
   {
     "code": 2,
     "name": "Kwale",
+    "coordinates": {"lat": -4.1800, "lng": 39.4500},
     "subCounties": [
-      { "name": "Msambweni" },
-      { "name": "Lunga Lunga" },
-      { "name": "Matuga" },
-      { "name": "Kinango" }
+      {"name": "Msambweni", "coordinates": {"lat": -4.4667, "lng": 39.4833}},
+      {"name": "Lunga Lunga", "coordinates": {"lat": -4.5500, "lng": 39.1167}},
+      {"name": "Matuga", "coordinates": {"lat": -4.1667, "lng": 39.4667}},
+      {"name": "Kinango", "coordinates": {"lat": -4.1333, "lng": 39.3167}}
     ]
   },
   {
     "code": 3,
     "name": "Kilifi",
+    "coordinates": {"lat": -3.6300, "lng": 39.8500},
     "subCounties": [
-      { "name": "Kilifi North" },
-      { "name": "Kilifi South" },
-      { "name": "Kaloleni" },
-      { "name": "Rabai" },
-      { "name": "Ganze" },
-      { "name": "Malindi" },
-      { "name": "Magarini" }
+      {"name": "Kilifi North", "coordinates": {"lat": -3.6000, "lng": 39.8500}},
+      {"name": "Kilifi South", "coordinates": {"lat": -3.6500, "lng": 39.8500}},
+      {"name": "Kaloleni", "coordinates": {"lat": -3.8667, "lng": 39.6000}},
+      {"name": "Rabai", "coordinates": {"lat": -3.9333, "lng": 39.5833}},
+      {"name": "Ganze", "coordinates": {"lat": -3.8000, "lng": 39.5500}},
+      {"name": "Malindi", "coordinates": {"lat": -3.2167, "lng": 40.1167}},
+      {"name": "Magarini", "coordinates": {"lat": -3.0000, "lng": 40.0000}}
     ]
   },
   {
     "code": 4,
     "name": "Tana River",
+    "coordinates": {"lat": -1.5000, "lng": 40.0000},
     "subCounties": [
-      { "name": "Garsen" },
-      { "name": "Galole" },
-      { "name": "Bura" }
+      {"name": "Garsen", "coordinates": {"lat": -2.2667, "lng": 40.1167}},
+      {"name": "Galole", "coordinates": {"lat": -1.7833, "lng": 40.0667}},
+      {"name": "Bura", "coordinates": {"lat": -1.5000, "lng": 40.0333}}
     ]
   },
   {
     "code": 5,
     "name": "Lamu",
+    "coordinates": {"lat": -2.2694, "lng": 40.9000},
     "subCounties": [
-      { "name": "Lamu East" },
-      { "name": "Lamu West" }
+      {"name": "Lamu East", "coordinates": {"lat": -2.2000, "lng": 41.0000}},
+      {"name": "Lamu West", "coordinates": {"lat": -2.2694, "lng": 40.9000}}
     ]
   },
   {
     "code": 6,
     "name": "Taita Taveta",
+    "coordinates": {"lat": -3.4000, "lng": 38.3667},
     "subCounties": [
-      { "name": "Wundanyi" },
-      { "name": "Mwatate" },
-      { "name": "Voi" },
-      { "name": "Taveta" }
+      {"name": "Wundanyi", "coordinates": {"lat": -3.4000, "lng": 38.3667}},
+      {"name": "Mwatate", "coordinates": {"lat": -3.5000, "lng": 38.4000}},
+      {"name": "Voi", "coordinates": {"lat": -3.3833, "lng": 38.5667}},
+      {"name": "Taveta", "coordinates": {"lat": -3.4000, "lng": 37.6833}}
     ]
   },
   {
     "code": 7,
     "name": "Garissa",
+    "coordinates": {"lat": -0.4569, "lng": 39.6583},
     "subCounties": [
-      { "name": "Garissa Township" },
-      { "name": "Balambala" },
-      { "name": "Lagdera" },
-      { "name": "Dadaab" },
-      { "name": "Fafi" },
-      { "name": "Ijara" }
+      {"name": "Garissa Township", "coordinates": {"lat": -0.4569, "lng": 39.6583}},
+      {"name": "Balambala", "coordinates": {"lat": -0.5833, "lng": 39.7333}},
+      {"name": "Lagdera", "coordinates": {"lat": -0.3833, "lng": 39.9167}},
+      {"name": "Dadaab", "coordinates": {"lat": 0.0500, "lng": 40.3167}},
+      {"name": "Fafi", "coordinates": {"lat": -0.3333, "lng": 40.5000}},
+      {"name": "Ijara", "coordinates": {"lat": -1.5500, "lng": 40.9667}}
     ]
   },
   {
     "code": 8,
     "name": "Wajir",
+    "coordinates": {"lat": 1.7500, "lng": 40.0500},
     "subCounties": [
-      { "name": "Wajir East" },
-      { "name": "Wajir North" },
-      { "name": "Wajir West" },
-      { "name": "Wajir South" },
-      { "name": "Tarbaj" },
-      { "name": "Eldas" }
+      {"name": "Wajir East", "coordinates": {"lat": 1.7500, "lng": 40.0500}},
+      {"name": "Wajir North", "coordinates": {"lat": 2.5000, "lng": 40.2500}},
+      {"name": "Wajir West", "coordinates": {"lat": 1.5833, "lng": 39.4833}},
+      {"name": "Wajir South", "coordinates": {"lat": 1.1667, "lng": 40.0333}},
+      {"name": "Tarbaj", "coordinates": {"lat": 1.0000, "lng": 40.0000}},
+      {"name": "Eldas", "coordinates": {"lat": 0.4167, "lng": 39.5833}}
     ]
   },
   {
     "code": 9,
     "name": "Mandera",
+    "coordinates": {"lat": 3.9261, "lng": 41.8464},
     "subCounties": [
-      { "name": "Mandera East" },
-      { "name": "Mandera West" },
-      { "name": "Mandera North" },
-      { "name": "Mandera South" },
-      { "name": "Banissa" },
-      { "name": "Lafey" }
+      {"name": "Mandera East", "coordinates": {"lat": 3.9261, "lng": 41.8464}},
+      {"name": "Mandera West", "coordinates": {"lat": 3.7500, "lng": 41.5000}},
+      {"name": "Mandera North", "coordinates": {"lat": 4.2500, "lng": 41.0000}},
+      {"name": "Mandera South", "coordinates": {"lat": 2.5000, "lng": 40.8333}},
+      {"name": "Banissa", "coordinates": {"lat": 2.3333, "lng": 40.6667}},
+      {"name": "Lafey", "coordinates": {"lat": 3.5000, "lng": 41.0000}}
     ]
   },
   {
     "code": 10,
     "name": "Marsabit",
+    "coordinates": {"lat": 2.3333, "lng": 37.9833},
     "subCounties": [
-      { "name": "Moyale" },
-      { "name": "North Horr" },
-      { "name": "Saku" },
-      { "name": "Laisamis" }
+      {"name": "Moyale", "coordinates": {"lat": 3.5264, "lng": 39.0572}},
+      {"name": "North Horr", "coordinates": {"lat": 3.3000, "lng": 37.8667}},
+      {"name": "Saku", "coordinates": {"lat": 2.3333, "lng": 37.9833}},
+      {"name": "Laisamis", "coordinates": {"lat": 1.9500, "lng": 37.7000}}
     ]
   },
   {
     "code": 11,
     "name": "Isiolo",
+    "coordinates": {"lat": 0.3500, "lng": 37.5833},
     "subCounties": [
-      { "name": "Isiolo" },
-      { "name": "Garbatulla" },
-      { "name": "Merti" }
+      {"name": "Isiolo", "coordinates": {"lat": 0.3500, "lng": 37.5833}},
+      {"name": "Garbatulla", "coordinates": {"lat": 0.5000, "lng": 38.5000}},
+      {"name": "Merti", "coordinates": {"lat": 1.0500, "lng": 38.1667}}
     ]
   },
   {
     "code": 12,
     "name": "Meru",
+    "coordinates": {"lat": 0.0500, "lng": 37.6500},
     "subCounties": [
-      { "name": "Buuri" },
-      { "name": "Igembe Central" },
-      { "name": "Igembe North" },
-      { "name": "Igembe South" },
-      { "name": "Imenti Central" },
-      { "name": "Imenti North" },
-      { "name": "Imenti South" },
-      { "name": "Tigania East" },
-      { "name": "Tigania West" }
+      {"name": "Buuri", "coordinates": {"lat": 0.2000, "lng": 37.7000}},
+      {"name": "Igembe Central", "coordinates": {"lat": 0.1667, "lng": 37.9167}},
+      {"name": "Igembe North", "coordinates": {"lat": 0.5000, "lng": 37.8333}},
+      {"name": "Igembe South", "coordinates": {"lat": 0.0833, "lng": 37.8333}},
+      {"name": "Imenti Central", "coordinates": {"lat": 0.0500, "lng": 37.6500}},
+      {"name": "Imenti North", "coordinates": {"lat": 0.2500, "lng": 37.5833}},
+      {"name": "Imenti South", "coordinates": {"lat": -0.5000, "lng": 37.6667}},
+      {"name": "Tigania East", "coordinates": {"lat": 0.1667, "lng": 37.7500}},
+      {"name": "Tigania West", "coordinates": {"lat": 0.0833, "lng": 37.6667}}
     ]
   },
   {
     "code": 13,
     "name": "Tharaka-Nithi",
+    "coordinates": {"lat": -0.3000, "lng": 37.8167},
     "subCounties": [
-      { "name": "Tharaka" },
-      { "name": "Chuka" },
-      { "name": "Igambang'ombe" },
-      { "name": "Maara" }
+      {"name": "Tharaka", "coordinates": {"lat": -0.1667, "lng": 38.0833}},
+      {"name": "Chuka", "coordinates": {"lat": -0.3333, "lng": 37.6500}},
+      {"name": "Igambang'ombe", "coordinates": {"lat": -0.4167, "lng": 37.8333}},
+      {"name": "Maara", "coordinates": {"lat": -0.2500, "lng": 37.9167}}
     ]
   },
   {
     "code": 14,
     "name": "Embu",
+    "coordinates": {"lat": -0.5333, "lng": 37.4500},
     "subCounties": [
-      { "name": "Manyatta" },
-      { "name": "Runyenjes" },
-      { "name": "Mbeere North" },
-      { "name": "Mbeere South" }
+      {"name": "Manyatta", "coordinates": {"lat": -0.5333, "lng": 37.4500}},
+      {"name": "Runyenjes", "coordinates": {"lat": -0.4500, "lng": 37.5500}},
+      {"name": "Mbeere North", "coordinates": {"lat": -0.7000, "lng": 37.5833}},
+      {"name": "Mbeere South", "coordinates": {"lat": -0.9167, "lng": 37.6667}}
     ]
   },
   {
     "code": 15,
     "name": "Kitui",
+    "coordinates": {"lat": -1.3667, "lng": 38.0167},
     "subCounties": [
-      { "name": "Kitui Central" },
-      { "name": "Kitui East" },
-      { "name": "Kitui South" },
-      { "name": "Kitui West" },
-      { "name": "Kitui Rural" },
-      { "name": "Mwingi Central" },
-      { "name": "Mwingi North" },
-      { "name": "Mwingi West" }
+      {"name": "Kitui Central", "coordinates": {"lat": -1.3667, "lng": 38.0167}},
+      {"name": "Kitui East", "coordinates": {"lat": -1.5000, "lng": 38.3333}},
+      {"name": "Kitui South", "coordinates": {"lat": -2.0000, "lng": 38.1667}},
+      {"name": "Kitui West", "coordinates": {"lat": -1.5833, "lng": 37.8333}},
+      {"name": "Kitui Rural", "coordinates": {"lat": -1.5000, "lng": 38.0833}},
+      {"name": "Mwingi Central", "coordinates": {"lat": -0.9333, "lng": 38.0667}},
+      {"name": "Mwingi North", "coordinates": {"lat": -0.5833, "lng": 38.1667}},
+      {"name": "Mwingi West", "coordinates": {"lat": -1.0833, "lng": 37.8333}}
     ]
   },
   {
     "code": 16,
     "name": "Machakos",
+    "coordinates": {"lat": -1.5167, "lng": 37.2667},
     "subCounties": [
-      { "name": "Machakos Town" },
-      { "name": "Mavoko" },
-      { "name": "Kangundo" },
-      { "name": "Matungulu" },
-      { "name": "Kathiani" },
-      { "name": "Masinga" },
-      { "name": "Yatta" },
-      { "name": "Mwala" }
+      {"name": "Machakos Town", "coordinates": {"lat": -1.5167, "lng": 37.2667}},
+      {"name": "Mavoko", "coordinates": {"lat": -1.3833, "lng": 36.9167}},
+      {"name": "Kangundo", "coordinates": {"lat": -1.3000, "lng": 37.3500}},
+      {"name": "Matungulu", "coordinates": {"lat": -1.2833, "lng": 37.2500}},
+      {"name": "Kathiani", "coordinates": {"lat": -1.4000, "lng": 37.3333}},
+      {"name": "Masinga", "coordinates": {"lat": -0.9167, "lng": 37.5000}},
+      {"name": "Yatta", "coordinates": {"lat": -1.4167, "lng": 37.5000}},
+      {"name": "Mwala", "coordinates": {"lat": -1.4167, "lng": 37.4167}}
     ]
   },
   {
     "code": 17,
     "name": "Makueni",
+    "coordinates": {"lat": -1.8000, "lng": 37.6167},
     "subCounties": [
-      { "name": "Makueni" },
-      { "name": "Kaiti" },
-      { "name": "Kibwezi West" },
-      { "name": "Kibwezi East" },
-      { "name": "Mbooni" },
-      { "name": "Kilome" }
+      {"name": "Makueni", "coordinates": {"lat": -1.8000, "lng": 37.6167}},
+      {"name": "Kaiti", "coordinates": {"lat": -1.7833, "lng": 37.5333}},
+      {"name": "Kibwezi West", "coordinates": {"lat": -2.4167, "lng": 37.9667}},
+      {"name": "Kibwezi East", "coordinates": {"lat": -2.2500, "lng": 38.0833}},
+      {"name": "Mbooni", "coordinates": {"lat": -1.6667, "lng": 37.4167}},
+      {"name": "Kilome", "coordinates": {"lat": -1.9167, "lng": 37.3333}}
     ]
   },
   {
     "code": 18,
     "name": "Nyandarua",
+    "coordinates": {"lat": -0.5333, "lng": 36.5833},
     "subCounties": [
-      { "name": "Kinangop" },
-      { "name": "Kipipiri" },
-      { "name": "Ol Kalou" },
-      { "name": "Ol Joro Orok" },
-      { "name": "Ndaragwa" }
+      {"name": "Kinangop", "coordinates": {"lat": -0.6333, "lng": 36.6667}},
+      {"name": "Kipipiri", "coordinates": {"lat": -0.3333, "lng": 36.5000}},
+      {"name": "Ol Kalou", "coordinates": {"lat": -0.5333, "lng": 36.5833}},
+      {"name": "Ol Joro Orok", "coordinates": {"lat": -0.3333, "lng": 36.3333}},
+      {"name": "Ndaragwa", "coordinates": {"lat": -0.2500, "lng": 36.5833}}
     ]
   },
   {
     "code": 19,
     "name": "Nyeri",
+    "coordinates": {"lat": -0.4167, "lng": 36.9500},
     "subCounties": [
-      { "name": "Nyeri Town" },
-      { "name": "Kieni East" },
-      { "name": "Kieni West" },
-      { "name": "Mathira East" },
-      { "name": "Mathira West" },
-      { "name": "Mukurweini" },
-      { "name": "Othaya" },
-      { "name": "Tetu" }
+      {"name": "Nyeri Town", "coordinates": {"lat": -0.4167, "lng": 36.9500}},
+      {"name": "Kieni East", "coordinates": {"lat": -0.5000, "lng": 37.0833}},
+      {"name": "Kieni West", "coordinates": {"lat": -0.5833, "lng": 36.8333}},
+      {"name": "Mathira East", "coordinates": {"lat": -0.3333, "lng": 37.0833}},
+      {"name": "Mathira West", "coordinates": {"lat": -0.4167, "lng": 36.8333}},
+      {"name": "Mukurweini", "coordinates": {"lat": -0.5833, "lng": 37.0000}},
+      {"name": "Othaya", "coordinates": {"lat": -0.5667, "lng": 36.9500}},
+      {"name": "Tetu", "coordinates": {"lat": -0.4167, "lng": 36.9167}}
     ]
   },
   {
     "code": 20,
     "name": "Kirinyaga",
+    "coordinates": {"lat": -0.5000, "lng": 37.2833},
     "subCounties": [
-      { "name": "Kirinyaga Central" },
-      { "name": "Mwea East" },
-      { "name": "Mwea West" },
-      { "name": "Gichugu" },
-      { "name": "Ndia" }
+      {"name": "Kirinyaga Central", "coordinates": {"lat": -0.5000, "lng": 37.2833}},
+      {"name": "Mwea East", "coordinates": {"lat": -0.6667, "lng": 37.4167}},
+      {"name": "Mwea West", "coordinates": {"lat": -0.7500, "lng": 37.3333}},
+      {"name": "Gichugu", "coordinates": {"lat": -0.5833, "lng": 37.4167}},
+      {"name": "Ndia", "coordinates": {"lat": -0.5833, "lng": 37.2500}}
     ]
   },
   {
     "code": 21,
     "name": "Murang'a",
+    "coordinates": {"lat": -0.7167, "lng": 37.1500},
     "subCounties": [
-      { "name": "Kandara" },
-      { "name": "Kangema" },
-      { "name": "Kigumo" },
-      { "name": "Kiharu" },
-      { "name": "Mathioya" },
-      { "name": "Maragwa" },
-      { "name": "Gatanga" }
+      {"name": "Kandara", "coordinates": {"lat": -0.9167, "lng": 37.0000}},
+      {"name": "Kangema", "coordinates": {"lat": -0.6833, "lng": 36.9667}},
+      {"name": "Kigumo", "coordinates": {"lat": -0.7500, "lng": 37.0833}},
+      {"name": "Kiharu", "coordinates": {"lat": -0.7167, "lng": 37.1500}},
+      {"name": "Mathioya", "coordinates": {"lat": -0.8000, "lng": 37.0333}},
+      {"name": "Maragwa", "coordinates": {"lat": -0.8333, "lng": 37.2500}},
+      {"name": "Gatanga", "coordinates": {"lat": -0.8333, "lng": 37.0833}}
     ]
   },
   {
     "code": 22,
     "name": "Kiambu",
+    "coordinates": {"lat": -1.1667, "lng": 36.8333},
     "subCounties": [
-      { "name": "Kiambu" },
-      { "name": "Gatundu North" },
-      { "name": "Gatundu South" },
-      { "name": "Githunguri" },
-      { "name": "Juja" },
-      { "name": "Kabete" },
-      { "name": "Kikuyu" },
-      { "name": "Limuru" },
-      { "name": "Lari" },
-      { "name": "Ruiru" },
-      { "name": "Thika Town" }
+      {"name": "Kiambu", "coordinates": {"lat": -1.1667, "lng": 36.8333}},
+      {"name": "Gatundu North", "coordinates": {"lat": -0.9167, "lng": 36.9167}},
+      {"name": "Gatundu South", "coordinates": {"lat": -1.0000, "lng": 36.9167}},
+      {"name": "Githunguri", "coordinates": {"lat": -1.0667, "lng": 36.7833}},
+      {"name": "Juja", "coordinates": {"lat": -1.1000, "lng": 37.0167}},
+      {"name": "Kabete", "coordinates": {"lat": -1.2500, "lng": 36.7333}},
+      {"name": "Kikuyu", "coordinates": {"lat": -1.2500, "lng": 36.6667}},
+      {"name": "Limuru", "coordinates": {"lat": -1.1167, "lng": 36.6500}},
+      {"name": "Lari", "coordinates": {"lat": -0.8333, "lng": 36.5833}},
+      {"name": "Ruiru", "coordinates": {"lat": -1.1500, "lng": 36.9667}},
+      {"name": "Thika Town", "coordinates": {"lat": -1.0333, "lng": 37.0833}}
     ]
   },
   {
     "code": 23,
     "name": "Turkana",
+    "coordinates": {"lat": 3.1167, "lng": 35.6000},
     "subCounties": [
-      { "name": "Turkana Central" },
-      { "name": "Turkana East" },
-      { "name": "Turkana North" },
-      { "name": "Turkana South" },
-      { "name": "Turkana West" },
-      { "name": "Loima" }
+      {"name": "Turkana Central", "coordinates": {"lat": 3.1167, "lng": 35.6000}},
+      {"name": "Turkana East", "coordinates": {"lat": 2.8333, "lng": 36.1667}},
+      {"name": "Turkana North", "coordinates": {"lat": 3.5000, "lng": 35.5000}},
+      {"name": "Turkana South", "coordinates": {"lat": 2.5000, "lng": 35.8333}},
+      {"name": "Turkana West", "coordinates": {"lat": 3.2500, "lng": 35.0000}},
+      {"name": "Loima", "coordinates": {"lat": 3.0000, "lng": 35.3333}}
     ]
   },
   {
     "code": 24,
     "name": "West Pokot",
+    "coordinates": {"lat": 1.4167, "lng": 35.1167},
     "subCounties": [
-      { "name": "Kapenguria" },
-      { "name": "Kacheliba" },
-      { "name": "Pokot South" },
-      { "name": "Sigor" }
+      {"name": "Kapenguria", "coordinates": {"lat": 1.4167, "lng": 35.1167}},
+      {"name": "Kacheliba", "coordinates": {"lat": 1.5833, "lng": 35.2500}},
+      {"name": "Pokot South", "coordinates": {"lat": 1.1667, "lng": 35.0833}},
+      {"name": "Sigor", "coordinates": {"lat": 1.5000, "lng": 35.3333}}
     ]
   },
   {
     "code": 25,
     "name": "Samburu",
+    "coordinates": {"lat": 1.1000, "lng": 36.6667},
     "subCounties": [
-      { "name": "Samburu East" },
-      { "name": "Samburu North" },
-      { "name": "Samburu West" }
+      {"name": "Samburu East", "coordinates": {"lat": 1.0000, "lng": 37.5000}},
+      {"name": "Samburu North", "coordinates": {"lat": 1.5000, "lng": 36.8333}},
+      {"name": "Samburu West", "coordinates": {"lat": 1.1000, "lng": 36.6667}}
     ]
   },
   {
     "code": 26,
     "name": "Trans Nzoia",
+    "coordinates": {"lat": 1.0333, "lng": 35.0000},
     "subCounties": [
-      { "name": "Kiminini" },
-      { "name": "Kwanza" },
-      { "name": "Saboti" },
-      { "name": "Endebess" },
-      { "name": "Cherangany" }
+      {"name": "Kiminini", "coordinates": {"lat": 0.9167, "lng": 34.9167}},
+      {"name": "Kwanza", "coordinates": {"lat": 1.1000, "lng": 34.9333}},
+      {"name": "Saboti", "coordinates": {"lat": 0.9833, "lng": 34.8667}},
+      {"name": "Endebess", "coordinates": {"lat": 1.0000, "lng": 34.7833}},
+      {"name": "Cherangany", "coordinates": {"lat": 1.0333, "lng": 35.0000}}
     ]
   },
   {
     "code": 27,
     "name": "Uasin Gishu",
+    "coordinates": {"lat": 0.5167, "lng": 35.2833},
     "subCounties": [
-      { "name": "Ainabkoi" },
-      { "name": "Kapseret" },
-      { "name": "Kesses" },
-      { "name": "Moiben" },
-      { "name": "Soy" },
-      { "name": "Turbo" }
+      {"name": "Ainabkoi", "coordinates": {"lat": 0.4167, "lng": 35.4167}},
+      {"name": "Kapseret", "coordinates": {"lat": 0.4667, "lng": 35.2333}},
+      {"name": "Kesses", "coordinates": {"lat": 0.3333, "lng": 35.3333}},
+      {"name": "Moiben", "coordinates": {"lat": 0.5833, "lng": 35.5000}},
+      {"name": "Soy", "coordinates": {"lat": 0.6000, "lng": 35.1833}},
+      {"name": "Turbo", "coordinates": {"lat": 0.6667, "lng": 35.0833}}
     ]
   },
   {
     "code": 28,
     "name": "Elgeyo Marakwet",
+    "coordinates": {"lat": 0.5167, "lng": 35.5167},
     "subCounties": [
-      { "name": "Keiyo North" },
-      { "name": "Keiyo South" },
-      { "name": "Marakwet East" },
-      { "name": "Marakwet West" }
+      {"name": "Keiyo North", "coordinates": {"lat": 0.5833, "lng": 35.5833}},
+      {"name": "Keiyo South", "coordinates": {"lat": 0.5000, "lng": 35.5000}},
+      {"name": "Marakwet East", "coordinates": {"lat": 0.8333, "lng": 35.5833}},
+      {"name": "Marakwet West", "coordinates": {"lat": 0.7500, "lng": 35.5000}}
     ]
   },
   {
     "code": 29,
     "name": "Nandi",
+    "coordinates": {"lat": 0.2000, "lng": 35.1000},
     "subCounties": [
-      { "name": "Aldai" },
-      { "name": "Chesumei" },
-      { "name": "Emgwen" },
-      { "name": "Mosop" },
-      { "name": "Nandi Hills" },
-      { "name": "Tinderet" }
+      {"name": "Aldai", "coordinates": {"lat": 0.0833, "lng": 35.1667}},
+      {"name": "Chesumei", "coordinates": {"lat": 0.3333, "lng": 35.2500}},
+      {"name": "Emgwen", "coordinates": {"lat": 0.2000, "lng": 35.1000}},
+      {"name": "Mosop", "coordinates": {"lat": 0.2500, "lng": 35.1667}},
+      {"name": "Nandi Hills", "coordinates": {"lat": 0.1667, "lng": 35.1833}},
+      {"name": "Tinderet", "coordinates": {"lat": 0.0833, "lng": 35.0833}}
     ]
   },
   {
     "code": 30,
     "name": "Baringo",
+    "coordinates": {"lat": 0.4667, "lng": 35.9667},
     "subCounties": [
-      { "name": "Baringo Central" },
-      { "name": "Baringo North" },
-      { "name": "Baringo South" },
-      { "name": "Eldama Ravine" },
-      { "name": "Mogotio" },
-      { "name": "Tiaty" }
+      {"name": "Baringo Central", "coordinates": {"lat": 0.4667, "lng": 35.9667}},
+      {"name": "Baringo North", "coordinates": {"lat": 0.8333, "lng": 35.8333}},
+      {"name": "Baringo South", "coordinates": {"lat": 0.2500, "lng": 35.8333}},
+      {"name": "Eldama Ravine", "coordinates": {"lat": 0.0500, "lng": 35.7333}},
+      {"name": "Mogotio", "coordinates": {"lat": 0.0833, "lng": 35.9667}},
+      {"name": "Tiaty", "coordinates": {"lat": 1.1667, "lng": 36.0833}}
     ]
   },
   {
     "code": 31,
     "name": "Laikipia",
+    "coordinates": {"lat": 0.3333, "lng": 36.5833},
     "subCounties": [
-      { "name": "Laikipia East" },
-      { "name": "Laikipia North" },
-      { "name": "Laikipia West" }
+      {"name": "Laikipia East", "coordinates": {"lat": 0.3333, "lng": 36.5833}},
+      {"name": "Laikipia North", "coordinates": {"lat": 0.8333, "lng": 36.5833}},
+      {"name": "Laikipia West", "coordinates": {"lat": 0.1667, "lng": 36.4167}}
     ]
   },
   {
     "code": 32,
     "name": "Nakuru",
+    "coordinates": {"lat": -0.3000, "lng": 36.0667},
     "subCounties": [
-      { "name": "Nakuru Town East" },
-      { "name": "Nakuru Town West" },
-      { "name": "Naivasha" },
-      { "name": "Gilgil" },
-      { "name": "Kuresoi North" },
-      { "name": "Kuresoi South" },
-      { "name": "Molo" },
-      { "name": "Rongai" },
-      { "name": "Subukia" },
-      { "name": "Bahati" }
+      {"name": "Nakuru Town East", "coordinates": {"lat": -0.3000, "lng": 36.0667}},
+      {"name": "Nakuru Town West", "coordinates": {"lat": -0.2833, "lng": 36.0500}},
+      {"name": "Naivasha", "coordinates": {"lat": -0.7167, "lng": 36.4333}},
+      {"name": "Gilgil", "coordinates": {"lat": -0.5000, "lng": 36.3333}},
+      {"name": "Kuresoi North", "coordinates": {"lat": -0.1667, "lng": 35.8333}},
+      {"name": "Kuresoi South", "coordinates": {"lat": -0.3333, "lng": 35.7500}},
+      {"name": "Molo", "coordinates": {"lat": -0.2500, "lng": 35.7333}},
+      {"name": "Rongai", "coordinates": {"lat": -0.1667, "lng": 35.8667}},
+      {"name": "Subukia", "coordinates": {"lat": -0.0833, "lng": 36.1667}},
+      {"name": "Bahati", "coordinates": {"lat": -0.0833, "lng": 36.0833}}
     ]
   },
   {
     "code": 33,
     "name": "Narok",
+    "coordinates": {"lat": -1.0833, "lng": 35.8667},
     "subCounties": [
-      { "name": "Narok North" },
-      { "name": "Narok South" },
-      { "name": "Narok East" },
-      { "name": "Narok West" },
-      { "name": "Trans Mara East" },
-      { "name": "Trans Mara West" }
+      {"name": "Narok North", "coordinates": {"lat": -1.0833, "lng": 35.8667}},
+      {"name": "Narok South", "coordinates": {"lat": -1.5000, "lng": 35.6667}},
+      {"name": "Narok East", "coordinates": {"lat": -1.2500, "lng": 36.0000}},
+      {"name": "Narok West", "coordinates": {"lat": -1.1667, "lng": 35.5833}},
+      {"name": "Trans Mara East", "coordinates": {"lat": -1.0000, "lng": 34.9167}},
+      {"name": "Trans Mara West", "coordinates": {"lat": -1.1667, "lng": 34.8333}}
     ]
   },
   {
     "code": 34,
     "name": "Kajiado",
+    "coordinates": {"lat": -1.8500, "lng": 36.7833},
     "subCounties": [
-      { "name": "Kajiado North" },
-      { "name": "Kajiado South" },
-      { "name": "Kajiado East" },
-      { "name": "Kajiado West" },
-      { "name": "Loitokitok" }
+      {"name": "Kajiado North", "coordinates": {"lat": -1.4000, "lng": 36.7833}},
+      {"name": "Kajiado South", "coordinates": {"lat": -2.5000, "lng": 36.8333}},
+      {"name": "Kajiado East", "coordinates": {"lat": -2.0000, "lng": 37.1667}},
+      {"name": "Kajiado West", "coordinates": {"lat": -1.8500, "lng": 36.7833}},
+      {"name": "Loitokitok", "coordinates": {"lat": -2.6000, "lng": 37.5000}}
     ]
   },
   {
     "code": 35,
     "name": "Kericho",
+    "coordinates": {"lat": -0.3667, "lng": 35.2833},
     "subCounties": [
-      { "name": "Ainamoi" },
-      { "name": "Belgut" },
-      { "name": "Bureti" },
-      { "name": "Kipkelion East" },
-      { "name": "Kipkelion West" },
-      { "name": "Sigowet-Soin" }
+      {"name": "Ainamoi", "coordinates": {"lat": -0.3667, "lng": 35.2833}},
+      {"name": "Belgut", "coordinates": {"lat": -0.2500, "lng": 35.3333}},
+      {"name": "Bureti", "coordinates": {"lat": -0.5000, "lng": 35.3333}},
+      {"name": "Kipkelion East", "coordinates": {"lat": -0.1667, "lng": 35.4167}},
+      {"name": "Kipkelion West", "coordinates": {"lat": -0.2500, "lng": 35.2500}},
+      {"name": "Sigowet-Soin", "coordinates": {"lat": -0.4167, "lng": 35.1667}}
     ]
   },
   {
     "code": 36,
     "name": "Bomet",
+    "coordinates": {"lat": -0.7833, "lng": 35.3333},
     "subCounties": [
-      { "name": "Bomet Central" },
-      { "name": "Bomet East" },
-      { "name": "Chepalungu" },
-      { "name": "Konoin" },
-      { "name": "Sotik" }
+      {"name": "Bomet Central", "coordinates": {"lat": -0.7833, "lng": 35.3333}},
+      {"name": "Bomet East", "coordinates": {"lat": -0.8333, "lng": 35.4167}},
+      {"name": "Chepalungu", "coordinates": {"lat": -0.9167, "lng": 35.3333}},
+      {"name": "Konoin", "coordinates": {"lat": -0.8333, "lng": 35.1667}},
+      {"name": "Sotik", "coordinates": {"lat": -0.6833, "lng": 35.1167}}
     ]
   },
   {
     "code": 37,
     "name": "Kakamega",
+    "coordinates": {"lat": 0.2833, "lng": 34.7500},
     "subCounties": [
-      { "name": "Butere" },
-      { "name": "Ikolomani" },
-      { "name": "Khwisero" },
-      { "name": "Likuyani" },
-      { "name": "Lugari" },
-      { "name": "Lurambi" },
-      { "name": "Malava" },
-      { "name": "Matungu" },
-      { "name": "Mumias East" },
-      { "name": "Mumias West" },
-      { "name": "Navakholo" },
-      { "name": "Shinyalu" }
+      {"name": "Butere", "coordinates": {"lat": 0.2167, "lng": 34.5000}},
+      {"name": "Ikolomani", "coordinates": {"lat": 0.3333, "lng": 34.6667}},
+      {"name": "Khwisero", "coordinates": {"lat": 0.1667, "lng": 34.6667}},
+      {"name": "Likuyani", "coordinates": {"lat": 0.5000, "lng": 34.9167}},
+      {"name": "Lugari", "coordinates": {"lat": 0.5833, "lng": 34.9167}},
+      {"name": "Lurambi", "coordinates": {"lat": 0.2833, "lng": 34.7500}},
+      {"name": "Malava", "coordinates": {"lat": 0.4500, "lng": 34.8500}},
+      {"name": "Matungu", "coordinates": {"lat": 0.3333, "lng": 34.5833}},
+      {"name": "Mumias East", "coordinates": {"lat": 0.3333, "lng": 34.4833}},
+      {"name": "Mumias West", "coordinates": {"lat": 0.2833, "lng": 34.5333}},
+      {"name": "Navakholo", "coordinates": {"lat": 0.4167, "lng": 34.8333}},
+      {"name": "Shinyalu", "coordinates": {"lat": 0.2500, "lng": 34.8333}}
     ]
   },
   {
     "code": 38,
     "name": "Vihiga",
+    "coordinates": {"lat": 0.0500, "lng": 34.7167},
     "subCounties": [
-      { "name": "Emuhaya" },
-      { "name": "Hamisi" },
-      { "name": "Luanda" },
-      { "name": "Sabatia" },
-      { "name": "Vihiga" }
+      {"name": "Emuhaya", "coordinates": {"lat": 0.0833, "lng": 34.6667}},
+      {"name": "Hamisi", "coordinates": {"lat": 0.1667, "lng": 34.7500}},
+      {"name": "Luanda", "coordinates": {"lat": 0.0000, "lng": 34.5833}},
+      {"name": "Sabatia", "coordinates": {"lat": 0.0833, "lng": 34.7500}},
+      {"name": "Vihiga", "coordinates": {"lat": 0.0500, "lng": 34.7167}}
     ]
   },
   {
     "code": 39,
     "name": "Bungoma",
+    "coordinates": {"lat": 0.5667, "lng": 34.5667},
     "subCounties": [
-      { "name": "Bumula" },
-      { "name": "Kabuchai" },
-      { "name": "Kanduyi" },
-      { "name": "Kimilili" },
-      { "name": "Mt. Elgon" },
-      { "name": "Sirisia" },
-      { "name": "Tongaren" },
-      { "name": "Webuye East" },
-      { "name": "Webuye West" }
+      {"name": "Bumula", "coordinates": {"lat": 0.6667, "lng": 34.4167}},
+      {"name": "Kabuchai", "coordinates": {"lat": 0.7500, "lng": 34.6667}},
+      {"name": "Kanduyi", "coordinates": {"lat": 0.5667, "lng": 34.5667}},
+      {"name": "Kimilili", "coordinates": {"lat": 0.7833, "lng": 34.7167}},
+      {"name": "Mt. Elgon", "coordinates": {"lat": 1.0833, "lng": 34.5833}},
+      {"name": "Sirisia", "coordinates": {"lat": 0.6667, "lng": 34.5000}},
+      {"name": "Tongaren", "coordinates": {"lat": 0.6667, "lng": 34.6667}},
+      {"name": "Webuye East", "coordinates": {"lat": 0.6167, "lng": 34.7667}},
+      {"name": "Webuye West", "coordinates": {"lat": 0.5833, "lng": 34.7333}}
     ]
   },
   {
     "code": 40,
     "name": "Busia",
+    "coordinates": {"lat": 0.4667, "lng": 34.1167},
     "subCounties": [
-      { "name": "Bunyala" },
-      { "name": "Butula" },
-      { "name": "Matayos" },
-      { "name": "Nambale" },
-      { "name": "Teso North" },
-      { "name": "Teso South" },
-      { "name": "Samia" }
+      {"name": "Bunyala", "coordinates": {"lat": 0.3333, "lng": 33.9167}},
+      {"name": "Butula", "coordinates": {"lat": 0.3333, "lng": 34.1667}},
+      {"name": "Matayos", "coordinates": {"lat": 0.4167, "lng": 34.0833}},
+      {"name": "Nambale", "coordinates": {"lat": 0.5000, "lng": 34.2500}},
+      {"name": "Teso North", "coordinates": {"lat": 0.6667, "lng": 34.2500}},
+      {"name": "Teso South", "coordinates": {"lat": 0.5833, "lng": 34.1667}},
+      {"name": "Samia", "coordinates": {"lat": 0.4167, "lng": 34.0000}}
     ]
   },
   {
     "code": 41,
     "name": "Siaya",
+    "coordinates": {"lat": 0.0667, "lng": 34.2833},
     "subCounties": [
-      { "name": "Alego Usonga" },
-      { "name": "Bondo" },
-      { "name": "Gem" },
-      { "name": "Rarieda" },
-      { "name": "Ugenya" },
-      { "name": "Ugunja" }
+      {"name": "Alego Usonga", "coordinates": {"lat": 0.1667, "lng": 34.3333}},
+      {"name": "Bondo", "coordinates": {"lat": 0.0833, "lng": 34.1667}},
+      {"name": "Gem", "coordinates": {"lat": 0.0833, "lng": 34.4167}},
+      {"name": "Rarieda", "coordinates": {"lat": -0.0833, "lng": 34.4167}},
+      {"name": "Ugenya", "coordinates": {"lat": 0.1667, "lng": 34.2500}},
+      {"name": "Ugunja", "coordinates": {"lat": 0.1667, "lng": 34.3333}}
     ]
   },
   {
     "code": 42,
     "name": "Kisumu",
+    "coordinates": {"lat": -0.1000, "lng": 34.7500},
     "subCounties": [
-      { "name": "Kisumu Central" },
-      { "name": "Kisumu East" },
-      { "name": "Kisumu West" },
-      { "name": "Muhoroni" },
-      { "name": "Nyakach" },
-      { "name": "Nyando" },
-      { "name": "Seme" }
+      {"name": "Kisumu Central", "coordinates": {"lat": -0.1000, "lng": 34.7500}},
+      {"name": "Kisumu East", "coordinates": {"lat": -0.0833, "lng": 34.8333}},
+      {"name": "Kisumu West", "coordinates": {"lat": -0.1667, "lng": 34.6667}},
+      {"name": "Muhoroni", "coordinates": {"lat": -0.1667, "lng": 35.1667}},
+      {"name": "Nyakach", "coordinates": {"lat": -0.3333, "lng": 34.9167}},
+      {"name": "Nyando", "coordinates": {"lat": -0.3333, "lng": 34.8333}},
+      {"name": "Seme", "coordinates": {"lat": -0.0833, "lng": 34.5833}}
     ]
   },
   {
     "code": 43,
     "name": "Homa Bay",
+    "coordinates": {"lat": -0.5333, "lng": 34.4500},
     "subCounties": [
-      { "name": "Homa Bay Town" },
-      { "name": "Kabondo Kasipul" },
-      { "name": "Karachuonyo" },
-      { "name": "Kasipul" },
-      { "name": "Ndhiwa" },
-      { "name": "Rangwe" },
-      { "name": "Rachuonyo North" },
-      { "name": "Suba North" },
-      { "name": "Suba South" }
+      {"name": "Homa Bay Town", "coordinates": {"lat": -0.5333, "lng": 34.4500}},
+      {"name": "Kabondo Kasipul", "coordinates": {"lat": -0.4167, "lng": 34.5833}},
+      {"name": "Karachuonyo", "coordinates": {"lat": -0.5000, "lng": 34.6667}},
+      {"name": "Kasipul", "coordinates": {"lat": -0.4167, "lng": 34.5000}},
+      {"name": "Ndhiwa", "coordinates": {"lat": -0.8333, "lng": 34.3333}},
+      {"name": "Rangwe", "coordinates": {"lat": -0.5833, "lng": 34.3333}},
+      {"name": "Rachuonyo North", "coordinates": {"lat": -0.4167, "lng": 34.7500}},
+      {"name": "Suba North", "coordinates": {"lat": -0.6667, "lng": 34.1667}},
+      {"name": "Suba South", "coordinates": {"lat": -0.7500, "lng": 34.2500}}
     ]
   },
   {
     "code": 44,
     "name": "Migori",
+    "coordinates": {"lat": -1.0667, "lng": 34.4667},
     "subCounties": [
-      { "name": "Awendo" },
-      { "name": "Kuria East" },
-      { "name": "Kuria West" },
-      { "name": "Nyatike" },
-      { "name": "Rongo" },
-      { "name": "Suna East" },
-      { "name": "Suna West" },
-      { "name": "Uriri" }
+      {"name": "Awendo", "coordinates": {"lat": -0.8333, "lng": 34.5833}},
+      {"name": "Kuria East", "coordinates": {"lat": -1.0000, "lng": 34.6667}},
+      {"name": "Kuria West", "coordinates": {"lat": -1.0833, "lng": 34.5833}},
+      {"name": "Nyatike", "coordinates": {"lat": -1.1667, "lng": 34.4167}},
+      {"name": "Rongo", "coordinates": {"lat": -0.8333, "lng": 34.6667}},
+      {"name": "Suna East", "coordinates": {"lat": -1.0667, "lng": 34.4667}},
+      {"name": "Suna West", "coordinates": {"lat": -1.0833, "lng": 34.4167}},
+      {"name": "Uriri", "coordinates": {"lat": -0.9167, "lng": 34.5000}}
     ]
   },
   {
     "code": 45,
     "name": "Kisii",
+    "coordinates": {"lat": -0.6833, "lng": 34.7667},
     "subCounties": [
-      { "name": "Bobasi" },
-      { "name": "Bomachoge Borabu" },
-      { "name": "Bomachoge Chache" },
-      { "name": "Bonchari" },
-      { "name": "Kitutu Chache North" },
-      { "name": "Kitutu Chache South" },
-      { "name": "Nyaribari Chache" },
-      { "name": "Nyaribari Masaba" },
-      { "name": "South Mugirango" }
+      {"name": "Bobasi", "coordinates": {"lat": -0.8333, "lng": 34.8333}},
+      {"name": "Bomachoge Borabu", "coordinates": {"lat": -0.7500, "lng": 34.9167}},
+      {"name": "Bomachoge Chache", "coordinates": {"lat": -0.7500, "lng": 34.8333}},
+      {"name": "Bonchari", "coordinates": {"lat": -0.6667, "lng": 34.9167}},
+      {"name": "Kitutu Chache North", "coordinates": {"lat": -0.6667, "lng": 34.8333}},
+      {"name": "Kitutu Chache South", "coordinates": {"lat": -0.7500, "lng": 34.7500}},
+      {"name": "Nyaribari Chache", "coordinates": {"lat": -0.6833, "lng": 34.7667}},
+      {"name": "Nyaribari Masaba", "coordinates": {"lat": -0.7500, "lng": 34.6667}},
+      {"name": "South Mugirango", "coordinates": {"lat": -0.8333, "lng": 34.6667}}
     ]
   },
   {
     "code": 46,
     "name": "Nyamira",
+    "coordinates": {"lat": -0.5667, "lng": 34.9333},
     "subCounties": [
-      { "name": "Borabu" },
-      { "name": "Manga" },
-      { "name": "Masaba North" },
-      { "name": "Nyamira North" },
-      { "name": "Nyamira South" }
+      {"name": "Borabu", "coordinates": {"lat": -0.6667, "lng": 35.0833}},
+      {"name": "Manga", "coordinates": {"lat": -0.7500, "lng": 34.9167}},
+      {"name": "Masaba North", "coordinates": {"lat": -0.5000, "lng": 34.9167}},
+      {"name": "Nyamira North", "coordinates": {"lat": -0.5667, "lng": 34.9333}},
+      {"name": "Nyamira South", "coordinates": {"lat": -0.6667, "lng": 34.9167}}
     ]
   },
   {
     "code": 47,
     "name": "Nairobi City",
+    "coordinates": {"lat": -1.2864, "lng": 36.8172},
     "subCounties": [
-      { "name": "Dagoretti North" },
-      { "name": "Dagoretti South" },
-      { "name": "Embakasi Central" },
-      { "name": "Embakasi East" },
-      { "name": "Embakasi North" },
-      { "name": "Embakasi South" },
-      { "name": "Embakasi West" },
-      { "name": "Kamukunji" },
-      { "name": "Kasarani" },
-      { "name": "Kibra" },
-      { "name": "Lang'ata" },
-      { "name": "Makadara" },
-      { "name": "Mathare" },
-      { "name": "Roysambu" },
-      { "name": "Ruaraka" },
-      { "name": "Starehe" },
-      { "name": "Westlands" }
+      {"name": "Dagoretti North", "coordinates": {"lat": -1.2833, "lng": 36.7500}},
+      {"name": "Dagoretti South", "coordinates": {"lat": -1.3167, "lng": 36.7500}},
+      {"name": "Embakasi Central", "coordinates": {"lat": -1.3167, "lng": 36.8833}},
+      {"name": "Embakasi East", "coordinates": {"lat": -1.3000, "lng": 36.9333}},
+      {"name": "Embakasi North", "coordinates": {"lat": -1.2833, "lng": 36.8667}},
+      {"name": "Embakasi South", "coordinates": {"lat": -1.3500, "lng": 36.8833}},
+      {"name": "Embakasi West", "coordinates": {"lat": -1.3167, "lng": 36.8333}},
+      {"name": "Kamukunji", "coordinates": {"lat": -1.2833, "lng": 36.8500}},
+      {"name": "Kasarani", "coordinates": {"lat": -1.2167, "lng": 36.8833}},
+      {"name": "Kibra", "coordinates": {"lat": -1.3167, "lng": 36.7833}},
+      {"name": "Lang'ata", "coordinates": {"lat": -1.3667, "lng": 36.7500}},
+      {"name": "Makadara", "coordinates": {"lat": -1.3000, "lng": 36.8667}},
+      {"name": "Mathare", "coordinates": {"lat": -1.2667, "lng": 36.8500}},
+      {"name": "Roysambu", "coordinates": {"lat": -1.2333, "lng": 36.8667}},
+      {"name": "Ruaraka", "coordinates": {"lat": -1.2500, "lng": 36.8667}},
+      {"name": "Starehe", "coordinates": {"lat": -1.2833, "lng": 36.8333}},
+      {"name": "Westlands", "coordinates": {"lat": -1.2667, "lng": 36.8000}}
     ]
   }
 ]

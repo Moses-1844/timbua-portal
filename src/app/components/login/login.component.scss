@@ -1,0 +1,291 @@
+@import '../../../assets/styles/shared-variables';
+
+.login-container {
+  min-height: 100vh;
+  background: $light-gradient;
+  display: flex;
+  align-items: center;
+  padding: 2rem 1rem;
+  justify-content: center;
+  font-family: $font-family;
+}
+
+.login-card {
+  background: $white;
+  border-radius: $border-radius-xl;
+  box-shadow: $shadow-xl;
+  padding: 3rem 2.5rem;
+  position: relative;
+  overflow: hidden;
+  
+  &::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 4px;
+    background: $primary-gradient;
+  }
+}
+
+.login-header {
+  text-align: center;
+  margin-bottom: 2.5rem;
+
+  .logo {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 1.5rem;
+
+    .logo-icon {
+      width: 50px;
+      height: 50px;
+      background: $primary-gradient;
+      border-radius: $border-radius-lg;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: $white;
+      font-size: 1.5rem;
+      font-weight: 700;
+      box-shadow: $shadow-md;
+    }
+
+    h1 {
+      font-size: 2rem;
+      font-weight: 700;
+      background: $primary-gradient;
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      margin: 0 0 0 0.75rem;
+    }
+  }
+
+  .welcome-text {
+    color: $text-light;
+    font-size: 1.125rem;
+    margin: 0;
+    font-weight: 500;
+  }
+}
+
+// Alert Styles
+.alert {
+  border: none;
+  border-radius: $border-radius;
+  padding: 1rem 1.25rem;
+  margin-bottom: 1.5rem;
+  box-shadow: $shadow-sm;
+  
+  &.alert-success {
+    background: rgba($success-color, 0.1);
+    color: $secondary-dark;
+    border-left: 4px solid $success-color;
+  }
+  
+  &.alert-danger {
+    background: rgba($error-color, 0.1);
+    color: #b91c1c;
+    border-left: 4px solid $error-color;
+  }
+
+  .btn-close {
+    padding: 0.75rem;
+  }
+}
+
+// Form Styles
+.login-form {
+  .form-label {
+    color: $text-dark;
+    font-weight: 600;
+    font-size: 0.875rem;
+    margin-bottom: 0.5rem;
+    display: block;
+  }
+
+  .form-control {
+    border: 2px solid $border-color;
+    border-radius: $border-radius;
+    padding: 0.875rem 1rem;
+    font-size: 1rem;
+    background: $white;
+    transition: $transition-normal;
+    box-shadow: $shadow-sm;
+
+    &:focus {
+      border-color: $primary-color;
+      box-shadow: 0 0 0 3px rgba($primary-color, 0.1);
+      outline: none;
+    }
+
+    &.is-invalid {
+      border-color: $error-color;
+      
+      &:focus {
+        box-shadow: 0 0 0 3px rgba($error-color, 0.1);
+      }
+    }
+
+    &::placeholder {
+      color: #9ca3af;
+    }
+  }
+
+  .invalid-feedback {
+    font-size: 0.875rem;
+    color: $error-color;
+    margin-top: 0.25rem;
+  }
+}
+
+// Checkbox and Links
+.form-check {
+  .form-check-input {
+    &:checked {
+      background-color: $primary-color;
+      border-color: $primary-color;
+    }
+
+    &:focus {
+      border-color: $primary-color;
+      box-shadow: 0 0 0 0.2rem rgba($primary-color, 0.25);
+    }
+  }
+
+  .form-check-label {
+    color: $text-dark;
+    font-size: 0.875rem;
+  }
+}
+
+.forgot-password {
+  color: $primary-color;
+  text-decoration: none;
+  font-size: 0.875rem;
+  font-weight: 500;
+  transition: $transition-fast;
+
+  &:hover {
+    color: $primary-dark;
+    text-decoration: underline;
+  }
+}
+
+// Login Button
+.login-button {
+  background: $accent-gradient;
+  border: none;
+  border-radius: $border-radius;
+  padding: 1rem 2rem;
+  font-size: 1rem;
+  font-weight: 600;
+  color: $dark-color;
+  transition: $transition-normal;
+  box-shadow: $shadow-md;
+  position: relative;
+  overflow: hidden;
+
+  &:hover:not(:disabled) {
+    transform: translateY(-2px);
+    box-shadow: $shadow-lg;
+  }
+
+  &:active:not(:disabled) {
+    transform: translateY(0);
+  }
+
+  &:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    transform: none;
+    box-shadow: $shadow-sm;
+  }
+}
+
+// Demo Accounts
+.demo-accounts {
+  background: rgba($primary-color, 0.05);
+  border: 1px solid rgba($primary-color, 0.1);
+  border-radius: $border-radius;
+  padding: 1.25rem;
+
+  h6 {
+    color: $dark-color;
+    font-weight: 600;
+    margin-bottom: 0.75rem;
+  }
+
+  .demo-account-item {
+    color: $text-light;
+    margin-bottom: 0.5rem;
+
+    &:last-child {
+      margin-bottom: 0;
+    }
+
+    strong {
+      color: $text-dark;
+    }
+  }
+}
+
+// Footer
+.login-footer {
+  border-top: 1px solid $border-color;
+  padding-top: 1.5rem;
+
+  p {
+    color: $text-light;
+    font-size: 0.875rem;
+    margin: 0;
+  }
+
+  .signup-link {
+    color: $primary-color;
+    text-decoration: none;
+    font-weight: 600;
+    transition: $transition-fast;
+
+    &:hover {
+      color: $primary-dark;
+      text-decoration: underline;
+    }
+  }
+}
+
+// Responsive Design
+@media (max-width: 768px) {
+  .login-container {
+    padding: 1rem 0.5rem;
+  }
+
+  .login-card {
+    padding: 2rem 1.5rem;
+    border-radius: $border-radius-lg;
+  }
+
+  .login-header {
+    .logo {
+      flex-direction: column;
+      gap: 0.75rem;
+
+      h1 {
+        margin: 0;
+        font-size: 1.75rem;
+      }
+    }
+
+    .welcome-text {
+      font-size: 1rem;
+    }
+  }
+}
+
+@media (max-width: 480px) {
+  .login-card {
+    padding: 1.5rem 1rem;
+  }
+}

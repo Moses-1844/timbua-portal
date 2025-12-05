@@ -1,0 +1,294 @@
+<div class="dashboard-layout">
+  <!-- Dashboard Header -->
+  <header class="dashboard-header" [style.background]="colors.kbrcDarkBlue">
+    <div class="header-content">
+      <div class="logo-section">
+        <div class="kenya-flag">
+          <div class="flag-black" [style.background]="colors.kenyaBlack"></div>
+          <div class="flag-red" [style.background]="colors.kenyaRed"></div>
+          <div class="flag-green" [style.background]="colors.kenyaGreen"></div>
+        </div>
+        <h1>Contractor Dashboard</h1>
+        <span class="government-badge">Timbua</span>
+      </div>
+      
+      <div class="header-actions">
+        <div class="kbrc-badge" [style.background]="colors.kbrcBlue">
+          KBRC Certified
+        </div>
+        
+        <div class="user-menu">
+          <span class="user-greeting">
+            Welcome, {{ authService.getContactPerson?.() || authService.getCompanyName?.() || 'Contractor' }}
+          </span>
+          <div class="user-dropdown">
+            <button class="user-toggle">
+              Contractor ▼
+            </button>
+            <div class="dropdown-menu">
+              <button class="dropdown-item" (click)="navigateToHome()">Home</button>
+              <button class="dropdown-item" (click)="logout()">Logout</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <div class="dashboard-container">
+    <!-- Sidebar -->
+    <nav class="sidebar" [style.background]="colors.kenyaWhite">
+      <div class="sidebar-content">
+        <div class="sidebar-menu">
+          <h3>Contractor Menu</h3>
+          <ul>
+            <li><a routerLink="/contractor-dashboard" class="menu-item" [class.active]="!isChildRouteActive()">Dashboard</a></li>
+            <li><a routerLink="/contractor-dashboard/projects" class="menu-item" [class.active]="isActiveRoute('/contractor-dashboard/projects')">My Projects</a></li>
+            
+            <li><a routerLink="/contractor-dashboard/quotations" class="menu-item" [class.active]="isActiveRoute('/contractor-dashboard/quotations')">Quotations</a></li>
+            <li><a routerLink="/contractor-dashboard/profile" class="menu-item" [class.active]="isActiveRoute('/contractor-dashboard/profile')">Profile</a></li>
+            <li><a routerLink="/contractor-dashboard/materials-map" class="menu-item">Materials Map</a></li>
+            <li><a routerLink="/contractor-dashboard/support" class="menu-item">Decision Support</a></li>
+          </ul>
+        </div>
+      </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="dashboard-main">
+      <router-outlet></router-outlet>
+      
+      <!-- Enhanced Dashboard Content -->
+      <div *ngIf="!isChildRouteActive()" class="dashboard-content">
+        <!-- Error State -->
+        <div *ngIf="hasError && !isLoading" class="error-state">
+          <div class="error-icon">⚠️</div>
+          <h3>Unable to Load Dashboard Data</h3>
+          <p>There was a problem loading your dashboard information. Please check your connection and try again.</p>
+          <button class="retry-btn" (click)="retryLoadData()">Retry Loading Data</button>
+        </div>
+
+        <!-- Loading State -->
+        <div *ngIf="isLoading && !hasError" class="loading-state">
+          <div class="loading-spinner"></div>
+          <p>Loading your construction dashboard...</p>
+        </div>
+
+        <!-- Main Dashboard Content -->
+        <div *ngIf="!isLoading && !hasError" class="dashboard-overview">
+          <!-- Welcome Section -->
+          <div class="welcome-section">
+            <h2>🏗️ Construction Management Dashboard</h2>
+            <p class="welcome-message">
+              Welcome back! Here's your construction overview for today.
+              {{ getPerformanceMessage() }}
+            </p>
+          </div>
+
+          <!-- Key Metrics Grid -->
+          <div class="metrics-grid">
+            <div class="metric-card" (click)="navigateToProjects()">
+              <div class="metric-icon">📊</div>
+              <div class="metric-content">
+                <div class="metric-value">{{ dashboardStats.totalProjects }}</div>
+                <div class="metric-label">Total Projects</div>
+                <div class="metric-subtext">
+                  {{ dashboardStats.activeProjects }} active • {{ dashboardStats.completedProjects }} completed
+                </div>
+              </div>
+            </div>
+
+            <div class="metric-card" (click)="navigateToQuotations()">
+              <div class="metric-icon">💰</div>
+              <div class="metric-content">
+                <div class="metric-value">{{ dashboardStats.pendingQuotations }}</div>
+                <div class="metric-label">Pending Quotes</div>
+                <div class="metric-subtext">
+                  {{ dashboardStats.totalMaterialRequests }} total requests
+                </div>
+              </div>
+            </div>
+
+            <div class="metric-card">
+              <div class="metric-icon">⏰</div>
+              <div class="metric-content">
+                <div class="metric-value">{{ dashboardStats.upcomingDeadlines }}</div>
+                <div class="metric-label">Upcoming Deadlines</div>
+                <div class="metric-subtext">
+                  Projects ending soon
+                </div>
+              </div>
+            </div>
+
+            <div class="metric-card">
+              <div class="metric-icon">🏆</div>
+              <div class="metric-content">
+                <div class="metric-value">{{ formatCurrency(dashboardStats.totalBudget) }}</div>
+                <div class="metric-label">Total Project Budget</div>
+                <div class="metric-subtext">
+                  Across all active projects
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Two Column Layout -->
+          <div class="dashboard-columns">
+            <!-- Left Column: Recent Projects -->
+            <div class="dashboard-column">
+              <div class="section-card">
+                <div class="section-header">
+                  <h3>📋 Recent Projects</h3>
+                  <button class="view-all-btn" (click)="navigateToProjects()">View All</button>
+                </div>
+                
+                <div *ngIf="recentProjects.length === 0" class="empty-state">
+                  <p>No projects yet. Create your first project to get started!</p>
+                </div>
+
+                <div *ngIf="recentProjects.length > 0" class="projects-list">
+                  <div *ngFor="let project of recentProjects" class="project-item">
+                    <div class="project-info">
+                      <h4 class="project-name">{{ project.name }}</h4>
+                      <div class="project-meta">
+                        <span [class]="getStatusBadgeClass(project.status)">
+                          {{ getStatusLabel(project.status) }}
+                        </span>
+                        <span class="project-dates">
+                          {{ formatDate(project.startDate) }} - {{ formatDate(project.endDate) }}
+                        </span>
+                      </div>
+                    </div>
+                    
+                    <div class="project-progress">
+                      <div class="progress-section">
+                        <div class="progress-header">
+                          <span class="progress-label">Progress</span>
+                          <span class="progress-percentage">{{ project.progress }}%</span>
+                        </div>
+                        <div class="progress-bar">
+                          <div 
+                            class="progress-fill" 
+                            [class]="getProgressColor(project.progress)"
+                            [style.width.%]="project.progress"
+                          ></div>
+                        </div>
+                      </div>
+                      <div class="project-budget">
+                        {{ formatCurrency(project.estimatedCost) }}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Right Column: Pending Actions & Activity -->
+            <div class="dashboard-column">
+              <!-- Pending Quotations -->
+              <div class="section-card">
+                <div class="section-header">
+                  <h3>⏳ Pending Actions</h3>
+                  <button class="view-all-btn" (click)="navigateToQuotations()">Manage</button>
+                </div>
+                
+                <div *ngIf="pendingQuotations.length === 0" class="empty-state">
+                  <p>No pending actions. Great job staying on top of things!</p>
+                </div>
+
+                <div *ngIf="pendingQuotations.length > 0" class="actions-list">
+                  <div *ngFor="let quote of pendingQuotations" class="action-item">
+                    <div class="action-icon">📦</div>
+                    <div class="action-content">
+                      <h4>{{ quote.material }}</h4>
+                      <p>{{ quote.quantity }} units needed</p>
+                      <div class="action-meta">
+                        <span class="deadline" [class.urgent]="isDeadlineUrgent(quote.deadline)">
+                          Due: {{ formatDate(quote.deadline) }}
+                          ({{ getDaysUntilDeadline(quote.deadline) }} days)
+                        </span>
+                      </div>
+                    </div>
+                    <div class="quotes-count">
+                      {{ quote.quotes.length }} quotes
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Recent Activity -->
+              <div class="section-card">
+                <div class="section-header">
+                  <h3>📈 Recent Activity</h3>
+                </div>
+                
+                <div class="activity-list">
+                  <div *ngFor="let activity of recentActivities" class="activity-item">
+                    <div class="activity-icon">
+                      <span *ngIf="activity.type === 'project'">🏗️</span>
+                      <span *ngIf="activity.type === 'quotation'">💰</span>
+                      <span *ngIf="activity.type === 'system'">⚡</span>
+                    </div>
+                    <div class="activity-content">
+                      <p class="activity-message">{{ activity.message }}</p>
+                      <span class="activity-time">
+                        {{ formatDate(activity.timestamp) }}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Performance Insights -->
+          <div class="insights-section">
+            <div class="section-card">
+              <h3>💡 Performance Insights</h3>
+              <div class="insights-grid">
+                <div class="insight-item">
+                  <div class="insight-icon">📊</div>
+                  <div class="insight-content">
+                    <h4>Project Health</h4>
+                    <p *ngIf="dashboardStats.activeProjects > 0">
+                      You have {{ dashboardStats.activeProjects }} active projects with good momentum.
+                    </p>
+                    <p *ngIf="dashboardStats.activeProjects === 0">
+                      Ready to start new projects? Create one to begin!
+                    </p>
+                  </div>
+                </div>
+                
+                <div class="insight-item">
+                  <div class="insight-icon">⏰</div>
+                  <div class="insight-content">
+                    <h4>Timeline Management</h4>
+                    <p *ngIf="dashboardStats.upcomingDeadlines > 0">
+                      {{ dashboardStats.upcomingDeadlines }} projects have upcoming deadlines. Stay on track!
+                    </p>
+                    <p *ngIf="dashboardStats.upcomingDeadlines === 0">
+                      All projects are well-scheduled. Great planning!
+                    </p>
+                  </div>
+                </div>
+                
+                <div class="insight-item">
+                  <div class="insight-icon">💰</div>
+                  <div class="insight-content">
+                    <h4>Budget Overview</h4>
+                    <p>
+                      Total project portfolio: {{ formatCurrency(dashboardStats.totalBudget) }}
+                    </p>
+                    <p *ngIf="dashboardStats.pendingQuotations > 0">
+                      {{ dashboardStats.pendingQuotations }} material quotes pending review.
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+</div>

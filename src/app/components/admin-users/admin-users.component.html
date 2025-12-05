@@ -1,0 +1,9 @@
+<div class="admin-page">
+  <h2>Users</h2>
+  <p>Manage system users.</p>
+
+  <div *ngIf="users.length === 0">No users available.</div>
+  <ul *ngIf="users.length > 0" class="item-list">
+    <li *ngFor="let u of users">{{ u.name || u.email || u.username }}</li>
+  </ul>
+</div>

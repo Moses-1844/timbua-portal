@@ -1,0 +1,9 @@
+<div class="admin-page">
+  <h2>Reports</h2>
+  <p>Export and review system reports.</p>
+
+  <div *ngIf="reports.length === 0">No reports available.</div>
+  <ul *ngIf="reports.length > 0" class="item-list">
+    <li *ngFor="let r of reports">{{ r.title || r.id }}</li>
+  </ul>
+</div>

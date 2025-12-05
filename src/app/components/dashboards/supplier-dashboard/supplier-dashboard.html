@@ -1,0 +1,270 @@
+<div class="dashboard-layout">
+  <!-- Dashboard Header -->
+  <header class="dashboard-header" [style.background]="colors.kbrcDarkBlue">
+    <div class="header-content">
+      <div class="logo-section">
+        <div class="kenya-flag">
+          <div class="flag-black" [style.background]="colors.kenyaBlack"></div>
+          <div class="flag-red" [style.background]="colors.kenyaRed"></div>
+          <div class="flag-green" [style.background]="colors.kenyaGreen"></div>
+        </div>
+        <h1>Supplier Dashboard</h1>
+        <span class="government-badge">Timbua</span>
+      </div>
+      
+      <div class="header-actions">
+        <div class="kbrc-badge" [style.background]="colors.kbrcBlue">
+          KBRC Certified
+        </div>
+        
+        <div class="user-menu">
+          <span class="user-greeting">
+            Welcome, {{ authService.getContactPerson() || authService.getCompanyName() }}
+          </span>
+          <div class="user-dropdown">
+            <button class="user-toggle">
+              Supplier ▼
+            </button>
+            <div class="dropdown-menu">
+              <button class="dropdown-item" (click)="navigateToHome()">Home</button>
+              <button class="dropdown-item" (click)="logout()">Logout</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <div class="dashboard-container">
+    <!-- Sidebar -->
+    <nav class="sidebar" [style.background]="colors.kenyaWhite">
+      <div class="sidebar-content">
+        <div class="sidebar-menu">
+          <h3>Supplier Menu</h3>
+          <ul>
+            <li><a routerLink="/supplier-dashboard" class="menu-item" [class.active]="isActiveRoute('/supplier-dashboard')">Dashboard</a></li>
+            <li><a routerLink="/supplier-dashboard/add-site" class="menu-item" [class.active]="isActiveRoute('/supplier-dashboard/add-site')">Add Material Site</a></li>
+            <li><a routerLink="/supplier-dashboard/inventory" class="menu-item" [class.active]="isActiveRoute('/supplier-dashboard/inventory')">My Material Sites</a></li>
+           
+            <li><a routerLink="/supplier-dashboard/requests" class="menu-item" [class.active]="isActiveRoute('/supplier-dashboard/requests')">Material Requests</a></li>
+           
+            <li><a routerLink="/supplier-dashboard/profile" class="menu-item" [class.active]="isActiveRoute('/supplier-dashboard/profile')">Profile</a></li>
+            <li><a routerLink="/supplier-dashboard/materials-map" class="menu-item" [class.active]="isActiveRoute('/supplier-dashboard/materials-map')">Materials Map</a></li>
+            <li><a routerLink="/supplier-dashboard/support" class="menu-item" [class.active]="isActiveRoute('/supplier-dashboard/support')">Decision Support</a></li>
+          </ul>
+        </div>
+      </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="dashboard-main">
+      <!-- Router outlet for nested components -->
+      <router-outlet></router-outlet>
+      
+      <!-- Default dashboard content when no child route is active -->
+      <div *ngIf="!isChildRouteActive()" class="dashboard-content">
+        <!-- Error Message -->
+        <div *ngIf="errorMessage" class="error-message">
+          <span class="error-icon">⚠️</span>
+          {{ errorMessage }}
+          <button (click)="refreshDashboard()" class="refresh-btn-small">Retry</button>
+        </div>
+        
+        <!-- Loading State -->
+        <div *ngIf="isLoading" class="loading-state">
+          <div class="loading-spinner"></div>
+          <p>Loading supplier dashboard...</p>
+        </div>
+        
+        <!-- Dashboard Content -->
+        <div *ngIf="!isLoading" class="dashboard-content-loaded">
+          <div class="dashboard-header-section">
+            <h2>Welcome to Your Supplier Dashboard</h2>
+            <p>Manage your material sites, orders, and quotations</p>
+            <button (click)="navigateToAddMaterial()" class="add-material-btn">
+              ➕ Add New Material Site
+            </button>
+            <button (click)="refreshDashboard()" class="refresh-btn">
+              🔄 Refresh Dashboard
+            </button>
+          </div>
+          
+          <!-- Quick Stats -->
+          <div class="stats-grid">
+            <div class="stat-card" (click)="navigateToMaterialSites()">
+              <div class="stat-value">{{ dashboardStats.totalMaterialSites }}</div>
+              <div class="stat-label">Material Sites</div>
+              <div class="stat-trend">{{ dashboardStats.activeMaterialSites }} active</div>
+            </div>
+            <div class="stat-card" (click)="navigateToOrders()">
+              <div class="stat-value">{{ dashboardStats.pendingOrders }}</div>
+              <div class="stat-label">Pending Orders</div>
+              <div class="stat-trend">{{ dashboardStats.completedOrders }} completed</div>
+            </div>
+            <div class="stat-card" (click)="navigateToQuotations()">
+              <div class="stat-value">{{ dashboardStats.sentQuotations }}</div>
+              <div class="stat-label">Sent Quotations</div>
+              <div class="stat-trend">{{ dashboardStats.acceptedQuotations }} accepted</div>
+            </div>
+            <div class="stat-card" (click)="navigateToRequests()">
+              <div class="stat-value">{{ dashboardStats.openRequests }}</div>
+              <div class="stat-label">Open Requests</div>
+              <div class="stat-trend">Awaiting quotes</div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-value">{{ formatCurrency(dashboardStats.totalRevenue) }}</div>
+              <div class="stat-label">Total Revenue</div>
+              <div class="stat-trend">From completed orders</div>
+            </div>
+          </div>
+
+          <!-- Recent Activity -->
+          <div class="dashboard-section">
+            <div class="section-header">
+              <h3>Recent Activity</h3>
+              <button class="view-all-btn" (click)="refreshDashboard()">Refresh</button>
+            </div>
+            <div class="activity-list">
+              <div *ngIf="recentActivity.length === 0" class="empty-activity">
+                <p>No recent activity to display</p>
+              </div>
+              <div *ngFor="let activity of recentActivity.slice(0, 5)" class="activity-item">
+                <div class="activity-icon">
+                  <span *ngIf="activity.type === 'material'">🏭</span>
+                  <span *ngIf="activity.type === 'order'">📦</span>
+                  <span *ngIf="activity.type === 'quotation'">💰</span>
+                  <span *ngIf="activity.type === 'request'">📋</span>
+                </div>
+                <div class="activity-content">
+                  <span class="activity-text">{{ activity.text }}</span>
+                  <span class="activity-time">{{ formatDate(activity.time) }}</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Material Sites -->
+          <div class="dashboard-section">
+            <div class="section-header">
+              <h3>My Material Sites</h3>
+              <button class="view-all-btn" (click)="navigateToMaterialSites()">View All</button>
+            </div>
+            <div class="material-sites-list">
+              <div *ngIf="recentMaterialSites.length === 0" class="empty-list">
+                <p>No material sites found. <a (click)="navigateToAddMaterial()" class="add-link">Add your first material site</a></p>
+              </div>
+              <div *ngFor="let site of recentMaterialSites" class="material-site-item">
+                <div class="material-site-info">
+                  <h4>{{ site.material }}</h4>
+                  <p class="site-location">📍 {{ site.county }}, {{ site.subCounty }}</p>
+                  <p class="site-details">
+                    Daily Production: {{ site.volumeProducedPerDay }} • 
+                    Employees: {{ site.numberOfPeopleEmployed }}
+                  </p>
+                </div>
+                <div class="material-site-status">
+                  <span [class]="getStatusBadgeClass(site.status)">
+                    {{ site.status }}
+                  </span>
+                  <p class="site-material">{{ site.materialUsedIn }}</p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Recent Orders -->
+          <div class="dashboard-section">
+            <div class="section-header">
+              <h3>Recent Orders</h3>
+              <button class="view-all-btn" (click)="navigateToOrders()">View All</button>
+            </div>
+            <div class="orders-list">
+              <div *ngIf="recentOrders.length === 0" class="empty-list">
+                <p>No recent orders</p>
+              </div>
+              <div *ngFor="let order of recentOrders" class="order-item">
+                <div class="order-info">
+                  <h4>{{ order.material }}</h4>
+                  <p class="order-quantity">{{ formatQuantity(order.quantity, order.material) }}</p>
+                  <p class="order-client">Client: {{ order.contractorName }}</p>
+                  <p class="order-location">📍 {{ order.siteLocation }}</p>
+                </div>
+                <div class="order-details">
+                  <span [class]="getStatusBadgeClass(order.status)">
+                    {{ order.status }}
+                  </span>
+                  <p class="order-total">{{ formatCurrency(order.totalPrice) }}</p>
+                  <p class="order-date">Ordered: {{ formatDate(order.orderDate) }}</p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Recent Quotations -->
+          <div class="dashboard-section">
+            <div class="section-header">
+              <h3>Recent Quotations</h3>
+              <button class="view-all-btn" (click)="navigateToQuotations()">View All</button>
+            </div>
+            <div class="quotations-list">
+              <div *ngIf="recentQuotations.length === 0" class="empty-list">
+                <p>No recent quotations</p>
+              </div>
+              <div *ngFor="let quotation of recentQuotations" class="quotation-item">
+                <div class="quotation-info">
+                  <h4>{{ quotation.material }}</h4>
+                  <p class="quotation-quantity">{{ formatQuantity(quotation.quantity, quotation.material) }}</p>
+                  <p class="quotation-client">To: {{ quotation.contractorName }}</p>
+                  <p class="quotation-expiry">Expires: {{ formatDate(quotation.expiryDate) }}</p>
+                </div>
+                <div class="quotation-details">
+                  <span [class]="getStatusBadgeClass(quotation.status)">
+                    {{ quotation.status }}
+                  </span>
+                  <p class="quotation-total">{{ formatCurrency(quotation.totalPrice) }}</p>
+                  <p class="quotation-unit">Unit: {{ formatCurrency(quotation.unitPrice) }}</p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Recent Material Requests -->
+          <div class="dashboard-section">
+            <div class="section-header">
+              <h3>Recent Material Requests</h3>
+              <button class="view-all-btn" (click)="navigateToRequests()">View All</button>
+            </div>
+            <div class="requests-list">
+              <div *ngIf="recentRequests.length === 0" class="empty-list">
+                <p>No recent material requests</p>
+              </div>
+              <div *ngFor="let request of recentRequests" class="request-item">
+                <div class="request-info">
+                  <h4>{{ request.materialType }}</h4>
+                  <p class="request-quantity">{{ formatQuantity(request.quantity, request.materialType) }}</p>
+                  <p class="request-client">From: {{ request.contractorCompany }}</p>
+                  <p class="request-urgency">
+                    <span [class]="getUrgencyBadgeClass(request.urgency)">
+                      {{ request.urgency }} Priority
+                    </span>
+                  </p>
+                  <p class="request-project">Project: {{ request.projectType }}</p>
+                </div>
+                <div class="request-details">
+                  <span [class]="getStatusBadgeClass(request.status)">
+                    {{ request.status }}
+                  </span>
+                  <p class="request-budget">Budget: {{ formatCurrency(request.budget) }}</p>
+                  <p class="request-needed">Needed by: {{ formatDate(request.requiredBy) }}</p>
+                  <button *ngIf="request.status === 'OPEN'" class="quote-btn" (click)="navigateToQuotations()">
+                    Send Quote
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+</div>

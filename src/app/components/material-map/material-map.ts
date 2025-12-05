@@ -85,6 +85,7 @@ export class MaterialMap implements OnInit, AfterViewInit {
     'Cinder': '🧱',
     'Cabro': '🧱',
     'Coral': '🪸',
+    'Coarse Aggregates': '🪨',
     'Other': '📦',
     'default': '📦'
   };
@@ -168,15 +169,20 @@ export class MaterialMap implements OnInit, AfterViewInit {
     this.materialService.getMaterials().subscribe({
       next: (apiMaterials: any[]) => {
         console.log('API Response received:', apiMaterials);
-        console.log('Materials loaded from API:', apiMaterials?.length);
+        console.log('Raw materials loaded from API:', apiMaterials?.length);
         
         if (apiMaterials && apiMaterials.length > 0) {
+          // Log the first few raw API materials for debugging
+          console.log('First 3 raw API materials:', apiMaterials.slice(0, 3));
+          
           // Transform API data to match our Material interface with validation
           const transformedMaterials: Material[] = apiMaterials
             .map(apiMaterial => this.transformApiMaterial(apiMaterial))
             .filter((material): material is Material => material !== null);
 
           console.log('Successfully transformed materials:', transformedMaterials.length);
+          console.log('First 3 transformed materials:', transformedMaterials.slice(0, 3));
+          
           this.materials.set(transformedMaterials);
           this.filteredMaterials.set(transformedMaterials);
           
@@ -248,32 +254,41 @@ export class MaterialMap implements OnInit, AfterViewInit {
   }
 
   private transformApiMaterial(apiMaterial: any): Material | null {
+    console.log('Transforming API material:', apiMaterial);
+    
     // Validate required fields
-    if (!apiMaterial.id || !apiMaterial.material || !apiMaterial.materialLocation) {
+    if (!apiMaterial.id || !apiMaterial.material) {
       console.warn('Skipping invalid material data - missing required fields:', apiMaterial);
       return null;
     }
 
-    // Validate coordinates
-    if (apiMaterial.latitude == null || apiMaterial.longitude == null || 
-        isNaN(apiMaterial.latitude) || isNaN(apiMaterial.longitude)) {
-      console.warn('Material has invalid coordinates:', apiMaterial.id, apiMaterial.material);
-      return null;
+    // Validate coordinates - use fallback if coordinates are invalid
+    let latitude = apiMaterial.latitude;
+    let longitude = apiMaterial.longitude;
+    
+    if (latitude == null || longitude == null || 
+        isNaN(latitude) || isNaN(longitude) ||
+        latitude < -90 || latitude > 90 ||
+        longitude < -180 || longitude > 180) {
+      console.warn(`Material ${apiMaterial.id} has invalid coordinates, using fallback location`);
+      // Set fallback coordinates for Kwale county
+      latitude = -4.1882;
+      longitude = 39.4794;
     }
 
     const materialTypes = this.extractMaterialTypes(apiMaterial.material);
     const locationData = this.extractLocationData(apiMaterial);
     
-    return {
-      id: apiMaterial.id.toString(),
+    const transformedMaterial: Material = {
+      id: apiMaterial.id?.toString() || 'Unknown',
       questionnaireNo: apiMaterial.questionnaireNo?.toString() || 'Unknown',
       researchAssistantNo: apiMaterial.researchAssistantNo || 'Unknown',
-      name: apiMaterial.material,
+      name: apiMaterial.material || 'Unknown Material',
       type: materialTypes,
       location: {
-        name: apiMaterial.materialLocation,
-        latitude: apiMaterial.latitude,
-        longitude: apiMaterial.longitude,
+        name: apiMaterial.materialLocation || 'Unknown Location',
+        latitude: latitude,
+        longitude: longitude,
         county: locationData.county,
         subCounty: locationData.subCounty,
         ward: locationData.ward
@@ -282,16 +297,19 @@ export class MaterialMap implements OnInit, AfterViewInit {
       recommendations: [],
       timestamp: new Date().toISOString(),
       icon: this.getMaterialIcon(materialTypes),
-      materialUsedIn: apiMaterial.materialUsedIn,
-      sizeOfManufacturingIndustry: apiMaterial.sizeOfManufacturingIndustry,
-      periodOfManufacture: apiMaterial.periodOfManufacture,
-      ownerOfMaterial: apiMaterial.ownerOfMaterial,
-      materialUsage: apiMaterial.materialUsage,
-      numberOfPeopleEmployed: apiMaterial.numberOfPeopleEmployed,
-      similarLocations: apiMaterial.similarLocations,
-      volumeProducedPerDay: apiMaterial.volumeProducedPerDay,
-      comments: apiMaterial.comments
+      materialUsedIn: apiMaterial.materialUsedIn || null,
+      sizeOfManufacturingIndustry: apiMaterial.sizeOfManufacturingIndustry || null,
+      periodOfManufacture: apiMaterial.periodOfManufacture || null,
+      ownerOfMaterial: apiMaterial.ownerOfMaterial || null,
+      materialUsage: apiMaterial.materialUsage || null,
+      numberOfPeopleEmployed: apiMaterial.numberOfPeopleEmployed || null,
+      similarLocations: apiMaterial.similarLocations || null,
+      volumeProducedPerDay: apiMaterial.volumeProducedPerDay || null,
+      comments: apiMaterial.comments || null
     };
+
+    console.log('Transformed material:', transformedMaterial);
+    return transformedMaterial;
   }
 
   private extractMaterialTypes(materialString: string): string[] {
@@ -302,6 +320,7 @@ export class MaterialMap implements OnInit, AfterViewInit {
     const types: string[] = [];
     const materialLower = materialString.toLowerCase();
     
+    // Map specific material names to types
     if (materialLower.includes('block')) types.push('Blocks');
     if (materialLower.includes('brick')) types.push('Bricks');
     if (materialLower.includes('sand')) types.push('Sand');
@@ -320,11 +339,31 @@ export class MaterialMap implements OnInit, AfterViewInit {
     if (materialLower.includes('cinder')) types.push('Cinder');
     if (materialLower.includes('cabro')) types.push('Cabro');
     if (materialLower.includes('coral')) types.push('Coral');
+    if (materialLower.includes('coarse aggregate')) types.push('Coarse Aggregates');
     
-    return types.length > 0 ? types : ['Other'];
+    // If no specific types found, use the material name as type
+    if (types.length === 0) {
+      types.push(materialString);
+    }
+    
+    return types;
   }
 
   private extractLocationData(apiMaterial: any): { county: string; subCounty: string; ward: string } {
+    // Use the actual API data first
+    const county = apiMaterial.county || 'Unknown';
+    const subCounty = apiMaterial.subCounty || 'Unknown';
+    
+    // If county/subCounty are provided in API, use them
+    if (county !== 'Unknown' || subCounty !== 'Unknown') {
+      return {
+        county: county,
+        subCounty: subCounty,
+        ward: this.extractWard(apiMaterial.materialLocation)
+      };
+    }
+
+    // Fallback to location string parsing if county/subCounty not provided
     const locationString = apiMaterial.materialLocation;
     const latitude = apiMaterial.latitude;
     const longitude = apiMaterial.longitude;
@@ -333,7 +372,7 @@ export class MaterialMap implements OnInit, AfterViewInit {
       return this.detectCountyFromCoordinates(latitude, longitude);
     }
 
-    // First try to extract from location string using counties data
+    // Try to extract from location string using counties data
     const countiesData = this.countiesData();
     const locationLower = locationString.toLowerCase();
     
@@ -360,16 +399,7 @@ export class MaterialMap implements OnInit, AfterViewInit {
     }
 
     // If county not found in string, try to detect from coordinates
-    const coordinateBasedCounty = this.detectCountyFromCoordinates(latitude, longitude);
-    
-    // Try to extract sub-county from location string as fallback
-    const extractedSubCounty = this.extractSubCounty(locationString);
-    
-    return {
-      county: coordinateBasedCounty.county,
-      subCounty: extractedSubCounty !== 'Unknown' ? extractedSubCounty : coordinateBasedCounty.subCounty,
-      ward: this.extractWard(locationString)
-    };
+    return this.detectCountyFromCoordinates(latitude, longitude);
   }
 
   private detectCountyFromCoordinates(latitude: number, longitude: number): { county: string; subCounty: string; ward: string } {
@@ -385,10 +415,8 @@ export class MaterialMap implements OnInit, AfterViewInit {
       }
     }
 
-    // Fallback: Use reverse geocoding API (Nominatim)
-    // Note: This is a simple implementation. For production, you might want to use a proper geocoding service
+    // Fallback based on typical coastal region coordinates
     if (latitude && longitude) {
-      // Simple region detection based on coordinates
       if (latitude < -3.5 && longitude > 39.0) {
         return { county: 'Kilifi', subCounty: 'Unknown', ward: 'Unknown' };
       } else if (latitude < -4.0 && longitude < 39.5) {
@@ -400,30 +428,6 @@ export class MaterialMap implements OnInit, AfterViewInit {
 
     // Final fallback
     return { county: 'Mombasa', subCounty: 'Unknown', ward: 'Unknown' };
-  }
-
-  private extractSubCounty(location: string): string {
-    if (!location || typeof location !== 'string') {
-      return 'Unknown';
-    }
-    
-    // Extract sub-county from location string
-    const locationLower = location.toLowerCase();
-    
-    // Check for common sub-counties in the coastal region
-    const subCounties = [
-      'Bamburi', 'Shanzu', 'Mtopanga', 'Mwakurunge', 'Junda', 'Kisauni', 'Nyali',
-      'Likoni', 'Mvita', 'Changamwe', 'Jomvu', 'Kilifi', 'Malindi', 'Watamu',
-      'Diani', 'Ukunda', 'Lungalunga', 'Msambweni', 'Kinango'
-    ];
-    
-    for (const subCounty of subCounties) {
-      if (locationLower.includes(subCounty.toLowerCase())) {
-        return subCounty;
-      }
-    }
-    
-    return 'Unknown';
   }
 
   private extractWard(location: string): string {
@@ -454,8 +458,8 @@ export class MaterialMap implements OnInit, AfterViewInit {
   private extractChallenges(apiMaterial: any): string[] {
     const challenges: string[] = [];
     
-    // You can extract challenges from comments or other fields
-    if (apiMaterial.comments && apiMaterial.comments.includes('challenge')) {
+    // Extract challenges from comments or other fields
+    if (apiMaterial.comments && apiMaterial.comments !== 'null') {
       challenges.push(apiMaterial.comments);
     }
     
@@ -539,6 +543,7 @@ export class MaterialMap implements OnInit, AfterViewInit {
         marker.addTo(this.map!);
         
         marker.on('click', () => {
+          console.log('Marker clicked, setting selected material:', material);
           this.selectedMaterial.set(material);
         });
 
@@ -573,7 +578,7 @@ export class MaterialMap implements OnInit, AfterViewInit {
     if (material.type.includes('Sand')) return GovernmentColors.kbrcBlue;
     if (material.type.includes('Blocks') || material.type.includes('Bricks')) return GovernmentColors.kenyaGreen;
     if (material.type.includes('Cement') || material.type.includes('Concrete')) return GovernmentColors.kenyaRed;
-    if (material.type.includes('Stones') || material.type.includes('Limestone')) return GovernmentColors.kbrcDarkBlue;
+    if (material.type.includes('Stones') || material.type.includes('Limestone') || material.type.includes('Coarse Aggregates')) return GovernmentColors.kbrcDarkBlue;
     return GovernmentColors.kbrcGray;
   }
 
@@ -605,7 +610,7 @@ export class MaterialMap implements OnInit, AfterViewInit {
         <p><strong>County:</strong> ${material.location.county}</p>
         <p><strong>Sub-County:</strong> ${material.location.subCounty}</p>
         <p><strong>Types:</strong> ${material.type.join(', ')}</p>
-        <p><strong>Industry:</strong> ${material.sizeOfManufacturingIndustry}</p>
+        <p><strong>Industry:</strong> ${material.sizeOfManufacturingIndustry || 'Not specified'}</p>
       </div>
     `;
   }
@@ -641,25 +646,53 @@ export class MaterialMap implements OnInit, AfterViewInit {
       // If county changed, reset sub-county and update available sub-counties
       if (filterType === 'county' && value !== filters.county) {
         newFilters.subCounty = '';
-        this.updateAvailableSubCounties(value);
+        this.loadSubCountiesByCounty(value);
       }
       
       return newFilters;
     });
   }
 
-  private updateAvailableSubCounties(countyName: string): void {
-    if (countyName) {
-      const county = this.countiesData().counties.find(c => c.name === countyName);
-      if (county) {
-        const subCountyNames = county.subCounties.map(sc => sc.name).sort();
-        this.availableSubCounties.set(subCountyNames);
-      } else {
-        this.availableSubCounties.set([]);
-      }
+  private loadSubCountiesByCounty(countyName: string): void {
+    if (!countyName) {
+      this.availableSubCounties.set([]);
+      return;
+    }
+
+    console.log(`Loading sub-counties for county: ${countyName}`);
+    
+    // Show loading state for sub-counties
+    this.availableSubCounties.set(['Loading...']);
+
+    this.http.get<string[]>(`https://timbuabackend.onrender.com/api/material-sites/sub-counties/by-county?county=${encodeURIComponent(countyName)}`)
+      .subscribe({
+        next: (subCounties: string[]) => {
+          console.log(`Loaded sub-counties for ${countyName}:`, subCounties);
+          this.availableSubCounties.set(subCounties.sort());
+        },
+        error: (error) => {
+          console.error(`Error loading sub-counties for ${countyName}:`, error);
+          // Fallback: try to get sub-counties from local data
+          this.fallbackToLocalSubCounties(countyName);
+        }
+      });
+  }
+
+  private fallbackToLocalSubCounties(countyName: string): void {
+    const county = this.countiesData().counties.find(c => c.name === countyName);
+    if (county) {
+      const subCountyNames = county.subCounties.map(sc => sc.name).sort();
+      this.availableSubCounties.set(subCountyNames);
+      console.log(`Using local sub-counties for ${countyName}:`, subCountyNames);
     } else {
       this.availableSubCounties.set([]);
+      console.log(`No sub-counties found for ${countyName} in local data`);
     }
+  }
+
+  // Keep the old method as fallback
+  private updateAvailableSubCounties(countyName: string): void {
+    this.loadSubCountiesByCounty(countyName);
   }
 
   retryLoadMaterials(): void {

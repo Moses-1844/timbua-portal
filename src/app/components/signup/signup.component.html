@@ -1,0 +1,436 @@
+<div class="signup-container">
+  <div class="container">
+    <div class="row justify-content-center">
+      <div class="col-12 col-lg-10 col-xl-8">
+        <div class="signup-card">
+          <!-- Header Section -->
+          <div class="signup-header text-center mb-4">
+            <div class="logo d-flex align-items-center justify-content-center mb-3">
+              <div class="logo-icon me-3">T</div>
+              <h1 class="mb-0">Timbua</h1>
+            </div>
+            <p class="welcome-text mb-0">Join Timbua Construction Platform</p>
+          </div>
+
+          <!-- Success Message -->
+          <div *ngIf="successMessage" class="alert alert-success alert-dismissible fade show" role="alert">
+            <div class="d-flex align-items-center">
+              <i class="bi bi-check-circle-fill me-2"></i>
+              <span>{{ successMessage }}</span>
+            </div>
+            <button type="button" class="btn-close" (click)="clearMessages()" aria-label="Close"></button>
+          </div>
+
+          <!-- Error Message -->
+          <div *ngIf="errorMessage" class="alert alert-danger alert-dismissible fade show" role="alert">
+            <div class="d-flex align-items-center">
+              <i class="bi bi-exclamation-triangle-fill me-2"></i>
+              <span>{{ errorMessage }}</span>
+            </div>
+            <button type="button" class="btn-close" (click)="clearMessages()" aria-label="Close"></button>
+          </div>
+
+          <!-- Signup Form -->
+          <form (ngSubmit)="onSubmit()" class="signup-form">
+            
+            <!-- Role Selection -->
+            <div class="mb-4">
+              <label class="form-label h5">I want to join as <span class="text-danger">*</span></label>
+              <div class="row">
+                <div class="col-12 col-md-6" *ngFor="let role of roles">
+                  <div 
+                    class="role-card mb-3"
+                    [class.selected]="user.role === role.value"
+                    (click)="selectRole(role.value)"
+                  >
+                    <div class="role-icon mb-2">
+                      <i [class]="role.icon"></i>
+                    </div>
+                    <div class="role-header">
+                      <div class="form-check">
+                        <input
+                          class="form-check-input"
+                          type="radio"
+                          name="role"
+                          [id]="'role-' + role.value"
+                          [value]="role.value"
+                          [(ngModel)]="user.role"
+                        >
+                        <label class="form-check-label h6 mb-1" [for]="'role-' + role.value">
+                          {{ role.label }}
+                        </label>
+                      </div>
+                    </div>
+                    <div class="role-description">
+                      {{ role.description }}
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div *ngIf="!user.role" class="text-danger small mt-1">
+                Please select how you want to use Timbua
+              </div>
+            </div>
+
+            <!-- Account Information Section -->
+            <div class="section-card mb-4" *ngIf="user.role">
+              <h5 class="section-title">Account Information</h5>
+              <div class="row">
+                <div class="col-12 col-md-6">
+                  <div class="mb-3">
+                    <label for="fullName" class="form-label">Full Name <span class="text-danger">*</span></label>
+                    <input
+                      type="text"
+                      id="fullName"
+                      [(ngModel)]="user.fullName"
+                      name="fullName"
+                      class="form-control"
+                      placeholder="Enter your full name"
+                      required
+                    >
+                  </div>
+                </div>
+                <div class="col-12 col-md-6">
+                  <div class="mb-3">
+                    <label for="email" class="form-label">Email Address <span class="text-danger">*</span></label>
+                    <input
+                      type="email"
+                      id="email"
+                      [(ngModel)]="user.email"
+                      name="email"
+                      class="form-control"
+                      placeholder="Enter your email"
+                      (blur)="checkEmailAvailability()"
+                      required
+                    >
+                    <div *ngIf="emailChecking" class="form-text text-info">
+                      <i class="bi bi-hourglass-split me-1"></i>Checking email...
+                    </div>
+                    <div *ngIf="emailAvailable && user.email" class="form-text text-success">
+                      <i class="bi bi-check-circle me-1"></i>Email is available
+                    </div>
+                    <div *ngIf="!emailAvailable && user.email && !emailChecking" class="form-text text-danger">
+                      <i class="bi bi-x-circle me-1"></i>Email is already registered
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="row">
+                <div class="col-12 col-md-6">
+                  <div class="mb-3">
+                    <label for="password" class="form-label">Password <span class="text-danger">*</span></label>
+                    <input
+                      type="password"
+                      id="password"
+                      [(ngModel)]="user.password"
+                      name="password"
+                      class="form-control"
+                      placeholder="Create password"
+                      (input)="validatePassword()"
+                      minlength="6"
+                      required
+                    >
+                    <div class="password-strength mt-2">
+                      <div class="strength-bar">
+                        <div class="strength-fill" [class]="getPasswordStrengthClass()"></div>
+                      </div>
+                      <small class="text-muted">{{ getPasswordStrengthText() }}</small>
+                    </div>
+                  </div>
+                </div>
+                <div class="col-12 col-md-6">
+                  <div class="mb-3">
+                    <label for="confirmPassword" class="form-label">Confirm Password <span class="text-danger">*</span></label>
+                    <input
+                      type="password"
+                      id="confirmPassword"
+                      [(ngModel)]="user.confirmPassword"
+                      name="confirmPassword"
+                      class="form-control"
+                      placeholder="Confirm password"
+                      (input)="validatePassword()"
+                      required
+                    >
+                    <div *ngIf="passwordMismatch" class="text-danger small mt-1">
+                      <i class="bi bi-exclamation-circle me-1"></i>Passwords do not match
+                    </div>
+                    <div *ngIf="!passwordMismatch && user.confirmPassword" class="text-success small mt-1">
+                      <i class="bi bi-check-circle me-1"></i>Passwords match
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="row">
+                <div class="col-12">
+                  <div class="mb-3">
+                    <label for="phone" class="form-label">Phone Number <span class="text-danger">*</span></label>
+                    <input
+                      type="tel"
+                      id="phone"
+                      [(ngModel)]="user.phone"
+                      name="phone"
+                      class="form-control"
+                      placeholder="Enter your phone number"
+                      required
+                    >
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Contractor Specific Fields -->
+            <div class="section-card mb-4" *ngIf="user.role === 'contractor'">
+              <h5 class="section-title">
+                <i class="bi bi-building me-2"></i>Contractor Details
+              </h5>
+              <div class="row">
+                <div class="col-12 col-md-6">
+                  <div class="mb-3">
+                    <label for="contractorCompanyName" class="form-label">Company Name <span class="text-danger">*</span></label>
+                    <input
+                      type="text"
+                      id="contractorCompanyName"
+                      [(ngModel)]="contractor.companyName"
+                      name="contractorCompanyName"
+                      class="form-control"
+                      placeholder="Enter company name"
+                      required
+                    >
+                  </div>
+                </div>
+                <div class="col-12 col-md-6">
+                  <div class="mb-3">
+                    <label for="businessRegistrationNumber" class="form-label">Business Registration Number <span class="text-danger">*</span></label>
+                    <input
+                      type="text"
+                      id="businessRegistrationNumber"
+                      [(ngModel)]="contractor.businessRegistrationNumber"
+                      name="businessRegistrationNumber"
+                      class="form-control"
+                      placeholder="Enter registration number"
+                      required
+                    >
+                  </div>
+                </div>
+              </div>
+
+              <div class="row">
+                <div class="col-12">
+                  <div class="mb-3">
+                    <label for="physicalAddress" class="form-label">Physical Address <span class="text-danger">*</span></label>
+                    <textarea
+                      id="physicalAddress"
+                      [(ngModel)]="contractor.physicalAddress"
+                      name="physicalAddress"
+                      class="form-control"
+                      placeholder="Enter company physical address"
+                      rows="2"
+                      required
+                    ></textarea>
+                  </div>
+                </div>
+              </div>
+
+              <div class="row">
+                <div class="col-12 col-md-6">
+                  <div class="mb-3">
+                    <label for="specialization" class="form-label">Specialization <span class="text-danger">*</span></label>
+                    <select
+                      id="specialization"
+                      [(ngModel)]="contractor.specialization"
+                      name="specialization"
+                      class="form-select"
+                      required
+                    >
+                      <option value="">Select your specialization</option>
+                      <option *ngFor="let spec of specializations" [value]="spec">{{ spec }}</option>
+                    </select>
+                  </div>
+                </div>
+                <div class="col-12 col-md-6">
+                  <div class="mb-3">
+                    <label for="yearsOfExperience" class="form-label">Years of Experience <span class="text-danger">*</span></label>
+                    <input
+                      type="number"
+                      id="yearsOfExperience"
+                      [(ngModel)]="contractor.yearsOfExperience"
+                      name="yearsOfExperience"
+                      class="form-control"
+                      placeholder="0"
+                      min="0"
+                      max="50"
+                      required
+                    >
+                  </div>
+                </div>
+              </div>
+
+              <div class="row">
+                <div class="col-12">
+                  <div class="mb-3">
+                    <label for="licenseNumber" class="form-label">License Number <span class="text-danger">*</span></label>
+                    <input
+                      type="text"
+                      id="licenseNumber"
+                      [(ngModel)]="contractor.licenseNumber"
+                      name="licenseNumber"
+                      class="form-control"
+                      placeholder="Enter contractor license number"
+                      required
+                    >
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Supplier Specific Fields -->
+            <div class="section-card mb-4" *ngIf="user.role === 'supplier'">
+              <h5 class="section-title">
+                <i class="bi bi-truck me-2"></i>Supplier Details
+              </h5>
+              <div class="row">
+                <div class="col-12 col-md-6">
+                  <div class="mb-3">
+                    <label for="supplierCompanyName" class="form-label">Company Name <span class="text-danger">*</span></label>
+                    <input
+                      type="text"
+                      id="supplierCompanyName"
+                      [(ngModel)]="supplier.companyName"
+                      name="supplierCompanyName"
+                      class="form-control"
+                      placeholder="Enter company name"
+                      required
+                    >
+                  </div>
+                </div>
+                <div class="col-12 col-md-6">
+                  <div class="mb-3">
+                    <label for="supplierBusinessRegistrationNumber" class="form-label">Business Registration Number <span class="text-danger">*</span></label>
+                    <input
+                      type="text"
+                      id="supplierBusinessRegistrationNumber"
+                      [(ngModel)]="supplier.businessRegistrationNumber"
+                      name="supplierBusinessRegistrationNumber"
+                      class="form-control"
+                      placeholder="Enter registration number"
+                      required
+                    >
+                  </div>
+                </div>
+              </div>
+
+              <div class="row">
+                <div class="col-12 col-md-6">
+                  <div class="mb-3">
+                    <label for="yearsInBusiness" class="form-label">Years in Business <span class="text-danger">*</span></label>
+                    <input
+                      type="number"
+                      id="yearsInBusiness"
+                      [(ngModel)]="supplier.yearsInBusiness"
+                      name="yearsInBusiness"
+                      class="form-control"
+                      placeholder="0"
+                      min="0"
+                      max="50"
+                      required
+                    >
+                  </div>
+                </div>
+                <div class="col-12 col-md-6">
+                  <div class="mb-3">
+                    <label for="website" class="form-label">Website (Optional)</label>
+                    <input
+                      type="url"
+                      id="website"
+                      [(ngModel)]="supplier.website"
+                      name="website"
+                      class="form-control"
+                      placeholder="https://example.com"
+                    >
+                  </div>
+                </div>
+              </div>
+
+              <div class="row">
+                <div class="col-12">
+                  <div class="mb-3">
+                    <label for="description" class="form-label">Company Description (Optional)</label>
+                    <textarea
+                      id="description"
+                      [(ngModel)]="supplier.description"
+                      name="description"
+                      class="form-control"
+                      placeholder="Describe your company and services"
+                      rows="3"
+                    ></textarea>
+                    <div class="form-text">Tell us about your materials and services</div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="row">
+                <div class="col-12">
+                  <div class="mb-3">
+                    <label for="logoUrl" class="form-label">Logo URL (Optional)</label>
+                    <input
+                      type="url"
+                      id="logoUrl"
+                      [(ngModel)]="supplier.logoUrl"
+                      name="logoUrl"
+                      class="form-control"
+                      placeholder="https://example.com/logo.png"
+                    >
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Terms and Conditions -->
+            <div class="mb-4" *ngIf="user.role">
+              <div class="form-check">
+                <input class="form-check-input" type="checkbox" id="terms" [(ngModel)]="user.agreedToTerms" name="terms" required>
+                <label class="form-check-label" for="terms">
+                  I agree to the <a href="#" class="terms-link">Terms and Conditions</a> and <a href="#" class="terms-link">Privacy Policy</a>
+                </label>
+              </div>
+            </div>
+
+            <!-- Submit Button -->
+            <div class="text-center" *ngIf="user.role">
+              <button
+                type="submit"
+                class="btn signup-button"
+                [disabled]="isLoading || !isFormValid()"
+                [class.btn-loading]="isLoading"
+              >
+                <span *ngIf="!isLoading" class="d-flex align-items-center justify-content-center">
+                  <i class="bi bi-person-plus me-2"></i>
+                  Create {{ user.role === 'contractor' ? 'Contractor' : 'Supplier' }} Account
+                </span>
+                <span *ngIf="isLoading" class="d-flex align-items-center justify-content-center">
+                  <span class="spinner-border spinner-border-sm me-2" role="status"></span>
+                  Creating Account...
+                </span>
+              </button>
+              
+              <div class="mt-3">
+                <small class="text-muted">
+                  By signing up, you agree to our platform guidelines and verification process
+                </small>
+              </div>
+            </div>
+          </form>
+
+          <!-- Footer -->
+          <div class="signup-footer text-center mt-4 pt-3">
+            <p class="mb-0">Already have an account? 
+              <a [routerLink]="['/login']" class="login-link">Sign in to your account</a>
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
